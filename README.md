@@ -28,7 +28,7 @@ The in-game search is a case-insensitive regex over the beast name, so the
 generated pattern is an alternation of short name fragments:
 
 ```
-k.m|l.p|parasite        # everything worth 150c or more
+wild.b|k.m|cry|cys|l.pl|grav|e.pl|ushc|man.f|numus|vid.v|and.sk|icic.cro|ild.hell|parasite
 ```
 
 Each fragment is chosen so it appears in **no** beast below the threshold.
@@ -39,13 +39,30 @@ still-uncovered beasts.
 A second pattern below it does the inverse — everything *under* the threshold,
 for clearing out the cheap ones.
 
-### No literal spaces
+### The search is not a substring search
 
-An early version emitted fragments like `l p` (spanning the word break in
-"Fenuma**l P**lagued Arachnid"). In game those pulled in beasts that share no
-substring with the target at all — `l p` matched "Sulphuric Scorpion", and
-"Scum Crawler" showed up too. The search field does not treat a space as a
-literal character, so word breaks travel as a `.` wildcard instead.
+Two rounds of in-game testing turned up beasts that came back for patterns they
+share no substring with:
+
+| Pattern contained | Beast that came back |
+| --- | --- |
+| `l p` | Sulphuric Scorpion, Scum Crawler |
+| `fir`, `ris` | Farric Ursa, Farric Lynx Alpha |
+
+Checked against all 218 names, one reading explains every one of them:
+**the field matches subsequences.** The characters have to appear in order, but
+not next to each other — `ris` is in "fa**r**r**i**c ur**s**a", `fir` is in
+"**f**arr**i**c u**r**sa".
+
+So a fragment counts as unsafe if it hits an unwanted beast *either* way,
+substring or subsequence. That holds whichever the game actually does, and it
+costs little: the 4c pattern went from 92 to 138 characters, still well inside
+the budget. A literal space is never emitted either — word breaks travel as a
+`.` wildcard.
+
+`matchesBestiaryPattern()` implements that combined reading, and both the UI
+warnings and the tests are measured against it rather than against
+`RegExp.test`.
 
 ### The length budget
 

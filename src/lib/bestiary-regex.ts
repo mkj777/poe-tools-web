@@ -9,17 +9,13 @@
  */
 
 const MIN_FRAGMENT = 3;
-const MAX_FRAGMENT = 9;
-
-/** Letters only, no word break. */
-const WORD_FRAGMENT = /^[a-z]+$/;
+const MAX_FRAGMENT = 14;
 
 /**
- * May span one word break. The break is emitted as a `.` wildcard, never as a
- * literal space: the search field does not treat a space as a plain character,
- * and a `l p` fragment matched beasts sharing no substring with the target.
+ * Letters, and word breaks that leave as a `.` wildcard. A literal space is
+ * never emitted: the search field does not treat it as a plain character.
  */
-const PHRASE_FRAGMENT = /^[a-z]+ [a-z]+$/;
+const SAFE_FRAGMENT = /^[a-z][a-z ]*$|^ [a-z ]*[a-z]$/;
 
 /** Stand-in for the word break inside the solver, swapped for `.` on the way out. */
 const SPACE = " ";
@@ -45,12 +41,52 @@ function fragmentsOf(name: string) {
   for (let len = MIN_FRAGMENT; len <= MAX_FRAGMENT; len++) {
     for (let i = 0; i + len <= name.length; i++) {
       const fragment = name.slice(i, i + len);
-      if (WORD_FRAGMENT.test(fragment) || PHRASE_FRAGMENT.test(fragment)) {
-        out.add(fragment);
-      }
+      if (SAFE_FRAGMENT.test(fragment)) out.add(fragment);
     }
   }
   return out;
+}
+
+/**
+ * Does `fragment` hit `name` under the loosest reading of the search field?
+ *
+ * The field is not a plain substring search: patterns matched beasts that share
+ * no substring with the target at all ("Farric Ursa" came back for a pattern
+ * containing `fir` and `ris`). The only reading that explains every observed
+ * hit is subsequence matching — the characters have to appear in order, but not
+ * next to each other. A fragment counts as unsafe if it hits either way, so the
+ * result holds whichever the game actually does.
+ *
+ * A ` ` inside the fragment is the `.` wildcard, and matches any character.
+ */
+function hits(fragment: string, name: string) {
+  if (substringHit(fragment, name)) return true;
+
+  let i = 0;
+  for (const ch of name) {
+    if (fragment[i] === " " || fragment[i] === ch) i++;
+    if (i === fragment.length) return true;
+  }
+  return false;
+}
+
+function substringHit(fragment: string, name: string) {
+  outer: for (let start = 0; start + fragment.length <= name.length; start++) {
+    for (let i = 0; i < fragment.length; i++) {
+      const f = fragment[i];
+      if (f !== " " && f !== name[start + i]) continue outer;
+    }
+    return true;
+  }
+  return false;
+}
+
+/** Does a finished pattern hit this beast name? Used by the UI and the tests. */
+export function matchesBestiaryPattern(pattern: string, name: string) {
+  const target = normalize(name);
+  return pattern
+    .split("|")
+    .some((alternative) => hits(alternative.split(".").join(" "), target));
 }
 
 function escapeRegex(value: string) {
@@ -76,11 +112,11 @@ function candidatesFor(targets: string[], avoid: string[]) {
       targets.forEach((name, i) => {
         if (name.includes(fragment)) covers.add(i);
       });
-      const hits = avoid.reduce(
-        (n, name) => (name.includes(fragment) ? n + 1 : n),
+      const falsePositives = avoid.reduce(
+        (n, name) => (hits(fragment, name) ? n + 1 : n),
         0,
       );
-      out.set(fragment, { covers, hits });
+      out.set(fragment, { covers, hits: falsePositives });
     }
   }
   return out;
@@ -101,21 +137,23 @@ function solve(
     let bestGain = 0;
     let bestHits = Infinity;
 
-    for (const [fragment, { covers, hits }] of usable) {
+    for (const [fragment, candidate] of usable) {
       let gain = 0;
-      for (const i of covers) if (uncovered.has(i)) gain++;
+      for (const i of candidate.covers) if (uncovered.has(i)) gain++;
       if (gain === 0) continue;
 
       // Most beasts per fragment, then fewest false positives, then shortest.
       const better =
         gain > bestGain ||
         (gain === bestGain &&
-          (hits < bestHits ||
-            (hits === bestHits && best !== null && fragment.length < best.length)));
+          (candidate.hits < bestHits ||
+            (candidate.hits === bestHits &&
+              best !== null &&
+              fragment.length < best.length)));
       if (better) {
         best = fragment;
         bestGain = gain;
-        bestHits = hits;
+        bestHits = candidate.hits;
       }
     }
 
@@ -160,8 +198,9 @@ export function buildBestiaryRegex(
     const pattern = solve(targets, candidates, tolerance);
     if (pattern.length > maxLength) continue;
 
-    const matcher = new RegExp(pattern, "i");
-    const overmatched = unwanted.filter((name) => matcher.test(normalize(name)));
+    const overmatched = unwanted.filter((name) =>
+      matchesBestiaryPattern(pattern, name),
+    );
 
     // Fewest false positives wins, shortest pattern breaks the tie.
     const better =

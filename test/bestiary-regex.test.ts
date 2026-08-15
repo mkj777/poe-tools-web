@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   buildBestiaryRegex,
+  matchesBestiaryPattern,
   MAX_PATTERN_LENGTH,
 } from "../src/lib/bestiary-regex.ts";
 
@@ -14,12 +15,6 @@ const BEASTS: Fixture[] = JSON.parse(
 );
 
 const THRESHOLDS = [1, 2, 3, 5, 10, 20, 30, 100, 175];
-
-const normalize = (name: string) =>
-  name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(new RegExp("[\\u0300-\\u036f]", "g"), "");
 
 function split(threshold: number) {
   return {
@@ -39,9 +34,8 @@ test("isolates a beast from similarly named ones", () => {
     ["Craicic Croaker"],
     ["Craicic Chimeral", "Craicic Savage Crab", "Gravel Eater"],
   );
-  const matcher = new RegExp(pattern!, "i");
-  assert.ok(matcher.test("craicic croaker"));
-  assert.ok(!matcher.test("craicic chimeral"));
+  assert.ok(matchesBestiaryPattern(pattern!, "Craicic Croaker"));
+  assert.ok(!matchesBestiaryPattern(pattern!, "Craicic Chimeral"));
   assert.deepEqual(overmatched, []);
 });
 
@@ -50,8 +44,25 @@ test("reports beasts no fragment can exclude", () => {
     ["Parasite"],
     ["Plated Parasite", "Vicious Parasite"],
   );
-  assert.ok(new RegExp(pattern!, "i").test("parasite"));
+  assert.ok(matchesBestiaryPattern(pattern!, "Parasite"));
   assert.deepEqual(overmatched.sort(), ["Plated Parasite", "Vicious Parasite"]);
+});
+
+test("survives a search that matches subsequences", () => {
+  // "Farric Ursa" came back in game for a pattern containing "fir" and "ris":
+  // both appear in "fa-r-r-ic u-r-s-a" in order but not next to each other.
+  // A fragment that hits a cheap beast that way must never be picked.
+  const { wanted, unwanted } = split(4);
+  const { pattern, overmatched } = buildBestiaryRegex(wanted, unwanted);
+  assert.ok(pattern);
+
+  for (const name of ["Farric Ursa", "Farric Lynx Alpha"]) {
+    if (overmatched.includes(name)) continue;
+    assert.ok(
+      !matchesBestiaryPattern(pattern, name),
+      `${name} matches unreported: ${pattern}`,
+    );
+  }
 });
 
 test("returns null rather than a pattern over the limit", () => {
@@ -96,7 +107,7 @@ test("matches accented names with an ASCII pattern", () => {
     BEASTS.filter((b) => b.name !== "Black Mórrigan").map((b) => b.name),
   );
   assert.match(pattern!, /^[a-z.|]+$/);
-  assert.ok(new RegExp(pattern!, "i").test(normalize("Black Mórrigan")));
+  assert.ok(matchesBestiaryPattern(pattern!, "Black Mórrigan"));
 });
 
 for (const threshold of THRESHOLDS) {
@@ -113,13 +124,12 @@ for (const threshold of THRESHOLDS) {
   test(`never misses a beast worth at least ${threshold}c`, () => {
     const { wanted, unwanted } = split(threshold);
     const { pattern, overmatched } = buildBestiaryRegex(wanted, unwanted);
-    const matcher = new RegExp(pattern!, "i");
 
-    const missed = wanted.filter((name) => !matcher.test(normalize(name)));
+    const missed = wanted.filter((n) => !matchesBestiaryPattern(pattern!, n));
     assert.deepEqual(missed, [], `pattern missed ${missed.length} beasts`);
 
     // Every false positive must be one the caller was told about.
-    const extra = unwanted.filter((name) => matcher.test(normalize(name)));
+    const extra = unwanted.filter((n) => matchesBestiaryPattern(pattern!, n));
     assert.deepEqual(extra.sort(), [...overmatched].sort());
   });
 
@@ -129,11 +139,10 @@ for (const threshold of THRESHOLDS) {
     assert.ok(pattern, `no inverse pattern produced for ${threshold}c`);
     assert.ok(pattern.length <= MAX_PATTERN_LENGTH);
 
-    const matcher = new RegExp(pattern, "i");
-    const missed = unwanted.filter((name) => !matcher.test(normalize(name)));
+    const missed = unwanted.filter((n) => !matchesBestiaryPattern(pattern, n));
     assert.deepEqual(missed, [], `inverse missed ${missed.length} beasts`);
 
-    const extra = wanted.filter((name) => matcher.test(normalize(name)));
+    const extra = wanted.filter((n) => matchesBestiaryPattern(pattern, n));
     assert.deepEqual(extra.sort(), [...overmatched].sort());
   });
 }
