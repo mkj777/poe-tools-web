@@ -52,24 +52,19 @@ function PatternRow({
 }: {
   label: string;
   hint: string;
-  wanted: Beast[];
-  unwanted: Beast[];
+  wanted: string[];
+  unwanted: string[];
   extrasLabel: string;
 }) {
   const [copied, setCopied] = useState(false);
 
   const { pattern, overmatched, missing } = useMemo(() => {
-    const result = buildBestiaryRegex(
-      wanted.map((b) => b.name),
-      unwanted.map((b) => b.name),
-    );
+    const result = buildBestiaryRegex(wanted, unwanted);
     return {
       ...result,
       missing: result.pattern
-        ? wanted
-            .map((b) => b.name)
-            .filter((name) => !matchesBestiaryPattern(result.pattern!, name))
-        : wanted.map((b) => b.name),
+        ? wanted.filter((name) => !matchesBestiaryPattern(result.pattern!, name))
+        : wanted,
     };
   }, [wanted, unwanted]);
 
@@ -152,17 +147,27 @@ function Notice({
 
 function BestiaryRegex({
   beasts,
+  allNames,
   threshold,
   kept,
 }: {
   beasts: Beast[];
+  allNames: string[];
   threshold: number;
   kept: Beast[];
 }) {
-  const dropped = useMemo(() => {
-    const keptIds = new Set(kept.map((b) => b.id));
-    return beasts.filter((b) => !keptIds.has(b.id));
-  }, [beasts, kept]);
+  // The universe is every beast the trade site knows, not just the priced ones:
+  // a pattern that ignores the unpriced ones matches them by accident.
+  const { keepNames, dropNames, unpriced } = useMemo(() => {
+    const keepNames = kept.map((b) => b.name);
+    const keepSet = new Set(keepNames);
+    const universe = new Set([...allNames, ...beasts.map((b) => b.name)]);
+    return {
+      keepNames,
+      dropNames: [...universe].filter((name) => !keepSet.has(name)),
+      unpriced: universe.size - beasts.length,
+    };
+  }, [allNames, beasts, kept]);
 
   if (threshold <= 0) {
     return (
@@ -182,30 +187,38 @@ function BestiaryRegex({
       <PatternRow
         label={`Worth keeping — ${threshold}c and up`}
         hint="Paste into the Bestiary search to show only the beasts worth at least the min chaos value."
-        wanted={kept}
-        unwanted={dropped}
+        wanted={keepNames}
+        unwanted={dropNames}
         extrasLabel="cheaper beasts that no fragment can exclude"
       />
 
       <PatternRow
         label={`Reverse (Trash) — under ${threshold}c`}
         hint="The inverse: everything below the threshold, for clearing out the cheap ones."
-        wanted={dropped}
-        unwanted={kept}
+        wanted={dropNames}
+        unwanted={keepNames}
         extrasLabel="valuable beasts that no fragment can exclude"
       />
 
       <p className="text-muted-foreground border-t pt-4 text-sm">
-        Both patterns only know the {beasts.length} beasts poe.ninja prices.
-        Beasts nobody trades — Grimsucker, Sharptooth, Gloomfang and the rest —
-        are absent from that list, so neither pattern accounts for them and
-        neither will reliably show them.
+        Built against {keepNames.length + dropNames.length} beast names from the
+        official trade data — {beasts.length} of them priced by poe.ninja, {unpriced}{" "}
+        unpriced and therefore treated as trash. Randomly named rare beasts
+        (Grimsucker, Sharptooth, Deathclaw the Mad) are in no catalogue at all,
+        since the game generates those names per capture, so no pattern can
+        account for them.
       </p>
     </div>
   );
 }
 
-export function BeastTable({ beasts }: { beasts: Beast[] }) {
+export function BeastTable({
+  beasts,
+  allNames,
+}: {
+  beasts: Beast[];
+  allNames: string[];
+}) {
   const [query, setQuery] = useState("");
   const [minChaos, setMinChaos] = useState("");
   const [sort, setSort] = useState<SortKey>("chaosValue");
@@ -250,7 +263,12 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
 
   return (
     <div className="space-y-5">
-      <BestiaryRegex beasts={beasts} threshold={threshold} kept={worthKeeping} />
+      <BestiaryRegex
+        beasts={beasts}
+        allNames={allNames}
+        threshold={threshold}
+        kept={worthKeeping}
+      />
 
       <div className="flex flex-wrap items-center gap-3">
         <Input

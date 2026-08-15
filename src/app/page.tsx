@@ -1,4 +1,4 @@
-import { getBeasts, getLeagues } from "@/lib/ninja";
+import { getAllBeastNames, getBeasts, getLeagues } from "@/lib/ninja";
 import { BeastTable } from "@/components/beast-table";
 import { LeagueSelect } from "@/components/league-select";
 
@@ -13,7 +13,10 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const league =
     leagues.find((l) => l.id === requested)?.id ?? leagues[0]?.id ?? "Standard";
 
-  const beasts = await getBeasts(league);
+  const [beasts, allNames] = await Promise.all([
+    getBeasts(league),
+    getAllBeastNames().catch(() => [] as string[]),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-12">
@@ -28,7 +31,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         <LeagueSelect leagues={leagues} value={league} />
       </header>
 
-      <BeastTable beasts={beasts} />
+      <BeastTable beasts={beasts} allNames={allNames} />
     </main>
   );
 }

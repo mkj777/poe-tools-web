@@ -41,3 +41,30 @@ export async function getBeasts(league: string) {
   );
   return data.lines;
 }
+
+type TradeItemData = {
+  result: { label: string; entries: { type?: string; name?: string }[] }[];
+};
+
+/**
+ * Every beast the trade site knows, priced or not. poe.ninja only lists beasts
+ * with current listings (218 of them), while GGG's own item data has 361 — and
+ * a search pattern has to account for the ones nobody is selling too, or it
+ * matches them by accident.
+ *
+ * Randomly named rare beasts are in neither list: their names are generated per
+ * capture, so nothing can enumerate them ahead of time.
+ */
+export async function getAllBeastNames() {
+  const res = await fetch("https://www.pathofexile.com/api/trade/data/items", {
+    headers: { "User-Agent": UA },
+    next: { revalidate: 86400 },
+  });
+  if (!res.ok) throw new Error(`trade/data/items -> ${res.status}`);
+
+  const data: TradeItemData = await res.json();
+  const monsters = data.result.find((g) => g.label === "Itemised Monsters");
+  return (monsters?.entries ?? [])
+    .map((e) => e.name ?? e.type ?? "")
+    .filter(Boolean);
+}
