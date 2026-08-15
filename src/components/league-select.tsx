@@ -1,0 +1,39 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import type { League } from "@/lib/ninja";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+export function LeagueSelect({
+  leagues,
+  value,
+}: {
+  leagues: League[];
+  value: string;
+}) {
+  const router = useRouter();
+
+  return (
+    <Select
+      value={value}
+      onValueChange={(id) => router.push(`/?league=${encodeURIComponent(id)}`)}
+    >
+      <SelectTrigger className="w-[220px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {leagues.map((l) => (
+          <SelectItem key={l.id} value={l.id}>
+            {l.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}

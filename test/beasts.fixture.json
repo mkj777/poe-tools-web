@@ -1,0 +1,874 @@
+[
+  {
+    "name": "Black Mórrigan",
+    "chaosValue": 360.0
+  },
+  {
+    "name": "Fenumal Plagued Arachnid",
+    "chaosValue": 180.0
+  },
+  {
+    "name": "Parasite",
+    "chaosValue": 175.4
+  },
+  {
+    "name": "Wild Bristle Matron",
+    "chaosValue": 144.5
+  },
+  {
+    "name": "Gravel Eater",
+    "chaosValue": 144.4
+  },
+  {
+    "name": "Craicic Croaker",
+    "chaosValue": 130.0
+  },
+  {
+    "name": "Goatman Fire-raiser",
+    "chaosValue": 99.7
+  },
+  {
+    "name": "Crypt Ambusher",
+    "chaosValue": 82.74
+  },
+  {
+    "name": "Wild Hellion Alpha",
+    "chaosValue": 52.0
+  },
+  {
+    "name": "Farrul, First of the Plains",
+    "chaosValue": 45.0
+  },
+  {
+    "name": "Sand Skitterer",
+    "chaosValue": 36.5
+  },
+  {
+    "name": "Wild Brambleback",
+    "chaosValue": 30.0
+  },
+  {
+    "name": "Fenumus, First of the Night",
+    "chaosValue": 27.0
+  },
+  {
+    "name": "Vivid Vulture",
+    "chaosValue": 24.0
+  },
+  {
+    "name": "Primal Cystcaller",
+    "chaosValue": 20.0
+  },
+  {
+    "name": "Primal Crushclaw",
+    "chaosValue": 20.0
+  },
+  {
+    "name": "Craiceann, First of the Deep",
+    "chaosValue": 15.1
+  },
+  {
+    "name": "Saqawal, First of the Sky",
+    "chaosValue": 15.0
+  },
+  {
+    "name": "Sand Scorpion",
+    "chaosValue": 10.5
+  },
+  {
+    "name": "Farric Tiger Alpha",
+    "chaosValue": 5.0
+  },
+  {
+    "name": "Ravenous Parasite",
+    "chaosValue": 5.0
+  },
+  {
+    "name": "Vicious Hound",
+    "chaosValue": 5.0
+  },
+  {
+    "name": "Stygian Silverback",
+    "chaosValue": 4.2
+  },
+  {
+    "name": "Rotting Vulture",
+    "chaosValue": 4.0
+  },
+  {
+    "name": "Goatman Stomper",
+    "chaosValue": 4.0
+  },
+  {
+    "name": "Enraptured Crab",
+    "chaosValue": 4.0
+  },
+  {
+    "name": "Primal Beast",
+    "chaosValue": 4.0
+  },
+  {
+    "name": "Escaped Rhex",
+    "chaosValue": 3.6
+  },
+  {
+    "name": "Vaal Recluse",
+    "chaosValue": 3.4
+  },
+  {
+    "name": "Aboriginal Chieftain",
+    "chaosValue": 3.4
+  },
+  {
+    "name": "Sand Serpent",
+    "chaosValue": 3.3
+  },
+  {
+    "name": "Forest Beast",
+    "chaosValue": 3.2
+  },
+  {
+    "name": "Woods Ursa",
+    "chaosValue": 3.2
+  },
+  {
+    "name": "Rooster Demon",
+    "chaosValue": 3.1
+  },
+  {
+    "name": "Infested Serpent",
+    "chaosValue": 3.1
+  },
+  {
+    "name": "Chrome-touched Croaker",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Chimeric Croaker",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Chrome-infused Croaker",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Scalding Arachnid",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Hybrid Arachnid",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Mountain Lynx",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Maternal Rhex",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Carnage Ape",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Carnage Chieftain",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Plagued Arachnid",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Wild Rhex",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Sulphurspawn",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Waste Lurcher",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Infested Crab",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Dread Primate",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Blood Ape",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Vaulting Croaker",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Singing Siren",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Merveil's Blessed",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Snow Wolf",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Freezing Wolf",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Infested Maw",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Brine Vassal",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Adolescent Rhex",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Purge Hound",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Ink Spinner",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Stygian Ape",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Fury Hound",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Pitbull Demon",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Filth Maw",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Flame Hellion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Mountain Hellion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Alpine Devil",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Bearded Devil",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Merveil's Attendant",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Hill Devil",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Host Chieftain",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Porcupine Goliath",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Infested Tunnelfiend",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Blood Chieftain",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Goatman",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Bearded Shaman",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Chrome-infused Goliath",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Gluttonous Gull",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Avian Retch",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Mindless Scavenger",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Chrome-infused Chimeral",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Devourer",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Granite Eater",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Cave Skitterer",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Sewage Crawler",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Venomous Spawn",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Webbed Spider",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Virulent Spider",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Dune Hellion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Arakaali's Daughter",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Enraptured Arachnid",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Corrupted Arach",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Barrow Ape",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Goatman Shaman",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Shackled Hellion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Swarthy Mollusc",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Vicious Parasite",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Mountain Hellion Alpha",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Avalanche Rider",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Spindle Spider",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Enslaved Hellion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Fetid Maw",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Crustacean Sniper",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Feral Chimeral",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Plumed Chimeral",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Chrome-touched Chimeral",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Noxious Tarantula",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Infested Ape",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Plated Parasite",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Fighting Bull",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Night Adder",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Merveil's Retainer",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Host Cobra",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Sulphuric Scorpion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Black Scorpion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Sand Leaper",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Soulless Watcher",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Rooster Fiend",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Carrion Swarmer",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Infested Vulture",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Dirt Scrabbler",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Slimy Nemesis",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Alpine Shaman",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Colossus Crusher",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Bleached Crawler",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Bearded Skycaller",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Dust Scrabbler",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Predatory Scorpion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Obsidian Eater",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Infested Skitterer",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Bone Rhoa",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Plummeting Ursa",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Merveil's Favoured",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Spitting Parasite",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Elder-Blessed Rhoa",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Talon Archer",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Bone Cruncher",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Cursed Spawn",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Grazing Taurus",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Infested Rhoa",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Bramble Cobra",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Elder-Blessed Hellion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Leaping Spider",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Corrupted Rhoa",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Chrome-touched Goliath",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Thicket Hulk",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Scavenging Vulture",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Infested Crawler",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Elder-Blessed Goatman",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "War Hound",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Scum Crawler",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Savage Crab",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Murk Runner",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Skeletal Beast",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Merveil's Chosen",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Acid Slitherer",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Carrion Queen",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Ruins Hellion",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Armour Cruncher",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Spine Serpent",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Carrion Burrower",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Shaggy Monstrosity",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Elder-Blessed Cobra",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Elder-Blessed Retch",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Corrupted Beast",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Glade Mamba",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Enraptured Beast",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Host Adder",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Cave Beast",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Feral Fowl",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Hairy Bonecruncher",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Wild Chimeral",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Brooding Tarantula",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Ancient Devourer",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Primitive Ape",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Rhoa Mare",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Tercel Rhoa",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Vivid Watcher",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Primordial Rhoa",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Fossil Eater",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Bestial Maw",
+    "chaosValue": 3.0
+  },
+  {
+    "name": "Craicic Vassal",
+    "chaosValue": 2.0
+  },
+  {
+    "name": "Fenumal Hybrid Arachnid",
+    "chaosValue": 2.0
+  },
+  {
+    "name": "Craicic Squid",
+    "chaosValue": 2.0
+  },
+  {
+    "name": "Craicic Maw",
+    "chaosValue": 1.4
+  },
+  {
+    "name": "Farric Lynx Alpha",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Craicic Savage Crab",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Saqawine Vulture",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Farric Frost Hellion Alpha",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Farric Gargantuan",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Craicic Watcher",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Farric Wolf Alpha",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Farric Magma Hound",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Saqawine Rhex",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Craicic Shield Crab",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Saqawine Cobra",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Fenumal Scorpion",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Farric Pit Hound",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Farric Ape",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Craicic Spider Crab",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Saqawine Blood Viper",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Vivid Abberarach",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Primal Rhex Matriarch",
+    "chaosValue": 1.0
+  },
+  {
+    "name": "Craicic Sand Spitter",
+    "chaosValue": 0.95
+  },
+  {
+    "name": "Farric Flame Hellion Alpha",
+    "chaosValue": 0.85
+  },
+  {
+    "name": "Farric Chieftain",
+    "chaosValue": 0.85
+  },
+  {
+    "name": "Fenumal Widow",
+    "chaosValue": 0.84
+  },
+  {
+    "name": "Saqawine Chimeral",
+    "chaosValue": 0.8
+  },
+  {
+    "name": "Farric Goatman",
+    "chaosValue": 0.8
+  },
+  {
+    "name": "Fenumal Devourer",
+    "chaosValue": 0.65
+  },
+  {
+    "name": "Fenumal Queen",
+    "chaosValue": 0.5
+  },
+  {
+    "name": "Farric Goliath",
+    "chaosValue": 0.5
+  },
+  {
+    "name": "Fenumal Scrabbler",
+    "chaosValue": 0.5
+  },
+  {
+    "name": "Farric Ursa",
+    "chaosValue": 0.47
+  },
+  {
+    "name": "Farric Taurus",
+    "chaosValue": 0.46
+  },
+  {
+    "name": "Saqawine Rhoa",
+    "chaosValue": 0.4
+  },
+  {
+    "name": "Saqawine Retch",
+    "chaosValue": 0.38
+  }
+]

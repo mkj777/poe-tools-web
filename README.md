@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PoE Beast Prices
 
-## Getting Started
+Every Path of Exile 1 beast currently on the market, sortable by value, plus a
+generated Bestiary search pattern for the ones worth farming.
 
-First, run the development server:
+![Beast Prices](docs/screenshot.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## What it does
+
+- Lists **all** beasts for the selected league with Chaos value, Divine value,
+  7-day change and listing count.
+- Sort by any column, search by beast name, genus or habitat.
+- **Min chaos filter** — hide everything below a threshold.
+- **Bestiary regex** — a search pattern matching exactly the beasts above that
+  threshold, ready to paste into the in-game Bestiary window.
+
+## Data
+
+Prices come from the [poe.ninja economy API](https://poe.ninja/docs/api)
+(`/poe1/api/economy/...`). Requests happen server-side with a descriptive
+User-Agent and are cached for 15 minutes, which is roughly how often poe.ninja
+refreshes PoE 1 overviews.
+
+## The Bestiary regex
+
+The in-game search is a case-insensitive regex over the beast name, so the
+generated pattern is an alternation of short name fragments:
+
+```
+fir|rav|ld b|mal c|k m|l p|cry|tig|ld h|id v|d sc|us h|cic c|nd sk|parasite
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Each fragment is chosen so it appears in **no** beast below the threshold.
+Picking the smallest such set is set cover, so `src/lib/bestiary-regex.ts` uses
+the greedy approximation: repeatedly take the fragment covering the most
+still-uncovered beasts.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Two things the UI tells you about instead of hiding:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Length.** The search field takes 250 characters. Longer patterns get cut off.
+- **Over-matching.** When a wanted name is fully contained in a cheaper one
+  (`Parasite` inside `Plated Parasite`), no substring can separate them. The
+  pattern keeps the wanted beast and the UI names the extras you'll also see.
 
-## Learn More
+## Development
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm install
+pnpm dev      # http://localhost:3000
+pnpm test     # regex tests against a real 218-beast fixture
+pnpm build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Tests run on `node --test` with Node's built-in TypeScript stripping — no test
+framework needed. They assert the generated pattern never misses a wanted beast
+at several thresholds, and that every false positive is one the caller was
+warned about.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16 (App Router), React 19, Tailwind v4, shadcn/ui, TypeScript.
