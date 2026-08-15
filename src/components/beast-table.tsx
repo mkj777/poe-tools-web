@@ -4,7 +4,11 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
 import type { Beast } from "@/lib/ninja";
-import { buildBestiaryRegex, MAX_PATTERN_LENGTH } from "@/lib/bestiary-regex";
+import {
+  buildBestiaryRegex,
+  matchesBestiaryPattern,
+  MAX_PATTERN_LENGTH,
+} from "@/lib/bestiary-regex";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,14 +58,20 @@ function PatternRow({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const { pattern, overmatched } = useMemo(
-    () =>
-      buildBestiaryRegex(
-        wanted.map((b) => b.name),
-        unwanted.map((b) => b.name),
-      ),
-    [wanted, unwanted],
-  );
+  const { pattern, overmatched, missing } = useMemo(() => {
+    const result = buildBestiaryRegex(
+      wanted.map((b) => b.name),
+      unwanted.map((b) => b.name),
+    );
+    return {
+      ...result,
+      missing: result.pattern
+        ? wanted
+            .map((b) => b.name)
+            .filter((name) => !matchesBestiaryPattern(result.pattern!, name))
+        : wanted.map((b) => b.name),
+    };
+  }, [wanted, unwanted]);
 
   async function copy() {
     if (!pattern) return;
@@ -103,12 +113,40 @@ function PatternRow({
       <p className="text-muted-foreground text-sm">{hint}</p>
 
       {pattern && overmatched.length > 0 && (
-        <p className="text-sm text-amber-500">
-          Also matches {overmatched.length} {extrasLabel}:{" "}
-          {overmatched.join(", ")}.
-        </p>
+        <Notice tone="amber" text={`Also matches ${overmatched.length} ${extrasLabel}:`}>
+          {overmatched}
+        </Notice>
+      )}
+
+      {missing.length > 0 && (
+        <Notice
+          tone="red"
+          text={`Does not match ${missing.length} of the ${wanted.length} it should:`}
+        >
+          {missing}
+        </Notice>
       )}
     </div>
+  );
+}
+
+/** Warning line: the sentence and the beast names get their own colours. */
+function Notice({
+  tone,
+  text,
+  children,
+}: {
+  tone: "amber" | "red";
+  text: string;
+  children: string[];
+}) {
+  const sentence = tone === "amber" ? "text-amber-600" : "text-red-600";
+  const names = tone === "amber" ? "text-amber-300" : "text-red-300";
+
+  return (
+    <p className={`text-sm ${sentence}`}>
+      {text} <span className={`${names} font-medium`}>{children.join(", ")}</span>
+    </p>
   );
 }
 
@@ -156,6 +194,13 @@ function BestiaryRegex({
         unwanted={kept}
         extrasLabel="valuable beasts that no fragment can exclude"
       />
+
+      <p className="text-muted-foreground border-t pt-4 text-sm">
+        Both patterns only know the {beasts.length} beasts poe.ninja prices.
+        Beasts nobody trades — Grimsucker, Sharptooth, Gloomfang and the rest —
+        are absent from that list, so neither pattern accounts for them and
+        neither will reliably show them.
+      </p>
     </div>
   );
 }
