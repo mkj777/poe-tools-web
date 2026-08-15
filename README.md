@@ -27,7 +27,7 @@ The in-game search is a case-insensitive regex over the beast name, so the
 generated pattern is an alternation of short name fragments:
 
 ```
-fir|rav|ld b|mal c|k m|l p|cry|tig|ld h|id v|d sc|us h|cic c|nd sk|parasite
+k.m|l.p|parasite        # everything worth 150c or more
 ```
 
 Each fragment is chosen so it appears in **no** beast below the threshold.
@@ -35,7 +35,25 @@ Picking the smallest such set is set cover, so `src/lib/bestiary-regex.ts` uses
 the greedy approximation: repeatedly take the fragment covering the most
 still-uncovered beasts.
 
-Two things the UI tells you about instead of hiding:
+### No literal spaces
+
+An early version emitted fragments like `l p` (spanning the word break in
+"Fenuma**l P**lagued Arachnid"). In game those pulled in beasts that share no
+substring with the target at all — `l p` matched "Sulphuric Scorpion", and
+"Scum Crawler" showed up too. The search field does not treat a space as a
+literal character, so word breaks now travel as a `.` wildcard instead.
+
+That leaves two modes, toggled in the UI:
+
+| Mode | Example (150c) | Chars | Extra beasts |
+| --- | --- | --- | --- |
+| Plain substrings | `iga\|arachnid\|parasite` | 21 | 9 |
+| `.` wildcard | `k.m\|l.p\|parasite` | 16 | 4 |
+
+Plain mode never relies on regex support of any kind; wildcard mode is shorter
+and much more selective. Neither ever misses a beast above the threshold.
+
+Two more things the UI tells you about instead of hiding:
 
 - **Length.** The search field takes 250 characters. Longer patterns get cut off.
 - **Over-matching.** When a wanted name is fully contained in a cheaper one

@@ -56,6 +56,7 @@ function BestiaryRegex({
   kept: Beast[];
 }) {
   const [copied, setCopied] = useState(false);
+  const [wildcard, setWildcard] = useState(false);
 
   const { pattern, overmatched } = useMemo(() => {
     if (threshold <= 0 || kept.length === 0)
@@ -64,8 +65,9 @@ function BestiaryRegex({
     return buildBestiaryRegex(
       kept.map((b) => b.name),
       beasts.filter((b) => !keptIds.has(b.id)).map((b) => b.name),
+      { wildcard },
     );
-  }, [beasts, kept, threshold]);
+  }, [beasts, kept, threshold, wildcard]);
 
   async function copy() {
     await navigator.clipboard.writeText(pattern);
@@ -103,6 +105,23 @@ function BestiaryRegex({
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           {copied ? "Copied" : "Copy"}
         </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={wildcard}
+            onChange={(e) => setWildcard(e.target.checked)}
+            className="size-4 accent-current"
+          />
+          Use <code className="font-mono">.</code> wildcard
+        </label>
+        <span className="text-muted-foreground text-sm">
+          {wildcard
+            ? "Shorter and more precise, but only if the search supports regex wildcards."
+            : "Plain substrings only — safe everywhere, matches a few more cheap beasts."}
+        </span>
       </div>
 
       <p className="text-muted-foreground text-sm">

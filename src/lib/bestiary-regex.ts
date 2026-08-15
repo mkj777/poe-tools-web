@@ -10,22 +10,34 @@
  */
 
 const MIN_FRAGMENT = 3;
-const MAX_FRAGMENT = 7;
+const MAX_FRAGMENT = 9;
 
-/** Only plain letters/spaces — keeps the result typeable and regex-safe. */
-const SAFE_FRAGMENT = /^[a-z][a-z ]*[a-z]$/;
+/**
+ * Letters only, never spanning a space. A fragment like "l p" looks harmless
+ * but the in-game search does not treat the space as a literal: patterns with
+ * spaces pulled in beasts that share no substring at all (a "l p" fragment
+ * matched "Sulphuric Scorpion"). Single words are unambiguous.
+ */
+const WORD_FRAGMENT = /^[a-z]+$/;
+
+/** Same, but may span one space, which is emitted as a `.` wildcard. */
+const PHRASE_FRAGMENT = /^[a-z]+ [a-z]+$/;
+
+/** Placeholder for the space, swapped for `.` on the way out. */
+const SPACE = " ";
 
 const COMBINING_MARKS = new RegExp("[\\u0300-\\u036f]", "g");
 
 const normalize = (name: string) =>
   name.toLowerCase().normalize("NFD").replace(COMBINING_MARKS, "");
 
-function fragmentsOf(name: string) {
+function fragmentsOf(name: string, wildcard: boolean) {
   const out = new Set<string>();
   for (let len = MIN_FRAGMENT; len <= MAX_FRAGMENT; len++) {
     for (let i = 0; i + len <= name.length; i++) {
       const fragment = name.slice(i, i + len);
-      if (SAFE_FRAGMENT.test(fragment)) out.add(fragment);
+      if (WORD_FRAGMENT.test(fragment)) out.add(fragment);
+      else if (wildcard && PHRASE_FRAGMENT.test(fragment)) out.add(fragment);
     }
   }
   return out;
@@ -33,6 +45,13 @@ function fragmentsOf(name: string) {
 
 function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Longest space-free chunk of a name, so the pattern never needs a space. */
+function longestWord(name: string) {
+  const words = name.split(/[^a-z]+/).filter(Boolean);
+  const longest = words.reduce((a, b) => (b.length >= a.length ? b : a), "");
+  return longest || escapeRegex(name);
 }
 
 export type BestiaryRegexResult = {
@@ -45,9 +64,19 @@ export type BestiaryRegexResult = {
   overmatched: string[];
 };
 
+export type BestiaryRegexOptions = {
+  /**
+   * Allow fragments that span a word break, written as a `.` wildcard. Shorter
+   * and far more selective patterns, but it relies on the search supporting
+   * `.`; leave it off for plain-substring-only matching.
+   */
+  wildcard?: boolean;
+};
+
 export function buildBestiaryRegex(
   wanted: string[],
   unwanted: string[],
+  { wildcard = false }: BestiaryRegexOptions = {},
 ): BestiaryRegexResult {
   const targets = wanted.map(normalize);
   const avoid = unwanted.map(normalize);
@@ -57,7 +86,7 @@ export function buildBestiaryRegex(
   const coverage = new Map<string, Set<number>>();
   const seen = new Set<string>();
   for (const target of targets) {
-    for (const fragment of fragmentsOf(target)) {
+    for (const fragment of fragmentsOf(target, wildcard)) {
       if (seen.has(fragment)) continue;
       seen.add(fragment);
       if (avoid.some((name) => name.includes(fragment))) continue;
@@ -92,9 +121,10 @@ export function buildBestiaryRegex(
     }
 
     if (best === null) {
-      // Every remaining name is a substring of an unwanted one — no fragment
-      // can isolate it, so fall back to the full names and accept the extras.
-      for (const i of uncovered) picked.push(escapeRegex(targets[i]));
+      // No fragment can isolate what is left ("Parasite" lives inside "Plated
+      // Parasite"). Fall back to the longest single word and accept the extras,
+      // which get reported below.
+      for (const i of uncovered) picked.push(longestWord(targets[i]));
       break;
     }
 
@@ -103,7 +133,8 @@ export function buildBestiaryRegex(
     coverage.delete(best);
   }
 
-  const pattern = picked.join("|");
+  // A literal space is not safe in the search field, so it leaves as `.`.
+  const pattern = picked.join("|").split(SPACE).join(".");
   const matcher = new RegExp(pattern, "i");
 
   return {
