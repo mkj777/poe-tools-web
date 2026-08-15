@@ -150,7 +150,7 @@ function BestiaryRegex({
       />
 
       <PatternRow
-        label={`Vendor fodder — under ${threshold}c`}
+        label={`Reverse (Trash) — under ${threshold}c`}
         hint="The inverse: everything below the threshold, for clearing out the cheap ones."
         wanted={dropped}
         unwanted={kept}
