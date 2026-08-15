@@ -11,8 +11,9 @@ generated Bestiary search pattern for the ones worth farming.
   7-day change and listing count.
 - Sort by any column, search by beast name, genus or habitat.
 - **Min chaos filter** — hide everything below a threshold.
-- **Bestiary regex** — a search pattern matching exactly the beasts above that
-  threshold, ready to paste into the in-game Bestiary window.
+- **Bestiary regex** — a search pattern matching the beasts above that
+  threshold, ready to paste into the in-game Bestiary window, plus the inverse
+  pattern for everything below it.
 
 ## Data
 
@@ -35,30 +36,32 @@ Picking the smallest such set is set cover, so `src/lib/bestiary-regex.ts` uses
 the greedy approximation: repeatedly take the fragment covering the most
 still-uncovered beasts.
 
+A second pattern below it does the inverse — everything *under* the threshold,
+for clearing out the cheap ones.
+
 ### No literal spaces
 
 An early version emitted fragments like `l p` (spanning the word break in
 "Fenuma**l P**lagued Arachnid"). In game those pulled in beasts that share no
 substring with the target at all — `l p` matched "Sulphuric Scorpion", and
 "Scum Crawler" showed up too. The search field does not treat a space as a
-literal character, so word breaks now travel as a `.` wildcard instead.
+literal character, so word breaks travel as a `.` wildcard instead.
 
-That leaves two modes, toggled in the UI:
+### The length budget
 
-| Mode | Example (150c) | Chars | Extra beasts |
-| --- | --- | --- | --- |
-| Plain substrings | `iga\|arachnid\|parasite` | 21 | 9 |
-| `.` wildcard | `k.m\|l.p\|parasite` | 16 | 4 |
+The search field takes **249 characters**, and a truncated pattern silently
+matches the wrong beasts, so the generator never emits one that does not fit.
+If nothing fits, it says so instead of handing over something broken.
 
-Plain mode never relies on regex support of any kind; wildcard mode is shorter
-and much more selective. Neither ever misses a beast above the threshold.
+Precision is what gets traded for length. Fragments are scored by how many
+*unwanted* beasts they also match, and the solver runs the whole range from
+"no false positives allowed" to "quite permissive", keeping the most precise
+pattern that fits. Looser is not simply worse: a permissive fragment sometimes
+covers a beast that would otherwise force a very broad fallback word.
 
-Two more things the UI tells you about instead of hiding:
-
-- **Length.** The search field takes 250 characters. Longer patterns get cut off.
-- **Over-matching.** When a wanted name is fully contained in a cheaper one
-  (`Parasite` inside `Plated Parasite`), no substring can separate them. The
-  pattern keeps the wanted beast and the UI names the extras you'll also see.
+When a wanted name is fully contained in a cheaper one (`Parasite` inside
+`Plated Parasite`), no fragment can separate them at all. The pattern keeps the
+wanted beast and the UI names the extras you will also see.
 
 ## Development
 

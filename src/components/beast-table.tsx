@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
 import type { Beast } from "@/lib/ninja";
-import { buildBestiaryRegex } from "@/lib/bestiary-regex";
+import { buildBestiaryRegex, MAX_PATTERN_LENGTH } from "@/lib/bestiary-regex";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,62 +39,55 @@ const num = (value: number | undefined, digits = 0) =>
     maximumFractionDigits: digits,
   });
 
-/**
- * Characters the Bestiary search accepts. GGG raised the global search limit
- * from 50 to 250; the Bestiary window trailed behind at 100 for a while, so
- * bump this down if a pasted pattern ever gets cut off.
- */
-const SEARCH_FIELD_LIMIT = 250;
-
-function BestiaryRegex({
-  beasts,
-  threshold,
-  kept,
+function PatternRow({
+  label,
+  hint,
+  wanted,
+  unwanted,
+  extrasLabel,
 }: {
-  beasts: Beast[];
-  threshold: number;
-  kept: Beast[];
+  label: string;
+  hint: string;
+  wanted: Beast[];
+  unwanted: Beast[];
+  extrasLabel: string;
 }) {
   const [copied, setCopied] = useState(false);
-  const [wildcard, setWildcard] = useState(false);
 
-  const { pattern, overmatched } = useMemo(() => {
-    if (threshold <= 0 || kept.length === 0)
-      return { pattern: "", overmatched: [] };
-    const keptIds = new Set(kept.map((b) => b.id));
-    return buildBestiaryRegex(
-      kept.map((b) => b.name),
-      beasts.filter((b) => !keptIds.has(b.id)).map((b) => b.name),
-      { wildcard },
-    );
-  }, [beasts, kept, threshold, wildcard]);
+  const { pattern, overmatched } = useMemo(
+    () =>
+      buildBestiaryRegex(
+        wanted.map((b) => b.name),
+        unwanted.map((b) => b.name),
+      ),
+    [wanted, unwanted],
+  );
 
   async function copy() {
+    if (!pattern) return;
     await navigator.clipboard.writeText(pattern);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
 
-  const tooLong = pattern.length > SEARCH_FIELD_LIMIT;
-
   return (
-    <div className="bg-card space-y-3 rounded-xl border p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-medium">Bestiary regex</h2>
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="font-medium">{label}</h3>
         <span className="text-muted-foreground text-sm tabular-nums">
-          {threshold > 0
-            ? `matches ${kept.length} beasts ≥ ${threshold}c · ${pattern.length} chars`
-            : "set a min chaos value to generate one"}
+          {pattern
+            ? `${wanted.length} beasts · ${pattern.length}/${MAX_PATTERN_LENGTH} chars`
+            : `${wanted.length} beasts`}
         </span>
       </div>
 
       <div className="flex gap-2">
         <Input
           readOnly
-          value={pattern}
-          placeholder="—"
+          value={pattern ?? ""}
+          placeholder="Could not be generated — no pattern fits in 249 characters."
           onFocus={(e) => e.currentTarget.select()}
-          className={`h-11 font-mono text-sm ${tooLong ? "border-amber-500/60" : ""}`}
+          className="h-11 font-mono text-sm placeholder:font-sans placeholder:text-amber-500"
         />
         <Button
           variant="secondary"
@@ -107,42 +100,62 @@ function BestiaryRegex({
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={wildcard}
-            onChange={(e) => setWildcard(e.target.checked)}
-            className="size-4 accent-current"
-          />
-          Use <code className="font-mono">.</code> wildcard
-        </label>
-        <span className="text-muted-foreground text-sm">
-          {wildcard
-            ? "Shorter and more precise, but only if the search supports regex wildcards."
-            : "Plain substrings only — safe everywhere, matches a few more cheap beasts."}
-        </span>
+      <p className="text-muted-foreground text-sm">{hint}</p>
+
+      {pattern && overmatched.length > 0 && (
+        <p className="text-sm text-amber-500">
+          Also matches {overmatched.length} {extrasLabel}:{" "}
+          {overmatched.join(", ")}.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function BestiaryRegex({
+  beasts,
+  threshold,
+  kept,
+}: {
+  beasts: Beast[];
+  threshold: number;
+  kept: Beast[];
+}) {
+  const dropped = useMemo(() => {
+    const keptIds = new Set(kept.map((b) => b.id));
+    return beasts.filter((b) => !keptIds.has(b.id));
+  }, [beasts, kept]);
+
+  if (threshold <= 0) {
+    return (
+      <div className="bg-card rounded-xl border p-5">
+        <h2 className="text-lg font-medium">Bestiary regex</h2>
+        <p className="text-muted-foreground text-sm">
+          Set a min chaos value to generate search patterns.
+        </p>
       </div>
+    );
+  }
 
-      <p className="text-muted-foreground text-sm">
-        Paste into the Bestiary search to show only beasts worth at least the min
-        chaos value.
-      </p>
+  return (
+    <div className="bg-card space-y-5 rounded-xl border p-5">
+      <h2 className="text-lg font-medium">Bestiary regex</h2>
 
-      {tooLong && (
-        <p className="text-sm text-amber-500">
-          Longer than the {SEARCH_FIELD_LIMIT}-character search box — raise the
-          min chaos value or split it across two searches.
-        </p>
-      )}
+      <PatternRow
+        label={`Worth keeping — ${threshold}c and up`}
+        hint="Paste into the Bestiary search to show only the beasts worth at least the min chaos value."
+        wanted={kept}
+        unwanted={dropped}
+        extrasLabel="cheaper beasts that no fragment can exclude"
+      />
 
-      {overmatched.length > 0 && (
-        <p className="text-sm text-amber-500">
-          Also matches {overmatched.length} cheaper{" "}
-          {overmatched.length === 1 ? "beast" : "beasts"} whose name cannot be
-          told apart by a substring: {overmatched.join(", ")}.
-        </p>
-      )}
+      <PatternRow
+        label={`Vendor fodder — under ${threshold}c`}
+        hint="The inverse: everything below the threshold, for clearing out the cheap ones."
+        wanted={dropped}
+        unwanted={kept}
+        extrasLabel="valuable beasts that no fragment can exclude"
+      />
     </div>
   );
 }
