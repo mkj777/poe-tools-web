@@ -53,6 +53,21 @@ const CURRENCY_NAMES = {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
+ * Shaped like the body Awakened PoE Trade sends. `status: "any"` is load
+ * bearing — an earlier version used "online" and every single beast came back
+ * with zero listings, which is what the control check below now catches.
+ */
+const tradeQuery = (name) => ({
+  query: {
+    status: { option: "any" },
+    type: name,
+    stats: [{ type: "and", filters: [] }],
+    filters: {},
+  },
+  sort: { price: "asc" },
+});
+
+/**
  * Turns the rate-limit headers into how long to wait before the next request.
  *
  *   x-rate-limit-ip:       "5:10:60,15:60:300,30:300:1800"   limit:period:penalty
@@ -148,6 +163,34 @@ if (todo.length !== missing.length) {
   console.log(`resuming — ${missing.length - todo.length} already known\n`);
 }
 
+/**
+ * Before trusting a single result, ask about a beast that certainly sells —
+ * the one poe.ninja sees the most listings for. If even that comes back empty
+ * the query is wrong, and writing 142 zeroes would bury the bug in data.
+ */
+const control = [...priced].sort(
+  (a, b) => (b.listingCount ?? 0) - (a.listingCount ?? 0),
+)[0];
+if (control) {
+  const check = await get(`${TRADE}/search/${encodeURIComponent(league)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(tradeQuery(control.name)),
+  });
+  console.log(
+    `control: ${control.name} — ${check.total} trade listings ` +
+      `(poe.ninja sees ${control.listingCount})`,
+  );
+  if (!check.total) {
+    console.error(
+      "\nThat beast has listings on poe.ninja but none here, so the query is " +
+        "wrong, not the market. Aborting rather than recording zeroes.",
+    );
+    process.exit(1);
+  }
+  await settle();
+}
+
 let withListings = 0;
 for (const [i, name] of todo.entries()) {
   remainingLookups = todo.length - i;
@@ -156,10 +199,7 @@ for (const [i, name] of todo.entries()) {
     const search = await get(`${TRADE}/search/${encodeURIComponent(league)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: { status: { option: "online" }, type: name },
-        sort: { price: "asc" },
-      }),
+      body: JSON.stringify(tradeQuery(name)),
     });
 
     let chaosValue = 0;

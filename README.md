@@ -45,8 +45,21 @@ touches it. Instead:
   instead.*
 - **`src/lib/trade-prices.fallback.json`** is a committed snapshot, served when
   the cache is cold: a fresh deployment shows real prices immediately rather
-  than a table full of dashes. Regenerate it with `pnpm prices:snapshot`, which
-  walks all of them at a polite 10.5s apart and takes about 25 minutes.
+  than a table full of dashes. Regenerate it with `pnpm prices:snapshot`. It
+  paces itself, resumes where it stopped, and takes about an hour — run it when
+  you are not playing, since the rate limit is per IP.
+
+Two things that bit us and are now guarded:
+
+- **`status` must not be `"online"`.** With it, every single beast came back
+  with zero listings. Awakened PoE Trade sends `available`, `securable` or
+  `any`; the snapshot uses `any`, the widest net. Before doing anything, the
+  script now asks about the beast poe.ninja sees the most listings for — if
+  even that returns nothing, the query is wrong and it aborts instead of
+  recording a table full of zeroes.
+- **Exceeding 30 requests per 300s locks the whole IP out for half an hour**,
+  game client included. Both the script and the cron take a minority share of
+  every bucket and read the rate-limit headers.
 
 ## The Bestiary regex
 

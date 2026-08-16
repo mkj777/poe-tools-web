@@ -62,6 +62,27 @@ async function chaosRates(league: string): Promise<Record<string, number>> {
   return rates;
 }
 
+/**
+ * The search body, shaped like the one Awakened PoE Trade sends.
+ *
+ * `status` matters: an earlier version used `"online"`, which came back with
+ * zero results for every beast — including ones that certainly sell. APT uses
+ * `available` / `securable` / `any`, never `online`. `any` is the widest net,
+ * which is what pricing an obscure beast calls for: an offline listing is still
+ * evidence that one exists, and 0 then really means nobody has ever listed it.
+ */
+export function tradeQuery(name: string) {
+  return {
+    query: {
+      status: { option: "any" },
+      type: name,
+      stats: [{ type: "and", filters: [] }],
+      filters: {},
+    },
+    sort: { price: "asc" },
+  };
+}
+
 /** Set only inside the cron route — a page render must never call the trade API. */
 let liveLookupsAllowed = false;
 
@@ -77,10 +98,7 @@ async function lookup(league: string, name: string): Promise<TradePrice> {
   const search = await fetch(`${TRADE}/search/${encodeURIComponent(league)}`, {
     method: "POST",
     headers: { "User-Agent": UA, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: { status: { option: "online" }, type: name },
-      sort: { price: "asc" },
-    }),
+    body: JSON.stringify(tradeQuery(name)),
     cache: "no-store",
   });
   // Never retry a 429. The penalty for the 300s bucket is a half hour lockout
