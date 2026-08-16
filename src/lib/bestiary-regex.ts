@@ -171,6 +171,18 @@ function solve(
   return picked.join("|").split(SPACE).join(".");
 }
 
+export type BeastEntry = {
+  name: string;
+  /**
+   * Everything the Bestiary row shows for this beast — name, genus, family,
+   * habitat. Probes matched beasts through their genus, not their name, so
+   * safety has to be judged against the whole row. Defaults to the name.
+   */
+  text?: string;
+};
+
+const textOf = (entry: BeastEntry) => normalize(entry.text ?? entry.name);
+
 export type BestiaryRegexResult = {
   /** The search string, or null when nothing fits the length budget. */
   pattern: string | null;
@@ -183,12 +195,13 @@ export type BestiaryRegexResult = {
 };
 
 export function buildBestiaryRegex(
-  wanted: string[],
-  unwanted: string[],
+  wanted: BeastEntry[],
+  unwanted: BeastEntry[],
   maxLength = MAX_PATTERN_LENGTH,
 ): BestiaryRegexResult {
-  const targets = wanted.map(normalize);
-  const avoid = unwanted.map(normalize);
+  // Fragments are cut from the name, but judged against the full row text.
+  const targets = wanted.map((entry) => normalize(entry.name));
+  const avoid = unwanted.map(textOf);
   if (targets.length === 0) return { pattern: null, overmatched: [] };
 
   const candidates = candidatesFor(targets, avoid);
@@ -198,9 +211,9 @@ export function buildBestiaryRegex(
     const pattern = solve(targets, candidates, tolerance);
     if (pattern.length > maxLength) continue;
 
-    const overmatched = unwanted.filter((name) =>
-      matchesBestiaryPattern(pattern, name),
-    );
+    const overmatched = unwanted
+      .filter((entry) => matchesBestiaryPattern(pattern, entry.text ?? entry.name))
+      .map((entry) => entry.name);
 
     // Fewest false positives wins, shortest pattern breaks the tie.
     const better =

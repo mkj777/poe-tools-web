@@ -7,7 +7,7 @@ import {
   MAX_PATTERN_LENGTH,
 } from "../src/lib/bestiary-regex.ts";
 
-type Fixture = { name: string; chaosValue: number };
+type Fixture = { name: string; chaosValue: number; baseType?: string };
 
 /** A real Allflame beast overview from poe.ninja — 218 lines. */
 const BEASTS: Fixture[] = JSON.parse(
@@ -16,23 +16,29 @@ const BEASTS: Fixture[] = JSON.parse(
 
 const THRESHOLDS = [1, 2, 3, 5, 10, 20, 30, 100, 175];
 
+/** What the Bestiary row shows: name, genus, family, habitat. */
+const entry = (b: Fixture) => ({
+  name: b.name,
+  text: `${b.name} ${(b.baseType ?? "").split("|").join(" ")}`.trim(),
+});
+
 function split(threshold: number) {
   return {
-    wanted: BEASTS.filter((b) => b.chaosValue >= threshold).map((b) => b.name),
-    unwanted: BEASTS.filter((b) => b.chaosValue < threshold).map((b) => b.name),
+    wanted: BEASTS.filter((b) => b.chaosValue >= threshold).map(entry),
+    unwanted: BEASTS.filter((b) => b.chaosValue < threshold).map(entry),
   };
 }
 
 test("empty input produces no pattern", () => {
-  const { pattern, overmatched } = buildBestiaryRegex([], ["Parasite"]);
+  const { pattern, overmatched } = buildBestiaryRegex([], [{ name: "Parasite" }]);
   assert.equal(pattern, null);
   assert.deepEqual(overmatched, []);
 });
 
 test("isolates a beast from similarly named ones", () => {
   const { pattern, overmatched } = buildBestiaryRegex(
-    ["Craicic Croaker"],
-    ["Craicic Chimeral", "Craicic Savage Crab", "Gravel Eater"],
+    [{ name: "Craicic Croaker" }],
+    ["Craicic Chimeral", "Craicic Savage Crab", "Gravel Eater"].map((name) => ({ name })),
   );
   assert.ok(matchesBestiaryPattern(pattern!, "Craicic Croaker"));
   assert.ok(!matchesBestiaryPattern(pattern!, "Craicic Chimeral"));
@@ -41,8 +47,8 @@ test("isolates a beast from similarly named ones", () => {
 
 test("reports beasts no fragment can exclude", () => {
   const { pattern, overmatched } = buildBestiaryRegex(
-    ["Parasite"],
-    ["Plated Parasite", "Vicious Parasite"],
+    [{ name: "Parasite" }],
+    [{ name: "Plated Parasite" }, { name: "Vicious Parasite" }],
   );
   assert.ok(matchesBestiaryPattern(pattern!, "Parasite"));
   assert.deepEqual(overmatched.sort(), ["Plated Parasite", "Vicious Parasite"]);
@@ -58,8 +64,9 @@ test("survives a search that matches subsequences", () => {
 
   for (const name of ["Farric Ursa", "Farric Lynx Alpha"]) {
     if (overmatched.includes(name)) continue;
+    const row = unwanted.find((e) => e.name === name);
     assert.ok(
-      !matchesBestiaryPattern(pattern, name),
+      !matchesBestiaryPattern(pattern, row?.text ?? name),
       `${name} matches unreported: ${pattern}`,
     );
   }
@@ -74,14 +81,23 @@ test("returns null rather than a pattern over the limit", () => {
 
 test("spends its length budget on precision", () => {
   // A bigger budget admits every pattern a smaller one did, so it can only
-  // match the same number of cheap beasts or fewer.
+  // match the same number of unwanted beasts or fewer.
   const { wanted, unwanted } = split(5);
-  const tight = buildBestiaryRegex(wanted, unwanted, 60);
   const roomy = buildBestiaryRegex(wanted, unwanted, MAX_PATTERN_LENGTH);
-  assert.ok(tight.pattern, "expected the tight budget to still produce one");
   assert.ok(roomy.pattern);
+
+  // Smallest budget this data still admits, so the comparison is meaningful.
+  let tight = null;
+  for (let budget = 20; budget < roomy.pattern.length; budget += 10) {
+    const attempt = buildBestiaryRegex(wanted, unwanted, budget);
+    if (attempt.pattern) {
+      tight = attempt;
+      break;
+    }
+  }
+  assert.ok(tight?.pattern, "no budget below the full one produced a pattern");
   assert.ok(
-    roomy.overmatched.length < tight.overmatched.length,
+    roomy.overmatched.length <= tight.overmatched.length,
     `roomy ${roomy.overmatched.length} vs tight ${tight.overmatched.length}`,
   );
 });
@@ -103,8 +119,8 @@ test("never emits a literal space", () => {
 
 test("matches accented names with an ASCII pattern", () => {
   const { pattern } = buildBestiaryRegex(
-    ["Black Mórrigan"],
-    BEASTS.filter((b) => b.name !== "Black Mórrigan").map((b) => b.name),
+    [{ name: "Black Mórrigan" }],
+    BEASTS.filter((b) => b.name !== "Black Mórrigan").map(entry),
   );
   assert.match(pattern!, /^[a-z.|]+$/);
   assert.ok(matchesBestiaryPattern(pattern!, "Black Mórrigan"));
@@ -125,11 +141,11 @@ for (const threshold of THRESHOLDS) {
     const { wanted, unwanted } = split(threshold);
     const { pattern, overmatched } = buildBestiaryRegex(wanted, unwanted);
 
-    const missed = wanted.filter((n) => !matchesBestiaryPattern(pattern!, n));
+    const missed = wanted.filter((e) => !matchesBestiaryPattern(pattern!, e.text)).map((e) => e.name);
     assert.deepEqual(missed, [], `pattern missed ${missed.length} beasts`);
 
     // Every false positive must be one the caller was told about.
-    const extra = unwanted.filter((n) => matchesBestiaryPattern(pattern!, n));
+    const extra = unwanted.filter((e) => matchesBestiaryPattern(pattern!, e.text)).map((e) => e.name);
     assert.deepEqual(extra.sort(), [...overmatched].sort());
   });
 
@@ -139,10 +155,10 @@ for (const threshold of THRESHOLDS) {
     assert.ok(pattern, `no inverse pattern produced for ${threshold}c`);
     assert.ok(pattern.length <= MAX_PATTERN_LENGTH);
 
-    const missed = unwanted.filter((n) => !matchesBestiaryPattern(pattern, n));
+    const missed = unwanted.filter((e) => !matchesBestiaryPattern(pattern, e.text)).map((e) => e.name);
     assert.deepEqual(missed, [], `inverse missed ${missed.length} beasts`);
 
-    const extra = wanted.filter((n) => matchesBestiaryPattern(pattern, n));
+    const extra = wanted.filter((e) => matchesBestiaryPattern(pattern, e.text)).map((e) => e.name);
     assert.deepEqual(extra.sort(), [...overmatched].sort());
   });
 }

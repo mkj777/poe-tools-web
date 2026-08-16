@@ -8,6 +8,7 @@ import {
   buildBestiaryRegex,
   matchesBestiaryPattern,
   MAX_PATTERN_LENGTH,
+  type BeastEntry,
 } from "@/lib/bestiary-regex";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -52,19 +53,22 @@ function PatternRow({
 }: {
   label: string;
   hint: string;
-  wanted: string[];
-  unwanted: string[];
+  wanted: BeastEntry[];
+  unwanted: BeastEntry[];
   extrasLabel: string;
 }) {
   const [copied, setCopied] = useState(false);
 
   const { pattern, overmatched, missing } = useMemo(() => {
     const result = buildBestiaryRegex(wanted, unwanted);
+    const names = wanted.map((e) => e.name);
     return {
       ...result,
       missing: result.pattern
-        ? wanted.filter((name) => !matchesBestiaryPattern(result.pattern!, name))
-        : wanted,
+        ? wanted
+            .filter((e) => !matchesBestiaryPattern(result.pattern!, e.text ?? e.name))
+            .map((e) => e.name)
+        : names,
     };
   }, [wanted, unwanted]);
 
@@ -81,7 +85,8 @@ function PatternRow({
         <h3 className="font-medium">{label}</h3>
         <span className="text-muted-foreground text-sm tabular-nums">
           {pattern
-            ? `${wanted.length} beasts · ${pattern.length}/${MAX_PATTERN_LENGTH} chars`
+            ? `${wanted.length} beasts · ${pattern.length}/${MAX_PATTERN_LENGTH} chars · ` +
+              `${overmatched.length} false positives`
             : `${wanted.length} beasts`}
         </span>
       </div>
@@ -138,9 +143,18 @@ function Notice({
   const sentence = tone === "amber" ? "text-amber-600" : "text-red-600";
   const names = tone === "amber" ? "text-amber-300" : "text-red-300";
 
+  // The count is the number that matters; a 139-name wall of text is not.
+  const LISTED = 15;
+  const shown = children.slice(0, LISTED).join(", ");
+  const rest = children.length - LISTED;
+
   return (
     <p className={`text-sm ${sentence}`}>
-      {text} <span className={`${names} font-medium`}>{children.join(", ")}</span>
+      {text}{" "}
+      <span className={`${names} font-medium`}>
+        {shown}
+        {rest > 0 && ` … and ${rest} more`}
+      </span>
     </p>
   );
 }
@@ -156,16 +170,24 @@ function BestiaryRegex({
   threshold: number;
   kept: Beast[];
 }) {
-  // The universe is every beast the trade site knows, not just the priced ones:
-  // a pattern that ignores the unpriced ones matches them by accident.
-  const { keepNames, dropNames, unpriced } = useMemo(() => {
-    const keepNames = kept.map((b) => b.name);
-    const keepSet = new Set(keepNames);
-    const universe = new Set([...allNames, ...beasts.map((b) => b.name)]);
+  // Three groups, not two. Beasts poe.ninja does not price are not cheap, they
+  // are unknown: they must never be matched by the "worth keeping" pattern, but
+  // claiming they are trash would be a guess, so they stay out of that one.
+  const { keep, trash, unknown } = useMemo(() => {
+    const entry = (b: Beast): BeastEntry => ({
+      name: b.name,
+      text: `${b.name} ${(b.baseType ?? "").split("|").join(" ")}`.trim(),
+    });
+
+    const keptIds = new Set(kept.map((b) => b.id));
+    const priced = new Set(beasts.map((b) => b.name));
+
     return {
-      keepNames,
-      dropNames: [...universe].filter((name) => !keepSet.has(name)),
-      unpriced: universe.size - beasts.length,
+      keep: kept.map(entry),
+      trash: beasts.filter((b) => !keptIds.has(b.id)).map(entry),
+      unknown: allNames
+        .filter((name) => !priced.has(name))
+        .map((name) => ({ name })),
     };
   }, [allNames, beasts, kept]);
 
@@ -187,27 +209,37 @@ function BestiaryRegex({
       <PatternRow
         label={`Worth keeping — ${threshold}c and up`}
         hint="Paste into the Bestiary search to show only the beasts worth at least the min chaos value."
-        wanted={keepNames}
-        unwanted={dropNames}
-        extrasLabel="cheaper beasts that no fragment can exclude"
+        wanted={keep}
+        unwanted={[...trash, ...unknown]}
+        extrasLabel="other beasts that no fragment can exclude"
       />
 
       <PatternRow
         label={`Reverse (Trash) — under ${threshold}c`}
         hint="The inverse: everything below the threshold, for clearing out the cheap ones."
-        wanted={dropNames}
-        unwanted={keepNames}
-        extrasLabel="valuable beasts that no fragment can exclude"
+        wanted={trash}
+        unwanted={[...keep, ...unknown]}
+        extrasLabel="other beasts that no fragment can exclude"
       />
 
-      <p className="text-muted-foreground border-t pt-4 text-sm">
-        Built against {keepNames.length + dropNames.length} beast names from the
-        official trade data — {beasts.length} of them priced by poe.ninja, {unpriced}{" "}
-        unpriced and therefore treated as trash. Randomly named rare beasts
-        (Grimsucker, Sharptooth, Deathclaw the Mad) are in no catalogue at all,
-        since the game generates those names per capture, so no pattern can
-        account for them.
-      </p>
+      <div className="text-muted-foreground space-y-2 border-t pt-4 text-sm">
+        <p>
+          Universe: {keep.length + trash.length + unknown.length} beasts from
+          GGG&apos;s trade data. {beasts.length} are priced by poe.ninja and drive
+          the two patterns above.{" "}
+          <span className="text-foreground">
+            {unknown.length} have no price data
+          </span>{" "}
+          — nobody is listing them, which is not the same as them being trash, so
+          neither pattern claims them. Both patterns still avoid matching them.
+        </p>
+        <p>
+          Beyond that list are the randomly named rare beasts — Grimsucker,
+          Sharptooth, Deathclaw the Mad. The game generates those names per
+          capture, so no catalogue contains them and no pattern can account for
+          them.
+        </p>
+      </div>
     </div>
   );
 }
