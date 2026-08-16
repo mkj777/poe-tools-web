@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
-import type { Beast } from "@/lib/ninja";
+import { leagueSlug, type Beast } from "@/lib/ninja";
 import { CurrencyIcon, Price } from "@/components/currency";
 import {
   MAX_PATTERN_LENGTH,
@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-type SortKey = "name" | "chaosValue" | "divineValue" | "listingCount" | "change";
+type SortKey = "name" | "chaosValue" | "listingCount" | "change";
 
 /** `label` is what the header shows, `name` what a screen reader reads. */
 const COLUMNS: {
@@ -40,18 +40,7 @@ const COLUMNS: {
   numeric: boolean;
 }[] = [
   { key: "name", name: "Beast", label: "Beast", numeric: false },
-  {
-    key: "chaosValue",
-    name: "Chaos value",
-    label: <CurrencyIcon currency="chaos" size={20} />,
-    numeric: true,
-  },
-  {
-    key: "divineValue",
-    name: "Divine value",
-    label: <CurrencyIcon currency="divine" size={20} />,
-    numeric: true,
-  },
+  { key: "chaosValue", name: "Value", label: "Value", numeric: true },
   { key: "change", name: "7 day change", label: "7d", numeric: true },
   { key: "listingCount", name: "Listings", label: "Listings", numeric: true },
 ];
@@ -301,7 +290,14 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
   );
 }
 
-export function BeastTable({ beasts }: { beasts: Beast[] }) {
+export function BeastTable({
+  beasts,
+  league,
+}: {
+  beasts: Beast[];
+  /** poe.ninja detail pages live under the league, so links need it. */
+  league: string;
+}) {
   const [query, setQuery] = useState("");
   const [minChaos, setMinChaos] = useState("");
   const [sort, setSort] = useState<SortKey>("chaosValue");
@@ -509,7 +505,7 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
                       <div className="min-w-0">
                         {beast.detailsId ? (
                           <a
-                            href={`https://poe.ninja/poe1/economy/beasts/${beast.detailsId}`}
+                            href={`https://poe.ninja/poe1/economy/${leagueSlug(league)}/beasts/${beast.detailsId}`}
                             target="_blank"
                             rel="noreferrer"
                             className="font-medium hover:underline"
@@ -528,15 +524,12 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {beast.chaosValue === undefined
-                      ? "—"
-                      : num(beast.chaosValue, beast.chaosValue < 10 ? 1 : 0)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-right tabular-nums">
-                    {beast.divineValue === undefined
-                      ? "—"
-                      : num(beast.divineValue, 2)}
+                  <TableCell className="text-right">
+                    {beast.chaosValue === undefined ? (
+                      <span className="tabular-nums">—</span>
+                    ) : (
+                      <Price value={beast.chaosValue} size={17} />
+                    )}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     <Badge

@@ -43,6 +43,20 @@ export function getLeagues() {
   return ninja<League[]>("/leagues");
 }
 
+/**
+ * The league as poe.ninja spells it in a URL. Not the API id: the site drops
+ * everything but letters and turns the hardcore variant into a suffix, so
+ * "Hardcore Allflame" is /allflamehc while plain "Hardcore" stays /hardcore.
+ */
+export function leagueSlug(league: string) {
+  const hardcore = /^hardcore\s+/i.test(league);
+  const base = league
+    .replace(/^hardcore\s+/i, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+  return hardcore ? `${base}hc` : base;
+}
+
 export async function getBeasts(league: string) {
   const data = await ninja<{ lines: Beast[] }>(
     `/stash/current/item/overview?league=${encodeURIComponent(league)}&type=Beast`,
@@ -88,6 +102,20 @@ export async function getScarabPrices(league: string): Promise<Scarab[]> {
     const value = byId.get(scarab.id);
     return value === undefined || !chaos ? [] : [{ ...scarab, chaosValue: value }];
   });
+}
+
+/** What one Divine Orb costs in chaos right now — the conversion everything
+ *  else on the page is read against. */
+export async function getDivinePrice(league: string) {
+  const data = await ninja<{
+    lines: { id: string; primaryValue: number }[];
+    core: { primary: string };
+  }>(
+    `/exchange/current/overview?league=${encodeURIComponent(league)}&type=Currency`,
+  );
+
+  if (data.core?.primary !== "chaos") return undefined;
+  return data.lines.find((line) => line.id === "divine")?.primaryValue;
 }
 
 type TradeItemData = {

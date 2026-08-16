@@ -2,6 +2,7 @@ import Image from "next/image";
 import {
   getAllBeastNames,
   getBeasts,
+  getDivinePrice,
   getLeagues,
   getScarabPrices,
   type Beast,
@@ -23,10 +24,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const league =
     leagues.find((l) => l.id === requested)?.id ?? leagues[0]?.id ?? "Standard";
 
-  const [priced, allNames, scarabs] = await Promise.all([
+  const [priced, allNames, scarabs, divine] = await Promise.all([
     getBeasts(league),
     getAllBeastNames().catch(() => [] as string[]),
     getScarabPrices(league).catch(() => []),
+    getDivinePrice(league).catch(() => undefined),
   ]);
 
   // poe.ninja only prices beasts with live listings. The rest come from the
@@ -55,12 +57,17 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   ];
 
   return (
-    <>
+    <div className="relative">
       {/* Full width on purpose: logo and scarabs belong in the window corners,
           not inside the centred column the rest of the page lives in. The
           logo fills the whole left gutter, so it ends exactly where the
-          heading below it starts — same 72rem/px-6 geometry as <main>. */}
-      <div className="flex items-start justify-between gap-6 pt-4">
+          heading starts — same 72rem/px-6 geometry as <main>.
+
+          From 1480px up the gutter is at least as wide as the logo's 9rem
+          floor, so the row can leave the flow and sit beside the page instead
+          of pushing it down. Narrower than that it would overlap, so there it
+          stays a normal row above the content. */}
+      <div className="flex items-start justify-between gap-6 pt-6 min-[1480px]:absolute min-[1480px]:inset-x-0 min-[1480px]:top-0">
         <div
           className="shrink-0 space-y-3"
           style={{ width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" }}
@@ -82,12 +89,12 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           </div>
         </div>
 
-        <div className="px-6 pt-2">
-          <ScarabPrices scarabs={scarabs} />
+        <div className="px-6">
+          <ScarabPrices scarabs={scarabs} divine={divine} />
         </div>
       </div>
 
-      <main className="mx-auto w-full max-w-6xl px-6 pt-8 pb-12">
+      <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
         <header className="mb-10 space-y-1">
           <h1 className="text-4xl font-semibold tracking-tight">
             Beast Prices
@@ -98,8 +105,8 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           </p>
         </header>
 
-        <BeastTable beasts={beasts} />
+        <BeastTable beasts={beasts} league={league} />
       </main>
-    </>
+    </div>
   );
 }

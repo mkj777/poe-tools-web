@@ -7,8 +7,10 @@ generated Bestiary search pattern for the ones worth farming.
 
 ## What it does
 
-- Lists **all** beasts for the selected league with Chaos value, Divine value,
-  7-day change and listing count.
+- Lists **all** beasts for the selected league with their chaos value, 7-day
+  change and listing count, linked to their poe.ninja page for that league.
+- Both Bestiary scarabs and the current divine rate sit in the top corner, so
+  the cost of setting a run up is next to what the run is worth.
 - Sort by any column, search by beast name, genus or habitat.
 - **Red or yellow** per row, drawn with the minimap marker the beast actually
   uses, so it is obvious whether the expensive ones are worth the detour.
