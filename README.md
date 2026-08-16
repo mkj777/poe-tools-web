@@ -29,8 +29,14 @@ Everything is fetched server-side with a descriptive User-Agent.
 
 poe.ninja only lists beasts somebody is currently selling. The rest are priced
 by asking the trade site directly — the same fallback Awakened PoE Trade uses.
-A beast nobody sells is worth **0c**, which is a real answer, and it shows up in
-the table as such.
+
+The answer turned out to be blunt. Of the 143 beasts poe.ninja has no data for,
+searching the trade site with offline listings included found **exactly one**:
+Tunnelfiend, 4c, a single listing. The other 142 have no listing anywhere.
+Anything the game still drops is being sold by someone, so those 142 are not
+cheap beasts — they are beasts the game no longer hands out. They are labelled
+"not found", hidden behind a chip, and excluded from both patterns, which is
+what took the 4c keep pattern from 155 characters down to 127.
 
 That API allows 5 requests per 10 seconds and 30 per 300, so no page render ever
 touches it. Instead:

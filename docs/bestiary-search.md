@@ -317,6 +317,14 @@ Awakened PoE Trade's bundled data, the PoE Wiki cargo tables, and poedb
 | Awakened PoE Trade `renderer/public/data/en/items.ndjson` | 220 `CAPTURED_BEAST` names + icons | Subset of GGG's list, no prices, no genus |
 | PoE Wiki `List_of_bestiary_modifiers` + `mods` cargo table | 28 modifier names and descriptions | Committed as `src/lib/bestiary-mods.ts`; refresh with `pnpm mods:update` |
 
-The app uses GGG's 361 as the universe, poe.ninja for prices where it has them,
-and the trade site for the rest. Only a beast neither source has reached yet
-counts as **unknown**: no pattern claims it, though both avoid matching it.
+The app uses GGG's 361 as the universe and poe.ninja for prices where it has
+them. The other 143 were each searched on the trade site with offline listings
+included; **exactly one came back with anything** — Tunnelfiend, 4c, one
+listing. Since everything the game drops is being sold by someone, the remaining
+142 read as content that no longer drops, which matches the other two signals:
+127 of them are absent from Awakened PoE Trade's current-patch data, and
+`BestiaryCapturableMonsters` marks 204 of its 480 rows `IsDisabled`.
+
+Those 142 are excluded from the patterns entirely. A beast that cannot be
+captured cannot appear in the Bestiary window, so spending pattern length to
+avoid it buys nothing.
