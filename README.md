@@ -17,10 +17,36 @@ generated Bestiary search pattern for the ones worth farming.
 
 ## Data
 
-Prices come from the [poe.ninja economy API](https://poe.ninja/docs/api)
-(`/poe1/api/economy/...`). Requests happen server-side with a descriptive
-User-Agent and are cached for an hour — poe.ninja refreshes PoE 1 overviews
-about every 15 minutes, but beast prices do not move that fast.
+| Source | Gives | Refresh |
+| --- | --- | --- |
+| [poe.ninja economy API](https://poe.ninja/docs/api) | prices, genus, family, habitat for the ~218 beasts with live listings | hourly |
+| `pathofexile.com/api/trade/data/items` | the full roster of 361 beast names | daily |
+| `pathofexile.com/api/trade/search` | prices for the ~143 beasts poe.ninja has no data on | daily, a slice at a time |
+
+Everything is fetched server-side with a descriptive User-Agent.
+
+### Pricing the beasts poe.ninja skips
+
+poe.ninja only lists beasts somebody is currently selling. The rest are priced
+by asking the trade site directly — the same fallback Awakened PoE Trade uses.
+A beast nobody sells is worth **0c**, which is a real answer, and it shows up in
+the table as such.
+
+That API allows 5 requests per 10 seconds and 30 per 300, so no page render ever
+touches it. Instead:
+
+- **`/api/refresh-prices`** runs on a Vercel cron every ten minutes and refreshes
+  a slice of eight, paced 2.2s apart. Which slice comes from the clock, so no
+  state is carried between runs. Entries inside their 24 hour TTL are served
+  from the Next.js data cache and cost no request at all, so in practice each
+  beast is looked up once a day. Set `CRON_SECRET` to lock the route down; tune
+  with `PRICE_REFRESH_SLICE` and `PRICE_REFRESH_SPACING_MS`.
+  *Vercel's Hobby plan only permits daily crons — on that plan raise the slice
+  instead.*
+- **`src/lib/trade-prices.fallback.json`** is a committed snapshot, served when
+  the cache is cold: a fresh deployment shows real prices immediately rather
+  than a table full of dashes. Regenerate it with `pnpm prices:snapshot`, which
+  walks all of them at a polite 10.5s apart and takes about 25 minutes.
 
 ## The Bestiary regex
 
@@ -84,9 +110,13 @@ wanted beast and the UI names the extras you will also see.
 
 ```bash
 pnpm install
-pnpm dev      # http://localhost:3000
-pnpm test     # regex tests against a real 218-beast fixture
+pnpm dev              # http://localhost:3000
+pnpm test             # regex tests against a real 218-beast fixture
 pnpm build
+
+pnpm prices:snapshot            # refresh the committed price fallback (~25 min)
+pnpm mods:update                # re-scrape the Bestiary modifier list
+pnpm words:update <words.json>  # re-import the name pool from a Words.dat export
 ```
 
 Tests run on `node --test` with Node's built-in TypeScript stripping — no test

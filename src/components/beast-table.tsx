@@ -167,18 +167,15 @@ function Notice({
 
 function BestiaryRegex({
   beasts,
-  allNames,
   threshold,
   kept,
 }: {
   beasts: Beast[];
-  allNames: string[];
   threshold: number;
   kept: Beast[];
 }) {
-  // Three groups, not two. Beasts poe.ninja does not price are not cheap, they
-  // are unknown: they must never be matched by the "worth keeping" pattern, but
-  // claiming they are trash would be a guess, so they stay out of that one.
+  // Three groups. A beast with no price from either source is unknown rather
+  // than cheap: no pattern claims it, but both still avoid matching it.
   const { keep, trash, unknown } = useMemo(() => {
     // Genus, family and habitat are separate lines in the Bestiary row, and
     // "^" binds to the start of any one of them.
@@ -188,16 +185,14 @@ function BestiaryRegex({
     });
 
     const keptIds = new Set(kept.map((b) => b.id));
-    const priced = new Set(beasts.map((b) => b.name));
-
     return {
       keep: kept.map(entry),
-      trash: beasts.filter((b) => !keptIds.has(b.id)).map(entry),
-      unknown: allNames
-        .filter((name) => !priced.has(name))
-        .map((name) => ({ name })),
+      trash: beasts
+        .filter((b) => !keptIds.has(b.id) && b.chaosValue !== undefined)
+        .map(entry),
+      unknown: beasts.filter((b) => b.chaosValue === undefined).map(entry),
     };
-  }, [allNames, beasts, kept]);
+  }, [beasts, kept]);
 
   if (threshold <= 0) {
     return (
@@ -232,14 +227,20 @@ function BestiaryRegex({
 
       <div className="text-muted-foreground space-y-2 border-t pt-4 text-sm">
         <p>
-          Universe: {keep.length + trash.length + unknown.length} beasts from
-          GGG&apos;s trade data. {beasts.length} are priced by poe.ninja and drive
-          the two patterns above.{" "}
-          <span className="text-foreground">
-            {unknown.length} have no price data
-          </span>{" "}
-          — nobody is listing them, which is not the same as them being trash, so
-          neither pattern claims them. Both patterns still avoid matching them.
+          Universe: {beasts.length} beasts from GGG&apos;s trade data.{" "}
+          {beasts.filter((b) => b.source === "ninja").length} are priced by
+          poe.ninja; the rest are looked up on the trade site, where 0c means
+          nobody is selling one.
+          {unknown.length > 0 && (
+            <>
+              {" "}
+              <span className="text-foreground">
+                {unknown.length} have no price yet
+              </span>{" "}
+              — the daily refresh has not reached them, so no pattern claims
+              them, though both still avoid matching them.
+            </>
+          )}
         </p>
         <p>
           The search reads more than the type name: genus, family, the up-to-three
@@ -261,13 +262,7 @@ function BestiaryRegex({
   );
 }
 
-export function BeastTable({
-  beasts,
-  allNames,
-}: {
-  beasts: Beast[];
-  allNames: string[];
-}) {
+export function BeastTable({ beasts }: { beasts: Beast[] }) {
   const [query, setQuery] = useState("");
   const [minChaos, setMinChaos] = useState("");
   const [sort, setSort] = useState<SortKey>("chaosValue");
@@ -312,12 +307,7 @@ export function BeastTable({
 
   return (
     <div className="space-y-5">
-      <BestiaryRegex
-        beasts={beasts}
-        allNames={allNames}
-        threshold={threshold}
-        kept={worthKeeping}
-      />
+      <BestiaryRegex beasts={beasts} threshold={threshold} kept={worthKeeping} />
 
       <div className="flex flex-wrap items-center gap-3">
         <Input
@@ -395,25 +385,38 @@ export function BeastTable({
                         <div className="size-[34px] shrink-0" />
                       )}
                       <div className="min-w-0">
-                        <a
-                          href={`https://poe.ninja/poe1/economy/beasts/${beast.detailsId}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-medium hover:underline"
-                        >
-                          {beast.name}
-                        </a>
+                        {beast.detailsId ? (
+                          <a
+                            href={`https://poe.ninja/poe1/economy/beasts/${beast.detailsId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-medium hover:underline"
+                          >
+                            {beast.name}
+                          </a>
+                        ) : (
+                          <span className="font-medium">{beast.name}</span>
+                        )}
                         <div className="text-muted-foreground truncate text-sm">
-                          {traits.join(" · ")}
+                          {traits.join(" · ") ||
+                            (beast.chaosValue === undefined
+                              ? "price not fetched yet"
+                              : beast.listingCount
+                                ? "priced from the trade site"
+                                : "nobody is selling one")}
                         </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {num(beast.chaosValue, (beast.chaosValue ?? 0) < 10 ? 1 : 0)}
+                    {beast.chaosValue === undefined
+                      ? "—"
+                      : num(beast.chaosValue, beast.chaosValue < 10 ? 1 : 0)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {num(beast.divineValue, 2)}
+                  <TableCell className="text-muted-foreground text-right tabular-nums">
+                    {beast.divineValue === undefined
+                      ? "—"
+                      : num(beast.divineValue, 2)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     <Badge

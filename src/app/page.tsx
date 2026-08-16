@@ -1,4 +1,5 @@
-import { getAllBeastNames, getBeasts, getLeagues } from "@/lib/ninja";
+import { getAllBeastNames, getBeasts, getLeagues, type Beast } from "@/lib/ninja";
+import { getTradePrices } from "@/lib/trade-prices";
 import { BeastTable } from "@/components/beast-table";
 import { LeagueSelect } from "@/components/league-select";
 
@@ -13,10 +14,30 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const league =
     leagues.find((l) => l.id === requested)?.id ?? leagues[0]?.id ?? "Standard";
 
-  const [beasts, allNames] = await Promise.all([
+  const [priced, allNames] = await Promise.all([
     getBeasts(league),
     getAllBeastNames().catch(() => [] as string[]),
   ]);
+
+  // poe.ninja only prices beasts with live listings. The rest come from the
+  // trade site via the cron-warmed cache, and 0c means nobody is selling one.
+  const known = new Set(priced.map((b) => b.name));
+  const missing = allNames.filter((name) => !known.has(name)).sort();
+  const tradePrices = await getTradePrices(league, missing);
+
+  const beasts: Beast[] = [
+    ...priced.map((b) => ({ ...b, source: "ninja" as const })),
+    ...missing.map((name, i) => {
+      const price = tradePrices.get(name);
+      return {
+        id: -(i + 1),
+        name,
+        chaosValue: price?.chaosValue,
+        listingCount: price?.listingCount ?? 0,
+        source: "trade" as const,
+      };
+    }),
+  ];
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-12">
@@ -24,14 +45,14 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         <div className="space-y-1">
           <h1 className="text-4xl font-semibold tracking-tight">Beast Prices</h1>
           <p className="text-muted-foreground">
-            All Path of Exile 1 beasts on the market — data from poe.ninja,
-            refreshed hourly.
+            Every Path of Exile 1 beast — priced by poe.ninja where it has data,
+            by the official trade site everywhere else.
           </p>
         </div>
         <LeagueSelect leagues={leagues} value={league} />
       </header>
 
-      <BeastTable beasts={beasts} allNames={allNames} />
+      <BeastTable beasts={beasts} />
     </main>
   );
 }

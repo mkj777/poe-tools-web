@@ -13,13 +13,17 @@ export type Beast = {
   icon?: string;
   /** "Goliaths|Unnaturals|The Wilds" — genus|family|habitat. Missing on some lines. */
   baseType?: string;
-  chaosValue: number;
-  divineValue: number;
+  /** Undefined only when neither poe.ninja nor the trade site could price it. */
+  chaosValue?: number;
+  divineValue?: number;
   exaltedValue?: number;
-  count: number;
-  listingCount: number;
-  detailsId: string;
+  count?: number;
+  listingCount?: number;
+  /** Absent for beasts poe.ninja has no page for. */
+  detailsId?: string;
   sparkLine?: { totalChange: number };
+  /** Where the price came from, for the table to explain itself. */
+  source?: "ninja" | "trade";
 };
 
 async function ninja<T>(path: string): Promise<T> {

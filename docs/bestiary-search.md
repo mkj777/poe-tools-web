@@ -313,10 +313,10 @@ Awakened PoE Trade's bundled data, the PoE Wiki cargo tables, and poedb
 | --- | --- | --- |
 | `poe.ninja/poe1/api/economy/stash/current/item/overview?type=Beast` | 218 beasts **with prices** | Only beasts with live listings |
 | `pathofexile.com/api/trade/data/items` → Itemised Monsters | 361 beast **names** | No prices |
-| `pathofexile.com/api/trade/search/{league}` | Live listings per beast | 5 req/10 s, 30 req/300 s — 143 lookups take ~25 min |
+| `pathofexile.com/api/trade/search/{league}` | Live listings per beast — this is how the 143 unpriced ones get a value, 0c when nobody sells them | 5 req/10 s, 30 req/300 s. A cron refreshes a slice at a time; `src/lib/trade-prices.fallback.json` covers a cold cache |
 | Awakened PoE Trade `renderer/public/data/en/items.ndjson` | 220 `CAPTURED_BEAST` names + icons | Subset of GGG's list, no prices, no genus |
 | PoE Wiki `List_of_bestiary_modifiers` + `mods` cargo table | 28 modifier names and descriptions | Committed as `src/lib/bestiary-mods.ts`; refresh with `pnpm mods:update` |
 
-The app uses GGG's 361 as the universe and poe.ninja for prices. The 143
-without a price are held as **unknown**, not trash: no pattern claims them, and
-both patterns avoid matching them.
+The app uses GGG's 361 as the universe, poe.ninja for prices where it has them,
+and the trade site for the rest. Only a beast neither source has reached yet
+counts as **unknown**: no pattern claims it, though both avoid matching it.
