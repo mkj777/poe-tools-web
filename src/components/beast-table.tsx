@@ -35,6 +35,14 @@ const COLUMNS: { key: SortKey; label: string; numeric: boolean }[] = [
   { key: "listingCount", label: "Listings", numeric: true },
 ];
 
+/**
+ * No listings anywhere. For something that drops there is always someone
+ * selling one, so this reads as "the game does not hand this out any more"
+ * rather than "it is cheap".
+ */
+const isNotFound = (beast: Beast) =>
+  beast.source === "trade" && !beast.listingCount;
+
 function sortValue(beast: Beast, key: SortKey) {
   if (key === "name") return beast.name;
   if (key === "change") return beast.sparkLine?.totalChange ?? 0;
@@ -212,7 +220,7 @@ function BestiaryRegex({
     <div className="bg-card space-y-5 rounded-xl border p-5">
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-lg font-medium">Bestiary regex</h2>
-        <HelpTip beasts={beasts} unknown={unknown.length} />
+        <HelpTip beasts={beasts} />
       </div>
 
       <PatternRow
@@ -233,7 +241,7 @@ function BestiaryRegex({
 }
 
 /** Everything worth explaining, out of the way until asked for. */
-function HelpTip({ beasts, unknown }: { beasts: Beast[]; unknown: number }) {
+function HelpTip({ beasts }: { beasts: Beast[] }) {
   const fromNinja = beasts.filter((b) => b.source === "ninja").length;
 
   return (
@@ -264,11 +272,11 @@ function HelpTip({ beasts, unknown }: { beasts: Beast[]; unknown: number }) {
               can spell.
             </p>
             <p>
-              {beasts.length} beasts from GGG&apos;s trade data, {fromNinja}{" "}
-              priced by poe.ninja and the rest looked up on the trade site, where
-              0c means nobody is selling one.
-              {unknown > 0 &&
-                ` ${unknown} have no price yet and neither pattern claims them.`}
+              Built from {beasts.length} beasts, {fromNinja} priced by poe.ninja
+              and the rest looked up on the trade site. Beasts with no listings
+              at all are left out entirely — anything the game still drops has
+              someone selling it, so an empty search means the beast is gone,
+              not cheap.
             </p>
           </div>
         </TooltipContent>
@@ -282,12 +290,19 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
   const [minChaos, setMinChaos] = useState("");
   const [sort, setSort] = useState<SortKey>("chaosValue");
   const [desc, setDesc] = useState(true);
+  const [showNotFound, setShowNotFound] = useState(false);
 
   const threshold = Number(minChaos) || 0;
 
+  // Anything that drops is being sold by someone. A beast the trade site
+  // returns nothing for is not a cheap beast, it is one the game no longer
+  // hands out — so it stays out of the table and out of both patterns.
+  const found = useMemo(() => beasts.filter((b) => !isNotFound(b)), [beasts]);
+  const listed = showNotFound ? beasts : found;
+
   const worthKeeping = useMemo(
-    () => beasts.filter((b) => (b.chaosValue ?? 0) >= threshold),
-    [beasts, threshold],
+    () => listed.filter((b) => (b.chaosValue ?? 0) >= threshold),
+    [listed, threshold],
   );
 
   const rows = useMemo(() => {
@@ -320,9 +335,11 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
     }
   }
 
+  const notFoundCount = beasts.length - found.length;
+
   return (
     <div className="space-y-5">
-      <BestiaryRegex beasts={beasts} threshold={threshold} />
+      <BestiaryRegex beasts={found} threshold={threshold} />
 
       <div className="flex flex-wrap items-center gap-3">
         <Input
@@ -347,8 +364,29 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
             className="h-11 w-24"
           />
         </div>
+        {notFoundCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowNotFound((v) => !v)}
+            aria-pressed={showNotFound}
+            className={`flex h-9 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors ${
+              showNotFound
+                ? "border-foreground/30 bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:border-foreground/30"
+            }`}
+          >
+            <span
+              className={`flex size-4 items-center justify-center rounded-[4px] border ${
+                showNotFound ? "bg-foreground text-background" : ""
+              }`}
+            >
+              {showNotFound && <Check className="size-3" strokeWidth={3} />}
+            </span>
+            {notFoundCount} not found
+          </button>
+        )}
         <span className="text-muted-foreground tabular-nums">
-          {rows.length} of {beasts.length} beasts
+          {rows.length} of {listed.length} beasts
         </span>
       </div>
 
@@ -414,11 +452,9 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
                         )}
                         <div className="text-muted-foreground truncate text-sm">
                           {traits.join(" · ") ||
-                            (beast.chaosValue === undefined
-                              ? "price not fetched yet"
-                              : beast.listingCount
-                                ? "priced from the trade site"
-                                : "nobody is selling one")}
+                            (isNotFound(beast)
+                              ? "not found"
+                              : "priced from the trade site")}
                         </div>
                       </div>
                     </div>
