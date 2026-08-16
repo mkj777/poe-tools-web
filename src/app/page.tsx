@@ -1,8 +1,16 @@
-import { getAllBeastNames, getBeasts, getLeagues, type Beast } from "@/lib/ninja";
+import Image from "next/image";
+import {
+  getAllBeastNames,
+  getBeasts,
+  getLeagues,
+  getScarabPrices,
+  type Beast,
+} from "@/lib/ninja";
 import { getTradePrices } from "@/lib/trade-prices";
 import { rarityOf } from "@/lib/beast-rarity";
 import { BeastTable } from "@/components/beast-table";
 import { LeagueSelect } from "@/components/league-select";
+import { ScarabPrices } from "@/components/scarab-prices";
 
 export const metadata = {
   title: "PoE Beast Prices",
@@ -15,9 +23,10 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const league =
     leagues.find((l) => l.id === requested)?.id ?? leagues[0]?.id ?? "Standard";
 
-  const [priced, allNames] = await Promise.all([
+  const [priced, allNames, scarabs] = await Promise.all([
     getBeasts(league),
     getAllBeastNames().catch(() => [] as string[]),
+    getScarabPrices(league).catch(() => []),
   ]);
 
   // poe.ninja only prices beasts with live listings. The rest come from the
@@ -47,15 +56,32 @@ export default async function Page({ searchParams }: PageProps<"/">) {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 py-12">
-      <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-4xl font-semibold tracking-tight">Beast Prices</h1>
-          <p className="text-muted-foreground">
-            Every Path of Exile 1 beast — priced by poe.ninja where it has data,
-            by the official trade site everywhere else.
-          </p>
+      <header className="mb-10 flex flex-wrap items-start justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <Image
+            src="/poe_logo.png"
+            alt="Path of Exile"
+            width={64}
+            height={64}
+            priority
+            className="shrink-0"
+          />
+          <div className="space-y-1">
+            <h1 className="text-4xl font-semibold tracking-tight">
+              Beast Prices
+            </h1>
+            <p className="text-muted-foreground">
+              Every beast — priced by poe.ninja where it has data, by the
+              official trade site everywhere else.
+            </p>
+          </div>
         </div>
-        <LeagueSelect leagues={leagues} value={league} />
+
+        {/* ml-auto keeps this right-aligned even once it wraps onto its own row. */}
+        <div className="ml-auto flex flex-col items-end gap-3">
+          <LeagueSelect leagues={leagues} value={league} />
+          <ScarabPrices scarabs={scarabs} />
+        </div>
       </header>
 
       <BeastTable beasts={beasts} />

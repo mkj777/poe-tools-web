@@ -50,6 +50,46 @@ export async function getBeasts(league: string) {
   return data.lines;
 }
 
+export type Scarab = {
+  id: string;
+  name: string;
+  icon: string;
+  /** Chaos each, from the currency exchange. */
+  chaosValue: number;
+};
+
+/** The two scarabs that decide whether a beast run is worth setting up. */
+const BESTIARY_SCARABS = [
+  {
+    id: "bestiary-scarab-of-duplicating",
+    name: "Scarab of Duplicating",
+    icon: "/duplicating_scarab.png",
+  },
+  {
+    id: "bestiary-scarab-of-the-herd",
+    name: "Scarab of the Herd",
+    icon: "/herd_scarab.png",
+  },
+];
+
+export async function getScarabPrices(league: string): Promise<Scarab[]> {
+  const data = await ninja<{
+    lines: { id: string; primaryValue: number }[];
+    core: { primary: string };
+  }>(
+    `/exchange/current/overview?league=${encodeURIComponent(league)}&type=Scarab`,
+  );
+
+  // The exchange quotes in a primary currency; for PoE 1 that is chaos.
+  const chaos = data.core?.primary === "chaos";
+  const byId = new Map(data.lines.map((line) => [line.id, line.primaryValue]));
+
+  return BESTIARY_SCARABS.flatMap((scarab) => {
+    const value = byId.get(scarab.id);
+    return value === undefined || !chaos ? [] : [{ ...scarab, chaosValue: value }];
+  });
+}
+
 type TradeItemData = {
   result: { label: string; entries: { type?: string; name?: string }[] }[];
 };
