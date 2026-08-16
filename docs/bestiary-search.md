@@ -27,19 +27,37 @@ beast type name.
 | **Searched:** genus and family | ✅ | Test 9 |
 | **Searched:** modifier names and descriptions | ✅ | Tests 7, 10 |
 | **Searched:** the generated per-capture name | ✅ | Test 10 |
-| `^` anchors | ❓ | Test 11 inconclusive |
+| **Searched:** modifier descriptions, not just their names | ✅ | Test 13 |
+| `^` anchors, per line | ✅ | Test 12 |
 
 ### What the generator does with that
 
 1. Fragments are cut from the beast type name, since that is what identifies it.
-2. A fragment is rejected if it appears in **any** modifier name or description
+2. Each fragment is offered in two forms: free-floating, and **anchored** with
+   `^` to the start of a line. The anchor costs one character and rules out
+   every mid-word collision, so it usually wins.
+3. A fragment is rejected if it appears in **any** modifier name or description
    (`src/lib/bestiary-mods.ts`, 28 entries). Those ride along on any beast, so
    such a fragment matches at random — `far` catches every beast holding
    "Farric Presence".
-3. A fragment is rejected if it appears in an unwanted beast's row text —
-   name, genus, family, habitat.
-4. Word breaks are emitted as `.`, never as a literal space.
-5. If nothing fits 249 characters, the pattern is refused rather than truncated.
+4. A fragment is rejected if it hits any line of an unwanted beast — name,
+   genus, family, habitat — as a substring, or as a line prefix when anchored.
+5. Word breaks are emitted as `.`, never as a literal space.
+6. If nothing fits 249 characters, the pattern is refused rather than truncated.
+
+Anchors changed the picture completely. Before them, every large selection was
+refused; now all of them build:
+
+| Threshold | Keep | Reverse |
+| --- | --- | --- |
+| 1c | 165 chars, 11 false positives | 66 chars, **0** |
+| 4c | 123 chars, 3 | 214 chars, 22 |
+| 20c | 69 chars, 4 | 175 chars, 9 |
+| 150c | 22 chars, 4 | 183 chars, **0** |
+
+The four at 150c are the Parasite variants, and they are honest: their **genus
+line reads "Parasites"**, so `^parasite` matches it. No pattern can separate a
+beast from a genus that starts with its name.
 
 **The known hole:** every captured beast also shows a generated name
 (Darkmauler, Stonegrowl, Whiteback, Grimtooth, Marrowthirst, Razordroll the
@@ -195,6 +213,23 @@ modifier names, and their descriptions. Free-text search reads all of it.
 Note that modifier names are not tied to a type — Farric Presence appears on a
 Gargantuan and on a Frost Hellion Alpha alike.
 
+### Test 12 — `^` anchors work
+**Searches:** `resence` → the Presence modifiers. `^resence` → **nothing**.
+
+→ `^` is a real anchor, and Test 7 showed it binds per line rather than to the
+whole row: `^far` still returned beasts whose first line is a generated name,
+because a later line ("Farric Presence", or the type name) starts with "Far".
+
+This is the single most valuable thing learned. Every fragment now gets offered
+in an anchored form for one extra character.
+
+### Test 13 — modifier descriptions are searched
+**Search:** `chaos damage`
+**Observed:** Stonegrowl and every other beast with chaos damage.
+
+→ Not just modifier names — their descriptions too. The ban list already
+carries both.
+
 ---
 
 ## Open questions, and the probes that would settle them
@@ -214,22 +249,46 @@ Anchors are the prize. `^` would let a fragment bind to the start of the type
 name, which would rule out most collisions with generated names and modifier
 text in one stroke.
 
-### The generated names
+### The generated names — found: `Words.dat`
 
 Grimtooth, Darkmauler, Stonegrowl, Whiteback, Marrowthirst, Razordroll the
-Relentless. Compound of two words, sometimes with an "X the Y" title — the shape
-of PoE's rare monster name generator, which builds from a fixed word pool in the
-game data rather than being truly random.
+Relentless. Not random: PoE composes rare monster names from a fixed word pool
+in **`Words.dat`**, whose schema is
 
-Reachable sources checked, none of which carries it:
+```graphql
+type Words {
+  Wordlist: Wordlists   # which pool this word belongs to
+  Text: string @unique  # the word itself
+  Text2: string
+  ...
+}
 
-- poe.ninja, GGG trade data, Awakened PoE Trade bundled data — type names only
-- PoE Wiki cargo tables (`bestiary_components`, `bestiary_recipes`, `mods`)
-- poedb `MonsterNames` / `Monster_Names` — both 404
+enum Wordlists {
+  ITEM_PREFIX  ITEM_SUFFIX
+  MONSTER_PREFIX  MONSTER_SUFFIX  MONSTER_TITLE
+  UNIQUE_ITEM  STRONGBOX_PREFIX  STRONGBOX_SUFFIX
+  ESSENCE  TEST  VILLAGER_PREFIX  VILLAGER_SUFFIX
+  MERCENARY_PREFIX  MERCENARY_SUFFIX
+}
+```
 
-Left to try: a `.dat` export of the monster-name tables via poe-dat-viewer or
-the poe-tool-dev schema repos. With that pool the last source of false positives
-becomes checkable; without it, a fragment can always collide with a name.
+Source: [poe-tool-dev/dat-schema](https://github.com/poe-tool-dev/dat-schema),
+`dat-schema/_Core.gql`. `Dark`+`mauler`, `Stone`+`growl`, `Grim`+`tooth`,
+`Razor`+`droll` + `the Relentless` — prefix, suffix and title, exactly.
+
+**To extract it:** open [poe-dat-viewer](https://snosme.github.io/poe-dat-viewer/),
+load `Data/Words.dat64` from the game install, filter `Wordlist` to
+`MONSTER_PREFIX`, `MONSTER_SUFFIX` and `MONSTER_TITLE`, export the `Text`
+column. Feeding those three lists into the ban list closes the last source of
+false positives — every name the game can generate becomes checkable.
+
+While in there, `BestiaryCapturableMonsters.dat64` is worth exporting too. It
+joins to `MonsterVarieties` (the name), `BestiaryGenus` and `BestiaryGroups`,
+and unlike GGG's trade data it covers beasts that cannot be itemised at all.
+
+Sources checked that do **not** carry the word pool: poe.ninja, GGG trade data,
+Awakened PoE Trade's bundled data, the PoE Wiki cargo tables, and poedb
+(`MonsterNames` → 404).
 
 ---
 

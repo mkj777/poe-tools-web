@@ -1,11 +1,20 @@
 /**
  * Builds a search string for the in-game Bestiary window that matches every
- * wanted beast and as few unwanted ones as possible.
+ * wanted beast and as few others as possible.
  *
- * The game's search is a case-insensitive regex over the beast name, so the
- * output is a `a|b|c` alternation of short name fragments. Finding the smallest
- * such set is set cover, so this uses the usual greedy approximation:
- * repeatedly take the fragment that covers the most still uncovered beasts.
+ * What the search actually does, established by in-game probing and written up
+ * in docs/bestiary-search.md:
+ *
+ * - Plain case-insensitive **substring** matching (`wldbrstl` finds nothing).
+ * - `|` alternation and the `.` wildcard work; `!` negation does not.
+ * - `^` anchors to the start of a **line**, not of the whole row
+ *   (`^resence` finds nothing while `resence` finds the Presence modifiers).
+ * - A literal space is not a plain character, so word breaks travel as `.`.
+ * - Each row offers several lines to match against: the beast type name, its
+ *   genus and family, and up to three modifier names with their descriptions.
+ *
+ * Finding the smallest set of fragments covering every wanted beast is set
+ * cover, so this uses the usual greedy approximation.
  */
 
 // Explicit extension: Node's test runner resolves this file directly.
@@ -14,23 +23,17 @@ import { BESTIARY_MOD_TEXT } from "./bestiary-mods.ts";
 const MIN_FRAGMENT = 3;
 const MAX_FRAGMENT = 14;
 
-/**
- * Letters, and word breaks that leave as a `.` wildcard. A literal space is
- * never emitted: the search field does not treat it as a plain character.
- */
-const SAFE_FRAGMENT = /^[a-z][a-z ]*$|^ [a-z ]*[a-z]$/;
-
-/** Stand-in for the word break inside the solver, swapped for `.` on the way out. */
-const SPACE = " ";
+/** Letters, and word breaks that leave as a `.` wildcard. */
+const SAFE_FRAGMENT = /^[a-z][a-z ]*[a-z]$|^[a-z]+$/;
 
 /** Characters the Bestiary search accepts before it cuts the input off. */
 export const MAX_PATTERN_LENGTH = 249;
 
 /**
  * How many unwanted beasts a single fragment may match. Every tolerance gets
- * solved and the most precise pattern that fits the length budget wins — a
- * looser fragment sometimes beats a strict one outright, because it can cover a
- * beast that would otherwise fall back to a very broad word.
+ * solved and the most precise pattern that fits the budget wins — a looser
+ * fragment sometimes beats a strict one outright, because it can cover a beast
+ * that would otherwise fall back to a very broad word.
  */
 const TOLERANCES = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
 
@@ -39,85 +42,118 @@ const COMBINING_MARKS = new RegExp("[\\u0300-\\u036f]", "g");
 const normalize = (name: string) =>
   name.toLowerCase().normalize("NFD").replace(COMBINING_MARKS, "");
 
-function fragmentsOf(name: string) {
-  const out = new Set<string>();
-  for (let len = MIN_FRAGMENT; len <= MAX_FRAGMENT; len++) {
-    for (let i = 0; i + len <= name.length; i++) {
-      const fragment = name.slice(i, i + len);
-      if (SAFE_FRAGMENT.test(fragment)) out.add(fragment);
-    }
-  }
-  return out;
-}
+export type BeastEntry = {
+  name: string;
+  /**
+   * The separate lines the Bestiary row shows — genus, family, habitat. `^`
+   * binds to the start of any one of them, so they cannot be concatenated.
+   * Defaults to just the name.
+   */
+  lines?: string[];
+};
+
+const linesOf = (entry: BeastEntry) =>
+  [entry.name, ...(entry.lines ?? [])].filter(Boolean).map(normalize);
 
 /**
- * Does `fragment` hit `text`?
- *
- * Plain case-insensitive substring. Subsequence matching was ruled out: the
- * search `wldbrstl` returned nothing, not even "Wild Bristle Matron". Earlier
- * hits that looked like subsequences turned out to be substrings of text the
- * row shows besides the beast type — the generated name ("km" matched
- * Dar**km**auler), the genus and family, and the modifiers.
- *
- * A ` ` inside the fragment is the `.` wildcard, and matches any character.
+ * Text every beast can carry regardless of type. A fragment found in here
+ * matches beasts at random — `far` catches everything holding "Farric
+ * Presence" — so it is never usable.
  */
-function hits(fragment: string, text: string) {
-  outer: for (let start = 0; start + fragment.length <= text.length; start++) {
+const MOD_LINES = BESTIARY_MOD_TEXT.map(normalize);
+
+/** `fragment` may contain ' ' as the `.` wildcard, matching any character. */
+function containedIn(fragment: string, line: string) {
+  outer: for (let start = 0; start + fragment.length <= line.length; start++) {
     for (let i = 0; i < fragment.length; i++) {
       const f = fragment[i];
-      if (f !== " " && f !== text[start + i]) continue outer;
+      if (f !== " " && f !== line[start + i]) continue outer;
     }
     return true;
   }
   return false;
 }
 
-/** Does a finished pattern hit this row text? Used by the UI and the tests. */
-export function matchesBestiaryPattern(pattern: string, text: string) {
-  const target = normalize(text);
-  return pattern
-    .split("|")
-    .some((alternative) => hits(alternative.split(".").join(" "), target));
+function startsWith(prefix: string, line: string) {
+  if (prefix.length > line.length) return false;
+  for (let i = 0; i < prefix.length; i++) {
+    if (prefix[i] !== " " && prefix[i] !== line[i]) return false;
+  }
+  return true;
 }
 
-/**
- * Text every beast can carry regardless of type: the modifier names and
- * descriptions. A fragment found in here matches beasts at random, so it is
- * never usable.
- */
-const MOD_TEXT = BESTIARY_MOD_TEXT.map(normalize);
+/** One alternative of a pattern, kept in solver form (spaces, not dots). */
+type Fragment = { body: string; anchored: boolean };
 
-function escapeRegex(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const emit = (f: Fragment) =>
+  (f.anchored ? "^" : "") + f.body.split(" ").join(".");
+
+const parse = (alternative: string): Fragment => ({
+  anchored: alternative.startsWith("^"),
+  body: alternative.replace(/^\^/, "").split(".").join(" "),
+});
+
+function fragmentHits(fragment: Fragment, lines: string[]) {
+  return lines.some((line) =>
+    fragment.anchored
+      ? startsWith(fragment.body, line)
+      : containedIn(fragment.body, line),
+  );
+}
+
+/** Does a finished pattern hit this beast? Used by the UI and the tests. */
+export function matchesBestiaryPattern(
+  pattern: string,
+  beast: string | string[],
+) {
+  const lines = (Array.isArray(beast) ? beast : [beast]).map(normalize);
+  return pattern.split("|").some((alt) => fragmentHits(parse(alt), lines));
 }
 
 /** Longest space-free chunk of a name, used when nothing can isolate it. */
 function longestWord(name: string) {
   const words = name.split(/[^a-z]+/).filter(Boolean);
-  const longest = words.reduce((a, b) => (b.length >= a.length ? b : a), "");
-  return longest || escapeRegex(name);
+  return words.reduce((a, b) => (b.length >= a.length ? b : a), "") || name;
 }
 
-type Candidate = { covers: Set<number>; hits: number };
+type Candidate = { fragment: Fragment; covers: Set<number>; hits: number };
 
-function candidatesFor(targets: string[], avoid: string[]) {
+function candidatesFor(targets: string[][], avoid: string[][]) {
   const out = new Map<string, Candidate>();
-  for (const target of targets) {
-    for (const fragment of fragmentsOf(target)) {
-      if (out.has(fragment)) continue;
 
-      // A fragment that appears in any modifier text is unusable outright.
-      if (MOD_TEXT.some((mod) => hits(fragment, mod))) continue;
+  const consider = (fragment: Fragment) => {
+    const key = emit(fragment);
+    if (out.has(key)) return;
 
-      const covers = new Set<number>();
-      targets.forEach((name, i) => {
-        if (name.includes(fragment)) covers.add(i);
-      });
-      const falsePositives = avoid.reduce(
-        (n, name) => (hits(fragment, name) ? n + 1 : n),
-        0,
-      );
-      out.set(fragment, { covers, hits: falsePositives });
+    // Modifier text rides along on any beast, so it disqualifies outright.
+    if (fragmentHits(fragment, MOD_LINES)) return;
+
+    const covers = new Set<number>();
+    targets.forEach((lines, i) => {
+      if (fragmentHits(fragment, lines)) covers.add(i);
+    });
+    if (covers.size === 0) return;
+
+    const hits = avoid.reduce(
+      (n, lines) => (fragmentHits(fragment, lines) ? n + 1 : n),
+      0,
+    );
+    out.set(key, { fragment, covers, hits });
+  };
+
+  for (const lines of targets) {
+    const name = lines[0];
+    for (let len = MIN_FRAGMENT; len <= MAX_FRAGMENT; len++) {
+      // Anchored: bound to the start of a line, which rules out mid-word
+      // collisions and costs a single character.
+      if (len <= name.length) {
+        const prefix = name.slice(0, len);
+        if (SAFE_FRAGMENT.test(prefix)) consider({ body: prefix, anchored: true });
+      }
+      for (let i = 0; i + len <= name.length; i++) {
+        const body = name.slice(i, i + len);
+        if (SAFE_FRAGMENT.test(body)) consider({ body, anchored: false });
+      }
     }
   }
   return out;
@@ -125,73 +161,55 @@ function candidatesFor(targets: string[], avoid: string[]) {
 
 /** One greedy pass, allowing fragments that match up to `tolerance` unwanted beasts. */
 function solve(
-  targets: string[],
+  targets: string[][],
   candidates: Map<string, Candidate>,
   tolerance: number,
 ) {
-  const usable = [...candidates].filter(([, c]) => c.hits <= tolerance);
+  const usable = [...candidates.values()].filter((c) => c.hits <= tolerance);
   const uncovered = new Set(targets.map((_, i) => i));
   const picked: string[] = [];
 
   while (uncovered.size > 0) {
-    let best: string | null = null;
+    let best: Candidate | null = null;
     let bestGain = 0;
-    let bestHits = Infinity;
 
-    for (const [fragment, candidate] of usable) {
+    for (const candidate of usable) {
       let gain = 0;
       for (const i of candidate.covers) if (uncovered.has(i)) gain++;
       if (gain === 0) continue;
 
       // Most beasts per fragment, then fewest false positives, then shortest.
       const better =
+        best === null ||
         gain > bestGain ||
         (gain === bestGain &&
-          (candidate.hits < bestHits ||
-            (candidate.hits === bestHits &&
-              best !== null &&
-              fragment.length < best.length)));
+          (candidate.hits < best.hits ||
+            (candidate.hits === best.hits &&
+              emit(candidate.fragment).length < emit(best.fragment).length)));
       if (better) {
-        best = fragment;
+        best = candidate;
         bestGain = gain;
-        bestHits = candidate.hits;
       }
     }
 
     if (best === null) {
-      // Nothing left can isolate these ("Parasite" lives inside "Plated
-      // Parasite"), so take the longest word and accept the extras.
-      for (const i of uncovered) picked.push(longestWord(targets[i]));
+      // Nothing left can isolate these, so take the longest word and accept
+      // the extras, which get reported.
+      for (const i of uncovered) picked.push(longestWord(targets[i][0]));
       break;
     }
 
-    for (const i of candidates.get(best)!.covers) uncovered.delete(i);
-    picked.push(best);
+    for (const i of best.covers) uncovered.delete(i);
+    picked.push(emit(best.fragment));
   }
 
-  return picked.join("|").split(SPACE).join(".");
+  return picked.join("|");
 }
-
-export type BeastEntry = {
-  name: string;
-  /**
-   * Everything the Bestiary row shows for this beast — name, genus, family,
-   * habitat. Probes matched beasts through their genus, not their name, so
-   * safety has to be judged against the whole row. Defaults to the name.
-   */
-  text?: string;
-};
-
-const textOf = (entry: BeastEntry) => normalize(entry.text ?? entry.name);
 
 export type BestiaryRegexResult = {
   /** The search string, or null when nothing fits the length budget. */
   pattern: string | null;
-  /**
-   * Beasts below the threshold that the pattern still matches — either because
-   * a wanted name is fully contained in a cheaper one ("Parasite" inside
-   * "Plated Parasite"), or because a shorter pattern was needed to fit.
-   */
+  /** Beasts the pattern matches that it should not. */
   overmatched: string[];
 };
 
@@ -200,9 +218,8 @@ export function buildBestiaryRegex(
   unwanted: BeastEntry[],
   maxLength = MAX_PATTERN_LENGTH,
 ): BestiaryRegexResult {
-  // Fragments are cut from the name, but judged against the full row text.
-  const targets = wanted.map((entry) => normalize(entry.name));
-  const avoid = unwanted.map(textOf);
+  const targets = wanted.map(linesOf);
+  const avoid = unwanted.map(linesOf);
   if (targets.length === 0) return { pattern: null, overmatched: [] };
 
   const candidates = candidatesFor(targets, avoid);
@@ -213,7 +230,7 @@ export function buildBestiaryRegex(
     if (pattern.length > maxLength) continue;
 
     const overmatched = unwanted
-      .filter((entry) => matchesBestiaryPattern(pattern, entry.text ?? entry.name))
+      .filter((entry) => matchesBestiaryPattern(pattern, linesOf(entry)))
       .map((entry) => entry.name);
 
     // Fewest false positives wins, shortest pattern breaks the tie.

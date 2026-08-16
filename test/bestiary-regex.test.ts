@@ -20,8 +20,10 @@ const THRESHOLDS = [1, 2, 3, 5, 10, 20, 30, 100, 175];
 /** What the Bestiary row shows: name, genus, family, habitat. */
 const entry = (b: Fixture) => ({
   name: b.name,
-  text: `${b.name} ${(b.baseType ?? "").split("|").join(" ")}`.trim(),
+  lines: (b.baseType ?? "").split("|").filter(Boolean),
 });
+
+const rowOf = (e: ReturnType<typeof entry>) => [e.name, ...e.lines];
 
 function split(threshold: number) {
   return {
@@ -46,13 +48,27 @@ test("isolates a beast from similarly named ones", () => {
   assert.deepEqual(overmatched, []);
 });
 
-test("reports beasts no fragment can exclude", () => {
+test("anchoring isolates a name that ends other names", () => {
+  // No substring of "Parasite" can avoid "Plated Parasite", but "^parasite"
+  // can: the other lines do not start with it.
   const { pattern, overmatched } = buildBestiaryRegex(
     [{ name: "Parasite" }],
     [{ name: "Plated Parasite" }, { name: "Vicious Parasite" }],
   );
-  assert.ok(matchesBestiaryPattern(pattern!, "Parasite"));
-  assert.deepEqual(overmatched.sort(), ["Plated Parasite", "Vicious Parasite"]);
+  assert.ok(pattern, "expected a pattern");
+  assert.ok(pattern.startsWith("^"), `expected an anchor, got ${pattern}`);
+  assert.ok(matchesBestiaryPattern(pattern, "Parasite"));
+  assert.deepEqual(overmatched, []);
+});
+
+test("reports beasts no fragment can exclude", () => {
+  // A name that *begins* another one cannot be isolated even with an anchor.
+  const { pattern, overmatched } = buildBestiaryRegex(
+    [{ name: "Craicic Maw" }],
+    [{ name: "Craicic Mawbeast" }],
+  );
+  assert.ok(matchesBestiaryPattern(pattern!, "Craicic Maw"));
+  assert.deepEqual(overmatched, ["Craicic Mawbeast"]);
 });
 
 test("matches substrings, not subsequences", () => {
@@ -133,7 +149,7 @@ test("matches accented names with an ASCII pattern", () => {
     [{ name: "Black Mórrigan" }],
     BEASTS.filter((b) => b.name !== "Black Mórrigan").map(entry),
   );
-  assert.match(pattern!, /^[a-z.|]+$/);
+  assert.match(pattern!, /^[a-z.|^]+$/);
   assert.ok(matchesBestiaryPattern(pattern!, "Black Mórrigan"));
 });
 
@@ -160,12 +176,12 @@ function assertSound(
   );
 
   const missed = wanted
-    .filter((e) => !matchesBestiaryPattern(pattern, e.text))
+    .filter((e) => !matchesBestiaryPattern(pattern, rowOf(e)))
     .map((e) => e.name);
   assert.deepEqual(missed, [], `${label}: missed ${missed.length} beasts`);
 
   const extra = unwanted
-    .filter((e) => matchesBestiaryPattern(pattern, e.text))
+    .filter((e) => matchesBestiaryPattern(pattern, rowOf(e)))
     .map((e) => e.name);
   assert.deepEqual(extra.sort(), [...overmatched].sort(), `${label}: undeclared extras`);
 

@@ -61,14 +61,19 @@ function PatternRow({
 
   const { pattern, overmatched, missing } = useMemo(() => {
     const result = buildBestiaryRegex(wanted, unwanted);
-    const names = wanted.map((e) => e.name);
     return {
       ...result,
       missing: result.pattern
         ? wanted
-            .filter((e) => !matchesBestiaryPattern(result.pattern!, e.text ?? e.name))
+            .filter(
+              (e) =>
+                !matchesBestiaryPattern(result.pattern!, [
+                  e.name,
+                  ...(e.lines ?? []),
+                ]),
+            )
             .map((e) => e.name)
-        : names,
+        : wanted.map((e) => e.name),
     };
   }, [wanted, unwanted]);
 
@@ -175,9 +180,11 @@ function BestiaryRegex({
   // are unknown: they must never be matched by the "worth keeping" pattern, but
   // claiming they are trash would be a guess, so they stay out of that one.
   const { keep, trash, unknown } = useMemo(() => {
+    // Genus, family and habitat are separate lines in the Bestiary row, and
+    // "^" binds to the start of any one of them.
     const entry = (b: Beast): BeastEntry => ({
       name: b.name,
-      text: `${b.name} ${(b.baseType ?? "").split("|").join(" ")}`.trim(),
+      lines: (b.baseType ?? "").split("|").filter(Boolean),
     });
 
     const keptIds = new Set(kept.map((b) => b.id));
