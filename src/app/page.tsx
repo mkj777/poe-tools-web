@@ -67,9 +67,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           floor, so the row can leave the flow and sit beside the page instead
           of pushing it down. Narrower than that it would overlap, so there it
           stays a normal row above the content. */}
-      <div className="flex items-start justify-between gap-6 pt-6 min-[1480px]:absolute min-[1480px]:inset-x-0 min-[1480px]:top-0">
+      <div className="pointer-events-none flex items-start justify-between gap-6 pt-6 min-[1480px]:absolute min-[1480px]:inset-x-0 min-[1480px]:top-0">
+        {/* The row spans the full width once it is absolute, so it would sit
+            on top of the controls below. Only its two columns take clicks. */}
         <div
-          className="shrink-0 space-y-3"
+          className="pointer-events-auto shrink-0 space-y-3"
           style={{ width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" }}
         >
           <Image
@@ -89,22 +91,17 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           </div>
         </div>
 
-        <div className="px-6">
+        {/* Same gutter width as the logo, so the cards stay clear of the
+            content column instead of covering what sits at its top right. */}
+        <div
+          className="pointer-events-auto shrink-0 pr-6"
+          style={{ width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" }}
+        >
           <ScarabPrices scarabs={scarabs} divine={divine} />
         </div>
       </div>
 
       <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
-        <header className="mb-10 space-y-1">
-          <h1 className="text-4xl font-semibold tracking-tight">
-            Beast Prices
-          </h1>
-          <p className="text-muted-foreground">
-            Every beast — priced by poe.ninja where it has data, by the official
-            trade site everywhere else.
-          </p>
-        </header>
-
         <BeastTable beasts={beasts} league={league} />
       </main>
     </div>

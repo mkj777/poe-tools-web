@@ -172,37 +172,44 @@ function BestiaryRegex({
 
   const { steps, unreachable, pending } = useBestiaryPattern(wanted, unwanted);
 
-  if (threshold <= 0) {
-    return (
-      <div className="bg-card rounded-xl border p-5">
-        <h2 className="text-lg font-medium">Bestiary regex</h2>
-        <p className="text-muted-foreground text-sm">
-          Set a minimum{" "}
-          <CurrencyIcon currency="chaos" size={16} className="align-middle" />{" "}
-          value to plan the searches.
-        </p>
-      </div>
-    );
-  }
+  const idle = threshold <= 0;
 
   return (
     <div className="bg-card space-y-5 rounded-xl border p-5">
+      {/* The header, and with it the help, is there in both states. */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <h2 className="text-lg font-medium">
-            {mode === "sell" ? "Sell beasts" : "Trash beasts"}
+            {idle
+              ? "Bestiary regex"
+              : mode === "sell"
+                ? "Sell beasts"
+                : "Trash beasts"}
           </h2>
-          {!pending && steps.length > 1 && (
+          {idle ? (
             <p className="text-muted-foreground text-sm">
-              Too many for one search. Run all {steps.length} — together they
-              hit exactly those beasts and nothing else.
+              Set a minimum{" "}
+              <CurrencyIcon
+                currency="chaos"
+                size={16}
+                className="align-middle"
+              />{" "}
+              value to plan the searches.
             </p>
+          ) : (
+            !pending &&
+            steps.length > 1 && (
+              <p className="text-muted-foreground text-sm">
+                Too many for one search. Run all {steps.length} — together they
+                hit exactly those beasts and nothing else.
+              </p>
+            )
           )}
         </div>
         <HelpTip beasts={beasts} />
       </div>
 
-      {pending ? (
+      {idle ? null : pending ? (
         <div className="space-y-2">
           <div className="flex items-baseline justify-between gap-2">
             <Skeleton className="h-5 w-32" />
@@ -252,8 +259,8 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger
-          aria-label="How these patterns work"
-          className="text-muted-foreground hover:text-foreground hover:border-foreground/40 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-sm"
+          aria-label="What this is and how the patterns work"
+          className="text-foreground border-foreground/40 bg-secondary hover:bg-foreground hover:text-background mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border font-medium transition-colors"
         >
           ?
         </TooltipTrigger>
@@ -261,6 +268,11 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
             become columns. */}
         <TooltipContent side="left" className="max-w-96 py-2.5 text-sm">
           <div className="space-y-2">
+            <p>
+              <span className="font-medium">Beast Prices.</span> Every beast —
+              priced by poe.ninja where it has data, by the official trade site
+              everywhere else.
+            </p>
             <p>
               Paste each search into the Bestiary window in turn. Precision
               comes first here: rather than one pattern that also drags in a few
@@ -277,11 +289,10 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
               can spell.
             </p>
             <p>
-              Built from {beasts.length} beasts, {fromNinja} priced by poe.ninja
-              and the rest looked up on the trade site. Beasts with no listings
-              at all are left out entirely — anything the game still drops has
-              someone selling it, so an empty search means the beast is gone,
-              not cheap.
+              Built from {beasts.length} beasts, {fromNinja} of them with
+              poe.ninja data. Beasts with no listings at all are left out
+              entirely — anything the game still drops has someone selling it,
+              so an empty search means the beast is gone, not cheap.
             </p>
           </div>
         </TooltipContent>

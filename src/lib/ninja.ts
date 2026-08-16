@@ -66,7 +66,10 @@ export async function getBeasts(league: string) {
 
 export type Scarab = {
   id: string;
+  /** What the card shows — the icon carries the rest. */
   name: string;
+  /** The full name, for the hover title. */
+  fullName: string;
   icon: string;
   /** Chaos each, from the currency exchange. */
   chaosValue: number;
@@ -76,12 +79,14 @@ export type Scarab = {
 const BESTIARY_SCARABS = [
   {
     id: "bestiary-scarab-of-duplicating",
-    name: "Scarab of Duplicating",
+    name: "Duplicating",
+    fullName: "Bestiary Scarab of Duplicating",
     icon: "/duplicating_scarab.png",
   },
   {
     id: "bestiary-scarab-of-the-herd",
-    name: "Scarab of the Herd",
+    name: "The Herd",
+    fullName: "Bestiary Scarab of the Herd",
     icon: "/herd_scarab.png",
   },
 ];

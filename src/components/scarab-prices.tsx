@@ -6,18 +6,25 @@ import { CurrencyIcon, Price } from "@/components/currency";
 function Card({
   icon,
   name,
+  title,
   children,
 }: {
   icon: ReactNode;
   name: string;
+  title?: string;
   children: ReactNode;
 }) {
   return (
-    <div className="bg-card flex items-center gap-2.5 rounded-xl border px-3 py-2">
+    <div
+      title={title ?? name}
+      className="bg-card flex items-center gap-2.5 rounded-xl border px-3 py-2"
+    >
       {icon}
-      <div>
-        <div className="text-sm font-medium">{name}</div>
-        <div className="text-muted-foreground flex items-center gap-2.5 text-sm">
+      <div className="min-w-0">
+        <div className="truncate text-sm font-medium">{name}</div>
+        {/* The column is only as wide as the page gutter, so a long line
+            wraps rather than running off the edge of the window. */}
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 text-sm">
           {children}
         </div>
       </div>
@@ -45,12 +52,13 @@ export function ScarabPrices({
         <Card
           key={scarab.id}
           name={scarab.name}
+          title={scarab.fullName}
           icon={
             <Image
               src={scarab.icon}
               alt=""
-              width={30}
-              height={30}
+              width={26}
+              height={26}
               className="shrink-0"
             />
           }
@@ -70,7 +78,7 @@ export function ScarabPrices({
       {divine !== undefined && (
         <Card
           name="Divine Orb"
-          icon={<CurrencyIcon currency="divine" size={30} />}
+          icon={<CurrencyIcon currency="divine" size={26} />}
         >
           <Price value={divine} size={15} className="text-foreground" />
         </Card>
