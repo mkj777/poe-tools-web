@@ -1,1 +1,559 @@
-{}
+{
+  "Allflame": {
+    "Aidan the Frenzied": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:50:32.264Z"
+    },
+    "Albino Rhoa": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:50:57.532Z"
+    },
+    "Alpha Paradisae": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:51:22.833Z"
+    },
+    "Amarissa, Daughter of Merveil": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:51:48.142Z"
+    },
+    "Ambrosia, Daughter of Merveil": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:52:13.407Z"
+    },
+    "Arctic Wolf": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:52:38.680Z"
+    },
+    "Balah, Duke": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:53:03.952Z"
+    },
+    "Barb Serpent": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:53:29.243Z"
+    },
+    "Black Death": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:53:54.529Z"
+    },
+    "Bladeback Guardian": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:54:19.825Z"
+    },
+    "Bladetooth": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T11:54:45.125Z"
+    },
+    "Bleached Crustacean": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:15:48.098Z"
+    },
+    "Blood Morpher": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:16:13.379Z"
+    },
+    "Blood Stasis ": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:16:38.744Z"
+    },
+    "Blue Frog": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:21:39.127Z"
+    },
+    "Boulderback": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:22:04.403Z"
+    },
+    "Brinecrack": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:22:29.675Z"
+    },
+    "Brood Princess": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:22:54.968Z"
+    },
+    "Buried Tarantula": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:23:20.303Z"
+    },
+    "Carrion Minion": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:23:45.567Z"
+    },
+    "Cave Crustacean": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:24:10.847Z"
+    },
+    "Cavern Drifter": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:24:36.114Z"
+    },
+    "Cintiq, the Inescapable": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:25:01.429Z"
+    },
+    "Common Frog": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:25:26.705Z"
+    },
+    "Corrupted Spitter": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:25:51.968Z"
+    },
+    "Crazed Chieftain": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:26:17.242Z"
+    },
+    "Crazed Flamebeast": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:26:42.542Z"
+    },
+    "Crustacean Pelter": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:31:42.868Z"
+    },
+    "Crypt Weaver": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:32:08.131Z"
+    },
+    "Deep Crustacean": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:32:33.395Z"
+    },
+    "Dire Wolf": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:32:58.676Z"
+    },
+    "Diseased Arachnid": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:33:23.950Z"
+    },
+    "Drifting Eye": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:33:49.235Z"
+    },
+    "Echo of the Verdant": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:34:14.537Z"
+    },
+    "Eyepecker": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:34:39.840Z"
+    },
+    "Fated Siren": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:35:05.114Z"
+    },
+    "Fathom Screamer": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:35:30.402Z"
+    },
+    "Foreseen Spawn": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:35:55.726Z"
+    },
+    "Fused Crawler": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:36:21.005Z"
+    },
+    "Genesis Paradisae": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:36:46.314Z"
+    },
+    "Guardian of the Mound": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:41:46.618Z"
+    },
+    "Hatchling": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:42:11.898Z"
+    },
+    "Hollowskull, the Willing Host": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:42:37.170Z"
+    },
+    "Infected Adder": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:43:02.439Z"
+    },
+    "Infected Ambusher": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:43:27.722Z"
+    },
+    "Infected Beast": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:43:53.014Z"
+    },
+    "Infected Spiker": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:44:18.306Z"
+    },
+    "Infected Watcher": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:44:43.570Z"
+    },
+    "Infested Crustacean": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:45:08.859Z"
+    },
+    "Infested Sniper": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:50:09.182Z"
+    },
+    "Infested Ursa": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:50:34.448Z"
+    },
+    "Inti of the Blood Moon": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:50:59.735Z"
+    },
+    "Invading Crustacean": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:51:25.027Z"
+    },
+    "Junglemare": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:51:50.318Z"
+    },
+    "Kamaq, Soilmaker": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:52:15.588Z"
+    },
+    "Konu, Maker of Wind": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:52:40.858Z"
+    },
+    "Lola, the Fierce": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:53:06.149Z"
+    },
+    "Lowlands Hopper": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:53:31.434Z"
+    },
+    "Lurking Venom": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:53:56.712Z"
+    },
+    "Maligaro's Inspiration": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:58:56.980Z"
+    },
+    "Maligaro's Muse": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:59:22.264Z"
+    },
+    "Maze Hatchling": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T12:59:47.576Z"
+    },
+    "Maze Needleback": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:00:12.839Z"
+    },
+    "Maze Slitherer": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:00:38.136Z"
+    },
+    "Maze Webspinner": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:01:03.398Z"
+    },
+    "Merveil's Daughter": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:06:03.726Z"
+    },
+    "Mother of the Hive": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:06:29.002Z"
+    },
+    "Mother of the Swarm": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:06:54.277Z"
+    },
+    "Mutant Arach": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:07:19.578Z"
+    },
+    "Mutated Adder": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:07:44.861Z"
+    },
+    "Mutated Arachnid": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:08:10.129Z"
+    },
+    "Mutated Broodqueen": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:08:35.495Z"
+    },
+    "Mutated Chieftain": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:09:00.766Z"
+    },
+    "Mutated Croaker": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:14:01.033Z"
+    },
+    "Mutated Flamebeast": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:14:26.304Z"
+    },
+    "Mutated Maw": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:14:51.593Z"
+    },
+    "Mutated Rhoa": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:15:16.882Z"
+    },
+    "Mutated Ursa": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:20:17.187Z"
+    },
+    "Mutated Watcher": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:20:42.464Z"
+    },
+    "Mutated Winterclaw": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:21:07.729Z"
+    },
+    "Mutewind Lynx": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:21:33.011Z"
+    },
+    "Mystic Devourer": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:21:58.279Z"
+    },
+    "Nadia the Soothing": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:22:23.598Z"
+    },
+    "Nightmarish Carrion": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:22:48.867Z"
+    },
+    "Oozeback Bloom": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:27:49.152Z"
+    },
+    "Paradisae Venenum": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:28:14.443Z"
+    },
+    "Pewterfang": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:28:39.725Z"
+    },
+    "Poisonous Parasite": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:33:40.019Z"
+    },
+    "Putrid Chimeral": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:34:05.294Z"
+    },
+    "Putrid Serpent": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:34:30.573Z"
+    },
+    "Putrid Weaver": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:34:55.840Z"
+    },
+    "Q'uru": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:35:21.116Z"
+    },
+    "Quetzerxi": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:35:46.399Z"
+    },
+    "Rabid Broodqueen": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:36:11.704Z"
+    },
+    "Rabid Maw": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:36:36.979Z"
+    },
+    "Rabid Minion": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:37:02.266Z"
+    },
+    "Rabid Rhoa": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:37:27.562Z"
+    },
+    "Raihara, Tukohama's Loyal": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:42:27.879Z"
+    },
+    "Rima, Deep Temptress": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:42:53.163Z"
+    },
+    "Risen Infested Beast": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:43:18.494Z"
+    },
+    "Rocco, the Bloodthirsty": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:43:43.765Z"
+    },
+    "Rock Spitter": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:44:09.043Z"
+    },
+    "Scrabbling Menace": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:44:34.315Z"
+    },
+    "Scrabbling Spitter": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:44:59.576Z"
+    },
+    "Sewer Drifter": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:45:24.869Z"
+    },
+    "Sheaq, Maker of Floods": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:45:50.131Z"
+    },
+    "Shivershell": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:46:15.448Z"
+    },
+    "Sickly Spinner": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:46:40.718Z"
+    },
+    "Simi, the Nature Touched": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:47:05.980Z"
+    },
+    "Siren's Spawn": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:47:31.289Z"
+    },
+    "Slimy Bloodsucker": {
+      "chaosValue": 0,
+      "listingCount": 0,
+      "checkedAt": "2026-08-16T13:47:56.556Z"
+    }
+  }
+}

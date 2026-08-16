@@ -4,15 +4,18 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
 import type { Beast } from "@/lib/ninja";
-import {
-  buildBestiaryRegex,
-  matchesBestiaryPattern,
-  MAX_PATTERN_LENGTH,
-  type BeastEntry,
-} from "@/lib/bestiary-regex";
+import { MAX_PATTERN_LENGTH, type BeastEntry } from "@/lib/bestiary-regex";
+import { useBestiaryPattern } from "@/lib/use-bestiary-pattern";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -46,42 +49,42 @@ const num = (value: number | undefined, digits = 0) =>
 
 function PatternRow({
   label,
-  hint,
   wanted,
   unwanted,
   extrasLabel,
 }: {
   label: string;
-  hint: string;
   wanted: BeastEntry[];
   unwanted: BeastEntry[];
   extrasLabel: string;
 }) {
   const [copied, setCopied] = useState(false);
-
-  const { pattern, overmatched, missing } = useMemo(() => {
-    const result = buildBestiaryRegex(wanted, unwanted);
-    return {
-      ...result,
-      missing: result.pattern
-        ? wanted
-            .filter(
-              (e) =>
-                !matchesBestiaryPattern(result.pattern!, [
-                  e.name,
-                  ...(e.lines ?? []),
-                ]),
-            )
-            .map((e) => e.name)
-        : wanted.map((e) => e.name),
-    };
-  }, [wanted, unwanted]);
+  const { pattern, overmatched, missing, pending } = useBestiaryPattern(
+    wanted,
+    unwanted,
+  );
 
   async function copy() {
     if (!pattern) return;
     await navigator.clipboard.writeText(pattern);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  }
+
+  if (pending) {
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-medium">{label}</h3>
+          <Skeleton className="h-5 w-52" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-11 flex-1" />
+          <Skeleton className="h-11 w-24 shrink-0" />
+        </div>
+        <Skeleton className="h-5 w-3/4" />
+      </div>
+    );
   }
 
   return (
@@ -114,8 +117,6 @@ function PatternRow({
           {copied ? "Copied" : "Copy"}
         </Button>
       </div>
-
-      <p className="text-muted-foreground text-sm">{hint}</p>
 
       {pattern && overmatched.length > 0 && (
         <Notice tone="amber" text={`Also matches ${overmatched.length} ${extrasLabel}:`}>
@@ -168,12 +169,11 @@ function Notice({
 function BestiaryRegex({
   beasts,
   threshold,
-  kept,
 }: {
   beasts: Beast[];
   threshold: number;
-  kept: Beast[];
 }) {
+  // Cheap: the solving itself happens in a worker, see useBestiaryPattern.
   // Three groups. A beast with no price from either source is unknown rather
   // than cheap: no pattern claims it, but both still avoid matching it.
   const { keep, trash, unknown } = useMemo(() => {
@@ -184,15 +184,18 @@ function BestiaryRegex({
       lines: (b.baseType ?? "").split("|").filter(Boolean),
     });
 
-    const keptIds = new Set(kept.map((b) => b.id));
     return {
-      keep: kept.map(entry),
+      keep: beasts.filter((b) => (b.chaosValue ?? -1) >= threshold).map(entry),
       trash: beasts
-        .filter((b) => !keptIds.has(b.id) && b.chaosValue !== undefined)
+        .filter((b) => b.chaosValue !== undefined && b.chaosValue < threshold)
         .map(entry),
       unknown: beasts.filter((b) => b.chaosValue === undefined).map(entry),
     };
-  }, [beasts, kept]);
+  }, [beasts, threshold]);
+
+  // New arrays every render would restart the worker on every render.
+  const notKeep = useMemo(() => [...trash, ...unknown], [trash, unknown]);
+  const notTrash = useMemo(() => [...keep, ...unknown], [keep, unknown]);
 
   if (threshold <= 0) {
     return (
@@ -207,58 +210,70 @@ function BestiaryRegex({
 
   return (
     <div className="bg-card space-y-5 rounded-xl border p-5">
-      <h2 className="text-lg font-medium">Bestiary regex</h2>
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-lg font-medium">Bestiary regex</h2>
+        <HelpTip beasts={beasts} unknown={unknown.length} />
+      </div>
 
       <PatternRow
         label={`Worth keeping — ${threshold}c and up`}
-        hint="Paste into the Bestiary search to show only the beasts worth at least the min chaos value."
         wanted={keep}
-        unwanted={[...trash, ...unknown]}
+        unwanted={notKeep}
         extrasLabel="other beasts that no fragment can exclude"
       />
 
       <PatternRow
         label={`Reverse (Trash) — under ${threshold}c`}
-        hint="The inverse: everything below the threshold, for clearing out the cheap ones."
         wanted={trash}
-        unwanted={[...keep, ...unknown]}
+        unwanted={notTrash}
         extrasLabel="other beasts that no fragment can exclude"
       />
-
-      <div className="text-muted-foreground space-y-2 border-t pt-4 text-sm">
-        <p>
-          Universe: {beasts.length} beasts from GGG&apos;s trade data.{" "}
-          {beasts.filter((b) => b.source === "ninja").length} are priced by
-          poe.ninja; the rest are looked up on the trade site, where 0c means
-          nobody is selling one.
-          {unknown.length > 0 && (
-            <>
-              {" "}
-              <span className="text-foreground">
-                {unknown.length} have no price yet
-              </span>{" "}
-              — the daily refresh has not reached them, so no pattern claims
-              them, though both still avoid matching them.
-            </>
-          )}
-        </p>
-        <p>
-          The search reads more than the type name: genus, family, the up-to-three
-          modifiers a beast carries, and their descriptions. Fragments found in
-          any modifier text are refused outright — otherwise{" "}
-          <code className="font-mono">far</code> would drag in everything holding
-          &ldquo;Farric Presence&rdquo;.
-        </p>
-        <p>
-          Each captured beast also shows a generated name — Darkmauler,
-          Stonegrowl, Grimtooth — which the search reads as well. The game spells
-          those from a fixed pool of 167 prefixes and 211 suffixes, so all 35,237
-          of them are checked too, and a fragment that could land inside one is
-          refused. See{" "}
-          <code className="font-mono">docs/bestiary-search.md</code>.
-        </p>
-      </div>
     </div>
+  );
+}
+
+/** Everything worth explaining, out of the way until asked for. */
+function HelpTip({ beasts, unknown }: { beasts: Beast[]; unknown: number }) {
+  const fromNinja = beasts.filter((b) => b.source === "ninja").length;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger
+          aria-label="How these patterns work"
+          className="text-muted-foreground hover:text-foreground hover:border-foreground/40 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-sm"
+        >
+          ?
+        </TooltipTrigger>
+        {/* One child: the content itself is a flex row, so several would
+            become columns. */}
+        <TooltipContent side="left" className="max-w-96 py-2.5 text-sm">
+          <div className="space-y-2">
+            <p>
+              Paste the top pattern into the Bestiary search to see only beasts
+              worth at least the min chaos value. The second is its inverse, for
+              clearing out the cheap ones.
+            </p>
+            <p>
+              The search reads more than the type name: genus, family, the
+              up-to-three modifiers a beast carries and their descriptions, plus
+              the generated name it was captured under. Fragments that could
+              land in any of those are refused — otherwise <code>far</code>{" "}
+              would drag in everything holding &ldquo;Farric Presence&rdquo;,
+              and a short one could hide inside any of the 35,237 names the game
+              can spell.
+            </p>
+            <p>
+              {beasts.length} beasts from GGG&apos;s trade data, {fromNinja}{" "}
+              priced by poe.ninja and the rest looked up on the trade site, where
+              0c means nobody is selling one.
+              {unknown > 0 &&
+                ` ${unknown} have no price yet and neither pattern claims them.`}
+            </p>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -307,7 +322,7 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
 
   return (
     <div className="space-y-5">
-      <BestiaryRegex beasts={beasts} threshold={threshold} kept={worthKeeping} />
+      <BestiaryRegex beasts={beasts} threshold={threshold} />
 
       <div className="flex flex-wrap items-center gap-3">
         <Input
