@@ -153,11 +153,16 @@ fragment that matched it, so a trash pattern that turns up something expensive
 is visible before the beast is released rather than after. Set the warning line
 to the threshold and any match at or above it turns red.
 
-It only knows the lines this project can enumerate. A captured beast also
-carries its generated name and its modifiers, and that is exactly where the
-last surprise came from, so a clean simulation is necessary rather than
-sufficient — and a disagreement between it and the game is the most useful bug
-report there is.
+Every beast is rolled into a capture the way the game rolls one: a generated
+name from the `Words.dat` word pool, three Bestiary modifiers on a red beast and
+one on a yellow, plus a few ordinary monster modifiers. Reroll draws again.
+
+A single roll only proves something about that roll, so the panel above the
+tiles asks the question that covers all of them: can any fragment land in *any*
+generated name or *any* modifier name? Type `rar` and it answers — inside
+"Tempo**rar**ily Revives", so that fragment can bring up any beast in the
+league. That was the actual bug behind a 50c beast turning up in a 2c trash
+pattern, and a test now asserts the planner never emits such a fragment.
 
 ### The length budget
 

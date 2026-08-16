@@ -26,6 +26,8 @@ const clean = (s) =>
     .trim();
 
 const text = new Set();
+/** Only what the Bestiary prints on a beast — the display names. */
+const names = new Set();
 
 for (const page of PAGES) {
   const res = await fetch(
@@ -40,6 +42,7 @@ for (const page of PAGES) {
   // Column order differs between the tables, and some carry a spawn-weight
   // column full of internal tags that is not text the game ever prints.
   let columns = [];
+  let display = -1;
   let taken = 0;
   for (const row of rows) {
     const cells = (row.match(/<t[dh][\s\S]*?<\/t[dh]>/g) ?? []).map(clean);
@@ -49,9 +52,13 @@ for (const page of PAGES) {
       columns = cells.flatMap((header, i) =>
         /^(Prefix|Suffix|Modifier Name|Effect\(s\))$/.test(header) ? [i] : [],
       );
+      display = cells.findIndex((header) => header === "Modifier Name");
       continue;
     }
     if (columns.length === 0) continue;
+
+    const shown = cells[display] || cells[0];
+    if (shown) names.add(shown);
 
     for (const i of columns) {
       // Spawn-weight tags ("rare 0 default 1000") slip into the effect column
@@ -67,6 +74,12 @@ for (const page of PAGES) {
 }
 
 const lines = [...text].sort((a, b) => a.localeCompare(b));
+// The tooltip prints one short line per modifier and nothing else, so the
+// simulation only ever needs these.
+const shownNames = [...names]
+  // A stray level or spawn-weight cell is not a modifier name.
+  .filter((n) => n.length <= 60 && /[a-z]/i.test(n) && !/^\d/.test(n))
+  .sort((a, b) => a.localeCompare(b));
 
 const file = `/**
  * Every generic monster modifier a captured beast can carry: the internal
@@ -83,7 +96,16 @@ const file = `/**
 export const MONSTER_MOD_TEXT: string[] = [
 ${lines.map((l) => `  ${JSON.stringify(l)},`).join("\n")}
 ];
+
+/**
+ * Just the names, which is all a beast's tooltip shows: "Soul Eater",
+ * "Extra Fire Damage and Exposure", "Periodically Enrages". The simulation
+ * rolls from these.
+ */
+export const MONSTER_MOD_NAMES: string[] = [
+${shownNames.map((l) => `  ${JSON.stringify(l)},`).join("\n")}
+];
 `;
 
 writeFileSync(new URL("../src/lib/monster-mods.ts", import.meta.url), file);
-console.log(`wrote ${lines.length} lines`);
+console.log(`wrote ${lines.length} lines, ${shownNames.length} names`);

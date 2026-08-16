@@ -283,15 +283,45 @@ with Saplings" and "Rare Minions create Frost Beacons on Death".
 - Cost, measured on the 218-beast fixture: trash at 4c goes from 3 searches to
   4. Nothing else moves.
 
-**Still open — which fragment actually matched?** Bisecting it in game would
-settle whether the leak was prose (`rar`, `c.ly`) or something structural.
-Paste these one at a time and note whether Wild Hellion Alpha appears:
+### Test 15 — the tooltip, and what actually leaked
 
-| Probe | Half it clears |
-| --- | --- |
-| `cic.s\|ric.g\|wine.r\|ric.f\|umal.s\|wine.c\|rar\|c.va\|c.wo\|c.ly\|e.vu\|ex.m` | first twelve |
-| `ne.b\|mal.h\|mal.d\|cic.m\|c.pit\|ic.ap\|c.mag\|cic.w\|mal.q\|c.tau\|mal.w\|c.chi\|rric.u` | last thirteen |
-| `rar` | the prime suspect on its own |
+Four in-game screenshots of captured beasts settled the shape of a row:
+
+```
+Greyscreech                        ← the generated name, and all the grid shows
+- Farric Flame Hellion Alpha -     ← the type, only in the tooltip
+Level: 83
+Farric Presence                    ← Bestiary modifiers, in red
+Tiger Prey
+Fertile Presence
+Soul Eater                         ← ordinary monster modifiers, in white
+Extra Fire Damage and Exposure
+```
+
+Three things follow.
+
+**Modifier names, not descriptions.** The tooltip prints one short line per
+modifier — "Extra Fire Damage and Exposure", "Periodically Enrages", "Shocked
+Ground on Death". That revises Test 13: `chaos damage` did not match a
+description, it matched the modifier *named* "Extra Chaos Damage". Which means
+the searchable text is enumerable after all, and small: 24 Bestiary modifier
+names and 111 monster ones.
+
+**And that is the leak.** `rar` is inside **Tempo*rar*ily Revives**, an
+ordinary rare monster modifier. Any beast can roll it, so `rar` could show any
+beast in the league — which is exactly what Wild Hellion Alpha was doing in a
+2c trash pattern. The user's list of that row's modifiers did not include it,
+but the row had more lines than were quoted.
+
+**Red beasts carry three Bestiary modifiers, yellow ones carry one**, matching
+the wiki's note. Both then carry a few ordinary ones, and a beast that survived
+the altar keeps "10% chance not to be consumed when sacrificed at the Blood
+Altar" as another line.
+
+All of that is now rolled per beast in `/simulation`, and `patternRisks()`
+answers the question without rolling: can this fragment land in *any* generated
+name or *any* modifier name? A test asserts the planner never emits one that
+can, at every threshold and in both modes.
 
 ---
 
@@ -305,8 +335,20 @@ useful, the two can be compared. Where the simulation shows a beast the game
 does not, or the game shows one the simulation does not, the model is wrong and
 the difference says where.
 
-The simulation cannot know the two lines that vary per capture: the generated
-name and the modifiers rolled. Test 14 is exactly that gap.
+Both lines that vary per capture are now rolled: the generated name, from the
+`Words.dat` pools, and the modifiers, from the two modifier lists. Reroll draws
+again; the risk panel skips the dice and asks whether a fragment could land in
+any generated name or any modifier name at all.
+
+What would make it exact rather than close — exports from
+[poe-dat-viewer](https://snosme.github.io/poe-dat-viewer/):
+
+| File | What it settles |
+| --- | --- |
+| `Mods.dat64` (Name, Domain, GenerationType) | every modifier name a beast can roll. The wiki lists 111 and misses some — "Stonemaul" is on a captured beast and on no wiki page |
+| `MonsterVarieties.dat64` (Id, Name) | which beast each `BestiaryCapturableMonsters` row is, so the dead ones can be dropped by their own flag instead of by "no listings" |
+| `BestiaryGenus.dat64`, `BestiaryFamilies.dat64` | whether genus and family really are searched, and under which spelling |
+| `Words.dat64` | already imported, would only be refreshed |
 
 ## Open questions, and the probes that would settle them
 

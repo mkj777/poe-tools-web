@@ -2,73 +2,81 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { Dices } from "lucide-react";
 import type { Beast } from "@/lib/ninja";
-import {
-  MAX_PATTERN_LENGTH,
-  matchingFragments,
-} from "@/lib/bestiary-regex";
+import { MAX_PATTERN_LENGTH, matchingFragments } from "@/lib/bestiary-regex";
+import { rollCapture, type Capture } from "@/lib/capture";
+import { patternRisks } from "@/lib/pattern-risk";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { CurrencyIcon, Price } from "@/components/currency";
-
-/** What the Bestiary row shows: type name, then genus, family, habitat. */
-const rowOf = (beast: Beast) => [
-  beast.name,
-  ...(beast.baseType ?? "").split("|").filter(Boolean),
-];
 
 type Row = {
   beast: Beast;
-  lines: string[];
+  capture: Capture;
   hits: { fragment: string; line: string }[];
 };
 
+/** A beast the way the Bestiary shows it, plus the price the game will not. */
 function Tile({ row, danger }: { row: Row; danger: boolean }) {
-  const { beast, lines, hits } = row;
+  const { beast, capture, hits } = row;
 
   return (
     <div
-      className={`bg-card flex gap-3 rounded-xl border p-3 ${
+      className={`bg-card flex flex-col gap-1.5 rounded-xl border p-3 ${
         danger ? "border-red-500/70 bg-red-950/20" : ""
       }`}
     >
-      <Image
-        src={
-          beast.rarity === "red"
-            ? "/BestiaryLegendaryBeast.webp"
-            : "/BestiaryRareMonster.webp"
-        }
-        alt={beast.rarity === "red" ? "Red beast" : "Yellow beast"}
-        width={26}
-        height={26}
-        className="mt-0.5 shrink-0"
-      />
-
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="truncate font-medium">{beast.name}</span>
-          <Price
-            value={beast.chaosValue ?? 0}
-            size={15}
-            className={danger ? "text-red-400" : "text-foreground"}
-          />
-        </div>
-        <div className="text-muted-foreground truncate text-sm">
-          {lines.slice(1).join(" · ") || "no genus data"}
-        </div>
-        {hits.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1">
-            {hits.map((hit) => (
-              <span
-                key={hit.fragment}
-                title={`matched on "${hit.line}"`}
-                className="bg-secondary text-muted-foreground rounded px-1.5 py-0.5 font-mono text-xs"
-              >
-                {hit.fragment}
-              </span>
-            ))}
-          </div>
-        )}
+      <div className="flex items-center gap-2">
+        <Image
+          src={
+            beast.rarity === "red"
+              ? "/BestiaryLegendaryBeast.webp"
+              : "/BestiaryRareMonster.webp"
+          }
+          alt={beast.rarity === "red" ? "Red beast" : "Yellow beast"}
+          width={22}
+          height={22}
+          className="shrink-0"
+        />
+        <span className="truncate font-medium">{capture.name}</span>
+        <Price
+          value={beast.chaosValue ?? 0}
+          size={15}
+          className={`ml-auto ${danger ? "text-red-400" : "text-foreground"}`}
+        />
       </div>
+
+      <div className="text-muted-foreground text-center text-sm">
+        - {capture.type} -
+      </div>
+
+      <div className="text-center text-sm leading-snug">
+        {capture.bestiaryMods.map((mod) => (
+          <div key={mod} className="text-red-400">
+            {mod}
+          </div>
+        ))}
+        {capture.monsterMods.map((mod) => (
+          <div key={mod} className="text-foreground/80">
+            {mod}
+          </div>
+        ))}
+      </div>
+
+      {hits.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-1">
+          {hits.map((hit) => (
+            <span
+              key={hit.fragment}
+              title={`matched on "${hit.line}"`}
+              className="bg-secondary text-muted-foreground rounded px-1.5 py-0.5 font-mono text-xs"
+            >
+              {hit.fragment}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -76,11 +84,11 @@ function Tile({ row, danger }: { row: Row; danger: boolean }) {
 /**
  * The Bestiary window, near enough to test a pattern against.
  *
- * Every beast with a listing is in here with the lines the game searches, so
- * pasting a pattern shows what the Bestiary would show — with the price on each
- * tile, which is the thing the game will not tell you. A trash pattern that
- * turns up something expensive is a bug you can see immediately instead of
- * finding out after the beast is gone.
+ * Every beast with a listing is rolled into a capture — generated name, type,
+ * Bestiary modifiers, monster modifiers — and the pattern runs over all of it,
+ * the way the game does. Reroll to see other names and other modifiers; the
+ * risk panel answers the same question without rolling, by asking whether a
+ * fragment could ever land in a generated name or a modifier at all.
  */
 export function BestiarySimulator({
   beasts,
@@ -91,35 +99,45 @@ export function BestiarySimulator({
 }) {
   const [pattern, setPattern] = useState(initialPattern);
   const [dangerAbove, setDangerAbove] = useState("");
+  const [roll, setRoll] = useState(0);
   const [showRest, setShowRest] = useState(false);
 
   const limit = Number(dangerAbove) || 0;
+  const captures = useMemo(
+    () => beasts.map((beast) => ({ beast, capture: rollCapture(beast, roll) })),
+    [beasts, roll],
+  );
 
   const { matched, rest } = useMemo(() => {
-    const rows: Row[] = beasts.map((beast) => ({
-      beast,
-      lines: rowOf(beast),
-      hits: [],
-    }));
-
     const trimmed = pattern.trim();
-    if (!trimmed) return { matched: [], rest: rows };
+    const byValue = (a: Row, b: Row) =>
+      (b.beast.chaosValue ?? 0) - (a.beast.chaosValue ?? 0);
+
+    if (!trimmed) {
+      return {
+        matched: [] as Row[],
+        rest: captures.map((c) => ({ ...c, hits: [] })).sort(byValue),
+      };
+    }
 
     const matched: Row[] = [];
     const rest: Row[] = [];
-    for (const row of rows) {
-      const hits = matchingFragments(trimmed, row.lines);
-      if (hits.length > 0) matched.push({ ...row, hits });
-      else rest.push(row);
+    for (const { beast, capture } of captures) {
+      const hits = matchingFragments(trimmed, capture.lines);
+      if (hits.length > 0) matched.push({ beast, capture, hits });
+      else rest.push({ beast, capture, hits: [] });
     }
-
-    const byValue = (a: Row, b: Row) =>
-      (b.beast.chaosValue ?? 0) - (a.beast.chaosValue ?? 0);
     return { matched: matched.sort(byValue), rest: rest.sort(byValue) };
-  }, [beasts, pattern]);
+  }, [captures, pattern]);
+
+  const risks = useMemo(
+    () => (pattern.trim() ? patternRisks(pattern.trim()) : []),
+    [pattern],
+  );
 
   const worst = matched[0]?.beast;
-  const over = limit > 0 ? matched.filter((r) => (r.beast.chaosValue ?? 0) >= limit) : [];
+  const over =
+    limit > 0 ? matched.filter((r) => (r.beast.chaosValue ?? 0) >= limit) : [];
 
   return (
     <div className="space-y-5">
@@ -141,6 +159,15 @@ export function BestiarySimulator({
           >
             {pattern.length}/{MAX_PATTERN_LENGTH}
           </span>
+          <Button
+            variant="secondary"
+            onClick={() => setRoll((r) => r + 1)}
+            title="Roll new names and modifiers for every beast"
+            className="shrink-0"
+          >
+            <Dices className="size-4" />
+            Reroll
+          </Button>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -188,11 +215,30 @@ export function BestiarySimulator({
           </p>
         )}
 
+        {risks.length > 0 && (
+          <div className="space-y-1 rounded-lg border border-red-500/40 bg-red-950/20 p-3 text-sm">
+            <p className="font-medium text-red-400">
+              These fragments can match a capture of any beast, whatever this
+              roll happens to show:
+            </p>
+            {risks.map((risk) => (
+              <p key={risk.fragment} className="text-muted-foreground">
+                <code className="text-foreground font-mono">
+                  {risk.fragment}
+                </code>{" "}
+                lands in the {risk.kind}{" "}
+                <span className="text-red-300">{risk.example}</span>
+              </p>
+            ))}
+          </div>
+        )}
+
         <p className="text-muted-foreground text-sm">
-          Searched here: type name, genus, family, habitat. A captured beast
-          also carries the name the game generated for it and up to three
-          modifiers with their descriptions — those are not in this data, so a
-          pattern that looks clean here can still hit one of those in game.
+          Names and modifiers are rolled per beast, the way the game rolls them
+          on capture: a prefix and a suffix word, sometimes a title, three
+          Bestiary modifiers on a red beast and one on a yellow, plus a few
+          ordinary monster modifiers. Reroll for a different draw — the risk
+          panel above covers every draw at once.
         </p>
       </div>
 

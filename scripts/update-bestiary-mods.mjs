@@ -66,6 +66,19 @@ const file = `/**
 export const BESTIARY_MOD_TEXT: string[] = [
 ${body}
 ];
+
+/**
+ * Just the names — what a captured beast's tooltip prints in red above the
+ * ordinary monster modifiers. The simulation rolls from these.
+ */
+export const BESTIARY_MOD_NAMES: string[] = [
+${mods
+  // Only the ones the list page describes. The rest come from Cargo by id and
+  // are internal affix names ("of Beasts") the Bestiary never prints.
+  .filter((m) => m.effect)
+  .map((m) => `  ${JSON.stringify(m.name)},`)
+  .join("\n")}
+];
 `;
 
 writeFileSync(new URL("../src/lib/bestiary-mods.ts", import.meta.url), file);

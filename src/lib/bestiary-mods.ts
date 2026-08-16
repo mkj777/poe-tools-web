@@ -63,3 +63,34 @@ export const BESTIARY_MOD_TEXT: string[] = [
   "Winter Bloom",
   "Several ice flowers bloom then explode.",
 ];
+
+/**
+ * Just the names — what a captured beast's tooltip prints in red above the
+ * ordinary monster modifiers. The simulation rolls from these.
+ */
+export const BESTIARY_MOD_NAMES: string[] = [
+  "Aspect of the Hellion",
+  "Blood Geyser",
+  "Churning Claws",
+  "Craicic Presence",
+  "Crimson Flock",
+  "Crushing Claws",
+  "Deep One's Presence",
+  "Erupting Winds",
+  "Farric Presence",
+  "Fenumal Presence",
+  "Fertile Presence",
+  "Hadal Dive",
+  "Incendiary Mite",
+  "Infested Earth",
+  "Putrid Flight",
+  "Raven Caller",
+  "Saqawine Presence",
+  "Satyr Storm",
+  "Spectral Stampede",
+  "Spectral Swipe",
+  "Tiger Prey",
+  "Unstable Swarm",
+  "Vile Hatchery",
+  "Winter Bloom",
+];

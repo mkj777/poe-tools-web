@@ -9,6 +9,8 @@ import {
 } from "../src/lib/bestiary-regex.ts";
 import { BESTIARY_MOD_TEXT } from "../src/lib/bestiary-mods.ts";
 import { MONSTER_MOD_TEXT } from "../src/lib/monster-mods.ts";
+import { patternRisks } from "../src/lib/pattern-risk.ts";
+import { rollCapture } from "../src/lib/capture.ts";
 import {
   MONSTER_NAME_PREFIXES,
   MONSTER_NAME_SUFFIXES,
@@ -233,6 +235,54 @@ test("matches accented names with an ASCII pattern", () => {
   assert.equal(steps.length, 1);
   assert.match(steps[0].pattern, /^[a-z.|^]+$/);
   assert.ok(matchesBestiaryPattern(steps[0].pattern, "Black Mórrigan"));
+});
+
+test("spots a fragment that can ride on any capture", () => {
+  // "Temporarily Revives" is an ordinary rare monster mod, so "rar" can turn
+  // up on absolutely anything. This is the shape of the bug that put a 50c
+  // beast in a 2c trash pattern.
+  assert.deepEqual(patternRisks("rar"), [
+    { fragment: "rar", kind: "modifier", example: "Temporarily Revives" },
+  ]);
+  assert.deepEqual(patternRisks("^wild.hell"), []);
+});
+
+test("plans nothing that could ride on a capture", () => {
+  // The same check applied to what the planner actually emits, at every
+  // threshold: no fragment may land in a generated name or a modifier name.
+  for (const threshold of THRESHOLDS) {
+    const { wanted, unwanted } = split(threshold);
+    for (const exact of [true, false]) {
+      const plan = planBestiaryPatterns(wanted, unwanted, { exact });
+      for (const step of plan.steps) {
+        const risks = patternRisks(step.pattern);
+        assert.deepEqual(
+          risks,
+          [],
+          `${threshold}c ${exact ? "exact" : "loose"}: ${JSON.stringify(risks)}`,
+        );
+      }
+    }
+  }
+});
+
+test("rolls a capture the way the Bestiary shows one", () => {
+  const red = rollCapture(
+    { id: 1, name: "Farric Flame Hellion Alpha", rarity: "red" },
+    0,
+  );
+  const yellow = rollCapture({ id: 2, name: "Crypt Ambusher", rarity: "yellow" }, 0);
+
+  assert.equal(red.bestiaryMods.length, 3);
+  assert.equal(yellow.bestiaryMods.length, 1);
+  assert.notEqual(red.name, red.type);
+  assert.ok(red.lines.includes(red.name) && red.lines.includes(red.type));
+
+  // Same seed, same roll — a shared link shows what the sender saw.
+  assert.deepEqual(
+    rollCapture({ id: 1, name: "Farric Flame Hellion Alpha", rarity: "red" }, 0),
+    red,
+  );
 });
 
 test("names the fragment behind a match", () => {
