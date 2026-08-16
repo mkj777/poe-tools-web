@@ -94,7 +94,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         {/* Same gutter width as the logo, so the cards stay clear of the
             content column instead of covering what sits at its top right. */}
         <div
-          className="pointer-events-auto shrink-0 pr-6"
+          className="pointer-events-auto shrink-0 px-4"
           style={{ width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" }}
         >
           <ScarabPrices scarabs={scarabs} divine={divine} />

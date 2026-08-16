@@ -34,9 +34,9 @@ function Card({
 
 /**
  * What a beast run costs to set up. Scarabs are bought by the stack, so the
- * bulk figures matter more than the unit price, and the total is one full
- * setup: 20 Duplicating, 40 of the Herd, 40 Kalguuran. The divine rate rides
- * along because every larger price is quoted in it.
+ * bulk figures matter more than the unit price, and "Map" is one map's worth
+ * of them: 20 Duplicating, 40 of the Herd, 40 Kalguuran. The divine rate
+ * rides along because every larger price is quoted in it.
  */
 export function ScarabPrices({
   scarabs,
@@ -83,13 +83,13 @@ export function ScarabPrices({
             ),
           )}
 
-          {/* The whole setup costs this much, on the last card's line. */}
+          {/* What one map's worth of scarabs costs, on the last card's line. */}
           {i === scarabs.length - 1 && (
             <span
               title={composition}
               className="text-foreground flex items-center gap-1"
             >
-              Total:
+              Map
               <Price value={total} size={15} />
             </span>
           )}
