@@ -8,16 +8,15 @@ export type PatternState = SolveResponse & { pending: boolean };
 
 const IDLE: PatternState = {
   id: 0,
-  pattern: null,
-  overmatched: [],
-  missing: [],
+  steps: [],
+  unreachable: [],
   pending: true,
 };
 
 /**
- * Builds the search pattern in a worker, keeping the threshold field
- * responsive. Only the newest request counts — earlier answers are dropped, so
- * holding a key down does not paint stale patterns on the way through.
+ * Plans the searches in a worker, keeping the threshold field responsive. Only
+ * the newest request counts — earlier answers are dropped, so holding a key
+ * down does not paint stale patterns on the way through.
  */
 export function useBestiaryPattern(wanted: BeastEntry[], unwanted: BeastEntry[]) {
   const worker = useRef<Worker | null>(null);

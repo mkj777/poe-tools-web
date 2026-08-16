@@ -30,6 +30,13 @@ beast type name.
 | **Searched:** modifier descriptions, not just their names | ✅ | Test 13 |
 | `^` anchors, per line | ✅ | Test 12 |
 
+### Precision is the goal, not brevity
+
+The generator no longer trades accuracy for length. A fragment that matches
+anything outside the selection is never used; when the surviving fragments do
+not fit in 249 characters they are split across several searches, run one after
+another. Whatever no fragment can reach is named rather than swept in.
+
 ### What the generator does with that
 
 1. Fragments are cut from the beast type name, since that is what identifies it.

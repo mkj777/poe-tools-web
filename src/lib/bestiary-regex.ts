@@ -1,6 +1,9 @@
 /**
- * Builds a search string for the in-game Bestiary window that matches every
- * wanted beast and as few others as possible.
+ * Plans Bestiary searches that select exactly the beasts asked for.
+ *
+ * Precision comes first. One search cannot always be both exact and short
+ * enough, so this returns as many as it takes — every one of them matching
+ * nothing it should not.
  *
  * What the search actually does, established by in-game probing and written up
  * in docs/bestiary-search.md:
@@ -33,14 +36,6 @@ const SAFE_FRAGMENT = /^[a-z][a-z ]*[a-z]$|^[a-z]+$/;
 
 /** Characters the Bestiary search accepts before it cuts the input off. */
 export const MAX_PATTERN_LENGTH = 249;
-
-/**
- * How many unwanted beasts a single fragment may match. Every tolerance gets
- * solved and the most precise pattern that fits the budget wins — a looser
- * fragment sometimes beats a strict one outright, because it can cover a beast
- * that would otherwise fall back to a very broad word.
- */
-const TOLERANCES = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
 
 const COMBINING_MARKS = new RegExp("[\\u0300-\\u036f]", "g");
 
@@ -174,12 +169,6 @@ export function matchesBestiaryPattern(
   return pattern.split("|").some((alt) => fragmentHits(parse(alt), lines));
 }
 
-/** Longest space-free chunk of a name, used when nothing can isolate it. */
-function longestWord(name: string) {
-  const words = name.split(/[^a-z]+/).filter(Boolean);
-  return words.reduce((a, b) => (b.length >= a.length ? b : a), "") || name;
-}
-
 type Candidate = { fragment: Fragment; covers: Set<number>; hits: number };
 
 function candidatesFor(targets: string[][], avoid: string[][]) {
@@ -225,15 +214,49 @@ function candidatesFor(targets: string[][], avoid: string[][]) {
   return out;
 }
 
-/** One greedy pass, allowing fragments that match up to `tolerance` unwanted beasts. */
-function solve(
-  targets: string[][],
-  candidates: Map<string, Candidate>,
-  tolerance: number,
-) {
-  const usable = [...candidates.values()].filter((c) => c.hits <= tolerance);
+export type BestiaryStep = {
+  /** Fits the search field and matches nothing outside the wanted set. */
+  pattern: string;
+  /** The beasts this step brings up. */
+  covers: string[];
+};
+
+export type BestiaryPlan = {
+  /** Run in any order — each is exact on its own. */
+  steps: BestiaryStep[];
+  /**
+   * Beasts no fragment can single out, whatever the length budget. "Parasite"
+   * is one: its own genus line reads "Parasites", so even `^parasite` catches
+   * the cheap variants along with it.
+   */
+  unreachable: string[];
+};
+
+/**
+ * Plans an exact selection, as however many searches it takes.
+ *
+ * One pattern for everything means accepting false positives, since the field
+ * stops at 249 characters. Several searches do not: only fragments that hit
+ * nothing outside the wanted set are used, and when they no longer fit in one
+ * pattern they spill into the next. Running every step selects exactly the
+ * wanted beasts and nothing else.
+ */
+export function planBestiaryPatterns(
+  wanted: BeastEntry[],
+  unwanted: BeastEntry[],
+  maxLength = MAX_PATTERN_LENGTH,
+): BestiaryPlan {
+  const targets = wanted.map(linesOf);
+  const avoid = unwanted.map(linesOf);
+  if (targets.length === 0) return { steps: [], unreachable: [] };
+
+  // Zero false positives, no exceptions — that is the whole point.
+  const usable = [...candidatesFor(targets, avoid).values()].filter(
+    (candidate) => candidate.hits === 0,
+  );
+
   const uncovered = new Set(targets.map((_, i) => i));
-  const picked: string[] = [];
+  const picked: { fragment: string; covers: number[] }[] = [];
 
   while (uncovered.size > 0) {
     let best: Candidate | null = null;
@@ -244,70 +267,56 @@ function solve(
       for (const i of candidate.covers) if (uncovered.has(i)) gain++;
       if (gain === 0) continue;
 
-      // Most beasts per fragment, then fewest false positives, then shortest.
+      // Most beasts per fragment, shortest fragment on a tie.
       const better =
         best === null ||
         gain > bestGain ||
         (gain === bestGain &&
-          (candidate.hits < best.hits ||
-            (candidate.hits === best.hits &&
-              emit(candidate.fragment).length < emit(best.fragment).length)));
+          emit(candidate.fragment).length < emit(best.fragment).length);
       if (better) {
         best = candidate;
         bestGain = gain;
       }
     }
 
-    if (best === null) {
-      // Nothing left can isolate these, so take the longest word and accept
-      // the extras, which get reported.
-      for (const i of uncovered) picked.push(longestWord(targets[i][0]));
-      break;
+    if (best === null) break;
+
+    const covers = [...best.covers].filter((i) => uncovered.has(i));
+    for (const i of covers) uncovered.delete(i);
+    picked.push({ fragment: emit(best.fragment), covers });
+  }
+
+  // Pack the fragments into as few searches as the field allows.
+  const steps: BestiaryStep[] = [];
+  let current: { fragments: string[]; covers: number[] } | null = null;
+
+  for (const { fragment, covers } of picked) {
+    const wouldBe = current
+      ? current.fragments.join("|").length + 1 + fragment.length
+      : fragment.length;
+
+    if (current && wouldBe <= maxLength) {
+      current.fragments.push(fragment);
+      current.covers.push(...covers);
+      continue;
     }
-
-    for (const i of best.covers) uncovered.delete(i);
-    picked.push(emit(best.fragment));
+    if (current) {
+      steps.push({
+        pattern: current.fragments.join("|"),
+        covers: current.covers.map((i) => wanted[i].name),
+      });
+    }
+    current = { fragments: [fragment], covers: [...covers] };
+  }
+  if (current) {
+    steps.push({
+      pattern: current.fragments.join("|"),
+      covers: current.covers.map((i) => wanted[i].name),
+    });
   }
 
-  return picked.join("|");
-}
-
-export type BestiaryRegexResult = {
-  /** The search string, or null when nothing fits the length budget. */
-  pattern: string | null;
-  /** Beasts the pattern matches that it should not. */
-  overmatched: string[];
-};
-
-export function buildBestiaryRegex(
-  wanted: BeastEntry[],
-  unwanted: BeastEntry[],
-  maxLength = MAX_PATTERN_LENGTH,
-): BestiaryRegexResult {
-  const targets = wanted.map(linesOf);
-  const avoid = unwanted.map(linesOf);
-  if (targets.length === 0) return { pattern: null, overmatched: [] };
-
-  const candidates = candidatesFor(targets, avoid);
-  let best: BestiaryRegexResult = { pattern: null, overmatched: [] };
-
-  for (const tolerance of TOLERANCES) {
-    const pattern = solve(targets, candidates, tolerance);
-    if (pattern.length > maxLength) continue;
-
-    const overmatched = unwanted
-      .filter((entry) => matchesBestiaryPattern(pattern, linesOf(entry)))
-      .map((entry) => entry.name);
-
-    // Fewest false positives wins, shortest pattern breaks the tie.
-    const better =
-      best.pattern === null ||
-      overmatched.length < best.overmatched.length ||
-      (overmatched.length === best.overmatched.length &&
-        pattern.length < best.pattern.length);
-    if (better) best = { pattern, overmatched };
-    if (overmatched.length === 0) break;
-  }
-
-  return best;
+  return {
+    steps,
+    unreachable: [...uncovered].map((i) => wanted[i].name),
+  };
 }

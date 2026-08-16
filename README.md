@@ -10,10 +10,32 @@ generated Bestiary search pattern for the ones worth farming.
 - Lists **all** beasts for the selected league with Chaos value, Divine value,
   7-day change and listing count.
 - Sort by any column, search by beast name, genus or habitat.
-- **Min chaos filter** — hide everything below a threshold.
-- **Bestiary regex** — a search pattern matching the beasts above that
-  threshold, ready to paste into the in-game Bestiary window, plus the inverse
-  pattern for everything below it.
+- **Trash / Sell switch** with a chaos threshold — select everything under it,
+  or everything from it up.
+- **Bestiary searches** for that selection, ready to paste into the in-game
+  Bestiary window.
+
+## Precision over brevity
+
+One pattern for a large selection cannot be exact: the search field stops at
+249 characters, so something has to give, and what gives is that a few beasts
+you wanted to keep come along.
+
+This does the opposite. Only fragments that match **nothing** outside the
+selection are used, and when they no longer fit in one pattern they spill into
+the next. Run every search and you have selected exactly the beasts you asked
+for — three searches instead of one, but no beast lost by accident.
+
+| Threshold | Sell | Trash |
+| --- | --- | --- |
+| 1c | 202 beasts, 2 searches | 16 beasts, 1 search |
+| 3c | 183 beasts, 3 searches | 35 beasts, 1 search |
+| 20c | 16 beasts, 1 search | 202 beasts, 3 searches |
+| 150c | 5 beasts, 1 search | 213 beasts, 2 searches |
+
+A handful can never be singled out — "Parasite" sits inside its own genus line
+"Parasites", so no fragment reaches it alone. Those are named so you can handle
+them by hand, rather than silently dragged in.
 
 ## Data
 
