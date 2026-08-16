@@ -52,7 +52,7 @@ export function ScarabPrices({
 
   return (
     <div className="flex flex-col items-stretch gap-2">
-      {scarabs.map((scarab) => (
+      {scarabs.map((scarab, i) => (
         <Card
           key={scarab.id}
           name={scarab.name}
@@ -76,20 +76,25 @@ export function ScarabPrices({
                 className="text-foreground"
               />
             ) : (
-              <span key={count} className="flex items-center gap-1">
+              <span key={count} className="flex items-center">
                 {count}×
                 <Price value={scarab.chaosValue * count} size={15} />
               </span>
             ),
           )}
+
+          {/* The whole setup costs this much, on the last card's line. */}
+          {i === scarabs.length - 1 && (
+            <span
+              title={composition}
+              className="text-foreground flex items-center gap-1"
+            >
+              Total:
+              <Price value={total} size={15} />
+            </span>
+          )}
         </Card>
       ))}
-
-      {scarabs.length > 0 && (
-        <Card name="Total" title={composition}>
-          <Price value={total} size={15} className="text-foreground" />
-        </Card>
-      )}
 
       {divine !== undefined && (
         <Card
