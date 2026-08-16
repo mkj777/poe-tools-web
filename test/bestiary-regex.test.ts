@@ -7,6 +7,7 @@ import {
   MAX_PATTERN_LENGTH,
 } from "../src/lib/bestiary-regex.ts";
 import { BESTIARY_MOD_TEXT } from "../src/lib/bestiary-mods.ts";
+import { MONSTER_MOD_TEXT } from "../src/lib/monster-mods.ts";
 import {
   MONSTER_NAME_PREFIXES,
   MONSTER_NAME_SUFFIXES,
@@ -137,6 +138,45 @@ test("never builds on text a modifier also carries", () => {
         assert.ok(
           !matchesBestiaryPattern(step.pattern, mod),
           `${threshold}c hits modifier text "${mod}": ${step.pattern}`,
+        );
+      }
+    }
+  }
+});
+
+test("never builds on text a generic monster modifier carries", () => {
+  // Not just the Bestiary modifiers: a captured beast rolls ordinary rare
+  // monster mods too, and the Bestiary prints those as well. "Wild Hellion
+  // Alpha" — 50c — came back for a trash pattern built at 2c, and its row
+  // showed Stonemaul, Soul Eater and Life Cannot Be Leeched.
+  for (const threshold of [2, 4, 20, 150]) {
+    const { wanted, unwanted } = split(threshold);
+    const { steps } = planBestiaryPatterns(wanted, unwanted);
+
+    for (const step of steps) {
+      for (const mod of MONSTER_MOD_TEXT) {
+        assert.ok(
+          !matchesBestiaryPattern(step.pattern, mod),
+          `${threshold}c hits monster modifier text "${mod}": ${step.pattern}`,
+        );
+      }
+    }
+  }
+});
+
+test("keeps unanchored fragments long enough to miss prose", () => {
+  // No list of modifier text is ever complete, so a fragment free to land
+  // anywhere has to be long: "rar" sits inside "Rare pack minions", "c.ly"
+  // inside "quickly". Anchored ones only meet the start of a line and may be
+  // shorter.
+  for (const threshold of THRESHOLDS) {
+    const { wanted, unwanted } = split(threshold);
+    for (const step of planBestiaryPatterns(wanted, unwanted).steps) {
+      for (const alternative of step.pattern.split("|")) {
+        if (alternative.startsWith("^")) continue;
+        assert.ok(
+          alternative.length >= 6,
+          `${threshold}c: unanchored "${alternative}" is too short`,
         );
       }
     }

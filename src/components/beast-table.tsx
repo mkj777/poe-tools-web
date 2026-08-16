@@ -160,14 +160,16 @@ function BestiaryRegex({
       lines: (b.baseType ?? "").split("|").filter(Boolean),
     });
 
+    // Beasts nobody has a listing for are out of the picture entirely: the
+    // game does not hand them out, so no search can turn one up and there is
+    // nothing to protect them from.
     const priced = beasts.filter((b) => b.chaosValue !== undefined);
     const sell = priced.filter((b) => b.chaosValue! >= threshold);
     const trash = priced.filter((b) => b.chaosValue! < threshold);
-    const unpriced = beasts.filter((b) => b.chaosValue === undefined);
 
     return mode === "sell"
-      ? { wanted: sell.map(entry), unwanted: [...trash, ...unpriced].map(entry) }
-      : { wanted: trash.map(entry), unwanted: [...sell, ...unpriced].map(entry) };
+      ? { wanted: sell.map(entry), unwanted: trash.map(entry) }
+      : { wanted: trash.map(entry), unwanted: sell.map(entry) };
   }, [beasts, threshold, mode]);
 
   const { steps, unreachable, pending } = useBestiaryPattern(wanted, unwanted);
@@ -280,13 +282,13 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
               takes, none of which touches anything outside the selection.
             </p>
             <p>
-              The search reads more than the type name: genus, family, the
-              up-to-three modifiers a beast carries and their descriptions, plus
-              the generated name it was captured under. Fragments that could
-              land in any of those are refused — otherwise <code>far</code>{" "}
-              would drag in everything holding &ldquo;Farric Presence&rdquo;,
-              and a short one could hide inside any of the 35,237 names the game
-              can spell.
+              The search reads more than the type name: genus, family, every
+              modifier the beast rolled — Bestiary ones and ordinary rare
+              monster ones — with their descriptions, plus the generated name it
+              was captured under. Fragments that could land in any of those are
+              refused, and an unanchored one has to be at least six characters,
+              because no list of modifier text is ever complete and something
+              like <code>rar</code> sits inside &ldquo;Rare pack minions&rdquo;.
             </p>
             <p>
               Built from {beasts.length} beasts, {fromNinja} of them with

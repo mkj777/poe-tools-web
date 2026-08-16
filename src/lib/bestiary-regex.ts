@@ -22,13 +22,22 @@
 
 // Explicit extension: Node's test runner resolves this file directly.
 import { BESTIARY_MOD_TEXT } from "./bestiary-mods.ts";
+import { MONSTER_MOD_TEXT } from "./monster-mods.ts";
 import {
   MONSTER_NAME_PREFIXES,
   MONSTER_NAME_SUFFIXES,
   MONSTER_NAME_TITLES,
 } from "./monster-words.ts";
 
-const MIN_FRAGMENT = 3;
+/**
+ * An anchored fragment only has to clear the handful of strings a line can
+ * begin with. A free one can land anywhere in a modifier description, and no
+ * list of those is ever complete — "Wild Hellion Alpha" came back for a
+ * pattern none of its known text matches — so free fragments have to be long
+ * enough that stumbling into English prose is unlikely.
+ */
+const MIN_ANCHORED_FRAGMENT = 3;
+const MIN_FREE_FRAGMENT = 6;
 const MAX_FRAGMENT = 14;
 
 /** Letters, and word breaks that leave as a `.` wildcard. */
@@ -60,7 +69,7 @@ const linesOf = (entry: BeastEntry) =>
  * matches beasts at random — `far` catches everything holding "Farric
  * Presence" — so it is never usable.
  */
-const MOD_LINES = BESTIARY_MOD_TEXT.map(normalize);
+const MOD_LINES = [...BESTIARY_MOD_TEXT, ...MONSTER_MOD_TEXT].map(normalize);
 
 /** `fragment` may contain ' ' as the `.` wildcard, matching any character. */
 function containedIn(fragment: string, line: string) {
@@ -198,13 +207,14 @@ function candidatesFor(targets: string[][], avoid: string[][]) {
 
   for (const lines of targets) {
     const name = lines[0];
-    for (let len = MIN_FRAGMENT; len <= MAX_FRAGMENT; len++) {
+    for (let len = MIN_ANCHORED_FRAGMENT; len <= MAX_FRAGMENT; len++) {
       // Anchored: bound to the start of a line, which rules out mid-word
       // collisions and costs a single character.
       if (len <= name.length) {
         const prefix = name.slice(0, len);
         if (SAFE_FRAGMENT.test(prefix)) consider({ body: prefix, anchored: true });
       }
+      if (len < MIN_FREE_FRAGMENT) continue;
       for (let i = 0; i + len <= name.length; i++) {
         const body = name.slice(i, i + len);
         if (SAFE_FRAGMENT.test(body)) consider({ body, anchored: false });

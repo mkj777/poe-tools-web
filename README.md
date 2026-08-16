@@ -33,10 +33,10 @@ for — three searches instead of one, but no beast lost by accident.
 
 | Threshold | Sell | Trash |
 | --- | --- | --- |
-| 1c | 202 beasts, 2 searches | 16 beasts, 1 search |
-| 3c | 183 beasts, 3 searches | 35 beasts, 1 search |
-| 20c | 16 beasts, 1 search | 202 beasts, 3 searches |
-| 150c | 5 beasts, 1 search | 213 beasts, 2 searches |
+| 1c | 202 beasts, 3 searches | 16 beasts, 1 search |
+| 3c | 183 beasts, 4 searches | 35 beasts, 1 search |
+| 20c | 16 beasts, 1 search | 202 beasts, 4 searches |
+| 150c | 5 beasts, 1 search | 213 beasts, 3 searches |
 
 A handful can never be singled out — "Parasite" sits inside its own genus line
 "Parasites", so no fragment reaches it alone. Those are named so you can handle
@@ -96,61 +96,60 @@ Two things that bit us and are now guarded:
 
 ## The Bestiary regex
 
-The in-game search is a case-insensitive regex over the beast name, so the
-generated pattern is an alternation of short name fragments:
+The in-game search is plain case-insensitive substring matching with `|` and
+`.` support, so a pattern is an alternation of short name fragments:
 
 ```
-wild.b|k.m|cry|cys|l.pl|grav|e.pl|ushc|man.f|numus|vid.v|and.sk|icic.cro|ild.hell|parasite
+wine.r|rric.g|cic.sa|rric.f|umal.s|wine.c|rric.w|rric.l|wine.v|icic.m|rric.m
 ```
 
-Each fragment is chosen so it appears in **no** beast below the threshold.
+Each fragment is chosen so it appears in **no** beast outside the selection.
 Picking the smallest such set is set cover, so `src/lib/bestiary-regex.ts` uses
 the greedy approximation: repeatedly take the fragment covering the most
-still-uncovered beasts.
+still-uncovered beasts, then pack the results into 249-character searches.
 
-A second pattern below it does the inverse — everything *under* the threshold,
-for clearing out the cheap ones.
+### What the search reads is not just the name
 
-### The search is not a substring search
+A Bestiary row is several lines, and every one of them is searchable: the beast
+type name, its genus, family and habitat, the name the game generated for that
+capture, and every modifier it rolled — names *and* descriptions.
 
-Two rounds of in-game testing turned up beasts that came back for patterns they
-share no substring with:
+That is where false positives come from, and one got through: a trash pattern
+built at 2c brought up Wild Hellion Alpha, worth 50c, because a fragment landed
+somewhere in its modifier text. So three corpora are off limits to fragments:
 
-| Pattern contained | Beast that came back |
-| --- | --- |
-| `l p` | Sulphuric Scorpion, Scum Crawler |
-| `fir`, `ris` | Farric Ursa, Farric Lynx Alpha |
+| Corpus | Size | Source |
+| --- | --- | --- |
+| Bestiary modifiers, names and effects | 28 | `pnpm mods:update` |
+| Generic rare monster modifiers | 224 | `pnpm mods:monsters` |
+| Words a generated name can be built from | 35,237 combinations | `pnpm words:update` |
 
-Checked against all 218 names, one reading explains every one of them:
-**the field matches subsequences.** The characters have to appear in order, but
-not next to each other — `ris` is in "fa**r**r**i**c ur**s**a", `fir` is in
-"**f**arr**i**c u**r**sa".
+No list of modifier text is ever complete, though, so length carries the rest
+of the weight: an **unanchored fragment must be at least six characters**,
+since something like `rar` sits inside "Rare pack minions" and is a coin flip
+against English prose. Anchored fragments (`^wild.hel`) may be shorter — `^`
+binds to the start of a line, so they only ever meet the first characters of a
+name, a genus or a modifier.
 
-So a fragment counts as unsafe if it hits an unwanted beast *either* way,
-substring or subsequence. That holds whichever the game actually does, and it
-costs little: the 4c pattern went from 92 to 138 characters, still well inside
-the budget. A literal space is never emitted either — word breaks travel as a
-`.` wildcard.
+A literal space is never emitted either: word breaks travel as a `.` wildcard,
+because the field does not treat a space as a plain character.
 
-`matchesBestiaryPattern()` implements that combined reading, and both the UI
-warnings and the tests are measured against it rather than against
-`RegExp.test`.
+`matchesBestiaryPattern()` implements this reading, and the UI warnings and the
+tests are measured against it rather than against `RegExp.test`.
+
+Every probe behind the model, including the ones that disproved earlier
+theories, is written up in [docs/bestiary-search.md](docs/bestiary-search.md).
 
 ### The length budget
 
 The search field takes **249 characters**, and a truncated pattern silently
-matches the wrong beasts, so the generator never emits one that does not fit.
-If nothing fits, it says so instead of handing over something broken.
+matches the wrong beasts, so a pattern is never emitted that does not fit.
+Fragments that no longer fit spill into the next search instead.
 
-Precision is what gets traded for length. Fragments are scored by how many
-*unwanted* beasts they also match, and the solver runs the whole range from
-"no false positives allowed" to "quite permissive", keeping the most precise
-pattern that fits. Looser is not simply worse: a permissive fragment sometimes
-covers a beast that would otherwise force a very broad fallback word.
-
-When a wanted name is fully contained in a cheaper one (`Parasite` inside
-`Plated Parasite`), no fragment can separate them at all. The pattern keeps the
-wanted beast and the UI names the extras you will also see.
+When a wanted name is fully contained in another (`Parasite` inside `Plated
+Parasite`, `Goatman` inside `Goatman Fire-raiser`), no fragment can separate
+them, and no number of extra searches helps — a search that finds the one finds
+the other. Those beasts are named as unreachable rather than quietly dragged in.
 
 ## Development
 
@@ -162,6 +161,7 @@ pnpm build
 
 pnpm prices:snapshot            # refresh the committed price fallback (~1 h)
 pnpm mods:update                # re-scrape the Bestiary modifier list
+pnpm mods:monsters              # re-scrape the generic monster modifier list
 pnpm rarity:update              # re-derive which beasts are red
 pnpm words:update <words.json>  # re-import the name pool from a Words.dat export
 ```

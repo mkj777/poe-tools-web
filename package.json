@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "node --test \"test/**/*.test.ts\"",
     "mods:update": "node scripts/update-bestiary-mods.mjs",
+    "mods:monsters": "node scripts/update-monster-mods.mjs",
     "words:update": "node scripts/update-monster-words.mjs",
     "rarity:update": "node scripts/update-beast-rarity.mjs",
     "prices:snapshot": "node scripts/fetch-trade-prices.mjs"

@@ -28,6 +28,8 @@ beast type name.
 | **Searched:** modifier names and descriptions | ✅ | Tests 7, 10 |
 | **Searched:** the generated per-capture name | ✅ | Test 10 |
 | **Searched:** modifier descriptions, not just their names | ✅ | Test 13 |
+| **Searched:** generic rare monster mods, not only Bestiary ones | ✅ | Test 14 |
+| **Searched:** text we still cannot enumerate | ⚠️ | Test 14 — a pattern matched a row none of its known strings explain |
 | `^` anchors, per line | ✅ | Test 12 |
 
 ### Precision is the goal, not brevity
@@ -242,6 +244,54 @@ in an anchored form for one extra character.
 
 → Not just modifier names — their descriptions too. The ban list already
 carries both.
+
+### Test 14 — a false positive the model did not predict
+
+**Search** (trash, threshold 2c, step 1 of 1):
+
+```
+cic.s|ric.g|wine.r|ric.f|umal.s|wine.c|rar|c.va|c.wo|c.ly|e.vu|ex.m|ne.b|mal.h|mal.d|cic.m|c.pit|ic.ap|c.mag|cic.w|mal.q|c.tau|mal.w|c.chi|rric.u
+```
+
+**Observed:** Wild Hellion Alpha — worth 50c, so squarely in the keep set —
+came back. Its row showed Stonemaul, Aspect of the Hellion, Satyr Storm,
+Spectral Swipe, Soul Eater, Life cannot be leeched.
+
+Checked every fragment against every string of that row — name, genus, family,
+habitat, all six modifier names, and the descriptions we hold for the three
+Bestiary ones. **None of them matches**, under substring, under subsequence,
+under a `.`-as-glob reading, and against the row concatenated into one string.
+So the matching text is something the row carries that is not written down
+here — almost certainly the description of one of the modifiers we have no
+text for.
+
+Two of those, Soul Eater and Life cannot be leeched, are not Bestiary
+modifiers at all: they are ordinary rare monster mods. That was the gap. The
+ban list held 28 Bestiary modifiers and nothing else, while a captured beast
+also rolls from the generic monster pool, which the wiki lists as 224 mods with
+their effect text — `rar` alone sits inside "Rare pack minions are replaced
+with Saplings" and "Rare Minions create Frost Beacons on Death".
+
+**Changed as a result:**
+
+- `src/lib/monster-mods.ts` (352 lines, `pnpm mods:monsters`) joins the ban
+  list, so no fragment may appear in generic monster modifier text either.
+- Unanchored fragments must now be at least **6 characters**. No list of
+  modifier text can ever be complete, and a three-character fragment like `rar`
+  is a coin flip against English prose. Anchored fragments may stay short —
+  they only ever meet the start of a line.
+- Cost, measured on the 218-beast fixture: trash at 4c goes from 3 searches to
+  4. Nothing else moves.
+
+**Still open — which fragment actually matched?** Bisecting it in game would
+settle whether the leak was prose (`rar`, `c.ly`) or something structural.
+Paste these one at a time and note whether Wild Hellion Alpha appears:
+
+| Probe | Half it clears |
+| --- | --- |
+| `cic.s\|ric.g\|wine.r\|ric.f\|umal.s\|wine.c\|rar\|c.va\|c.wo\|c.ly\|e.vu\|ex.m` | first twelve |
+| `ne.b\|mal.h\|mal.d\|cic.m\|c.pit\|ic.ap\|c.mag\|cic.w\|mal.q\|c.tau\|mal.w\|c.chi\|rric.u` | last thirteen |
+| `rar` | the prime suspect on its own |
 
 ---
 
