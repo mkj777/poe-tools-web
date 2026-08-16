@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   matchesBestiaryPattern,
+  matchingFragments,
   planBestiaryPatterns,
   MAX_PATTERN_LENGTH,
 } from "../src/lib/bestiary-regex.ts";
@@ -234,6 +235,15 @@ test("matches accented names with an ASCII pattern", () => {
   assert.ok(matchesBestiaryPattern(steps[0].pattern, "Black Mórrigan"));
 });
 
+test("names the fragment behind a match", () => {
+  const hits = matchingFragments("^craicic|arasite", [
+    "Plated Parasite",
+    "Parasites",
+    "Insects",
+  ]);
+  assert.deepEqual(hits, [{ fragment: "arasite", line: "Plated Parasite" }]);
+});
+
 for (const threshold of THRESHOLDS) {
   test(`selling at ${threshold}c is exact`, () => {
     const { wanted, unwanted } = split(threshold);
@@ -243,5 +253,40 @@ for (const threshold of THRESHOLDS) {
   test(`trashing under ${threshold}c is exact`, () => {
     const { wanted, unwanted } = split(threshold);
     assertExact(`${threshold}c trash`, unwanted, wanted);
+  });
+
+  test(`trashing under ${threshold}c never shows a dearer beast`, () => {
+    // The mode is destructive: this is the guarantee the whole thing rests on.
+    const { wanted, unwanted } = split(threshold);
+    const plan = planBestiaryPatterns(unwanted, wanted, { exact: true });
+    assert.deepEqual(plan.falsePositives, []);
+  });
+
+  test(`selling at ${threshold}c leaves nobody behind`, () => {
+    // The opposite trade: every valuable beast has to be in the list, and the
+    // cheap ones that come along are named rather than avoided.
+    const { wanted, unwanted } = split(threshold);
+    const plan = planBestiaryPatterns(wanted, unwanted, { exact: false });
+
+    assert.deepEqual(plan.unreachable, [], `${threshold}c sell: unreachable`);
+
+    const missed = wanted
+      .map((e) => e.name)
+      .filter(
+        (name, i) =>
+          !plan.steps.some((s) =>
+            matchesBestiaryPattern(s.pattern, rowOf(wanted[i])),
+          ) && name,
+      );
+    assert.deepEqual(missed, [], `${threshold}c sell dropped: ${missed}`);
+
+    const strays = unwanted
+      .filter((e) => plan.steps.some((s) => matchesBestiaryPattern(s.pattern, rowOf(e))))
+      .map((e) => e.name);
+    assert.deepEqual(
+      strays.filter((name) => !plan.falsePositives.includes(name)),
+      [],
+      `${threshold}c sell: unannounced extras`,
+    );
   });
 }

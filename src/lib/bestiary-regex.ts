@@ -178,7 +178,30 @@ export function matchesBestiaryPattern(
   return pattern.split("|").some((alt) => fragmentHits(parse(alt), lines));
 }
 
-type Candidate = { fragment: Fragment; covers: Set<number>; hits: number };
+/**
+ * Which alternatives of a pattern hit this beast, and on which line. What the
+ * simulator shows so a surprise match can be traced to the fragment that
+ * caused it rather than guessed at.
+ */
+export function matchingFragments(pattern: string, beast: string[]) {
+  const lines = beast.map(normalize);
+  const out: { fragment: string; line: string }[] = [];
+
+  for (const alternative of pattern.split("|")) {
+    if (!alternative) continue;
+    const fragment = parse(alternative);
+    const i = lines.findIndex((line) => fragmentHits(fragment, [line]));
+    if (i !== -1) out.push({ fragment: alternative, line: beast[i] });
+  }
+  return out;
+}
+
+type Candidate = {
+  fragment: Fragment;
+  covers: Set<number>;
+  /** Which of the unwanted beasts this fragment also brings up. */
+  hits: Set<number>;
+};
 
 function candidatesFor(targets: string[][], avoid: string[][]) {
   const out = new Map<string, Candidate>();
@@ -198,10 +221,10 @@ function candidatesFor(targets: string[][], avoid: string[][]) {
     });
     if (covers.size === 0) return;
 
-    const hits = avoid.reduce(
-      (n, lines) => (fragmentHits(fragment, lines) ? n + 1 : n),
-      0,
-    );
+    const hits = new Set<number>();
+    avoid.forEach((lines, i) => {
+      if (fragmentHits(fragment, lines)) hits.add(i);
+    });
     out.set(key, { fragment, covers, hits });
   };
 
@@ -225,21 +248,41 @@ function candidatesFor(targets: string[][], avoid: string[][]) {
 }
 
 export type BestiaryStep = {
-  /** Fits the search field and matches nothing outside the wanted set. */
+  /** Fits the search field. */
   pattern: string;
-  /** The beasts this step brings up. */
+  /** The wanted beasts this step brings up. */
   covers: string[];
+  /** Unwanted beasts it brings up too — always empty when exact. */
+  extras: string[];
 };
 
 export type BestiaryPlan = {
-  /** Run in any order — each is exact on its own. */
+  /** Run in any order. */
   steps: BestiaryStep[];
   /**
-   * Beasts no fragment can single out, whatever the length budget. "Parasite"
-   * is one: its own genus line reads "Parasites", so even `^parasite` catches
-   * the cheap variants along with it.
+   * Beasts no fragment can single out, whatever the length budget. "Goatman"
+   * is one: every search that finds it finds "Goatman Fire-raiser" too, so no
+   * number of extra steps helps. Only ever filled when exactness is demanded.
    */
   unreachable: string[];
+  /** Every unwanted beast the plan brings along, across all steps. */
+  falsePositives: string[];
+};
+
+export type PlanOptions = {
+  maxLength?: number;
+  /**
+   * What the two modes are actually for.
+   *
+   * Trashing is destructive: a pattern that shows one expensive beast among
+   * the junk gets it thrown away, so nothing outside the selection may match,
+   * even at the cost of more searches or of leaving a beast out.
+   *
+   * Selling is not: the point is to have every valuable beast in front of you,
+   * and a cheap one riding along costs nothing. There precision gives way to
+   * coverage — every wanted beast is selected, and the extras are named.
+   */
+  exact?: boolean;
 };
 
 /**
@@ -254,22 +297,26 @@ export type BestiaryPlan = {
 export function planBestiaryPatterns(
   wanted: BeastEntry[],
   unwanted: BeastEntry[],
-  maxLength = MAX_PATTERN_LENGTH,
+  { maxLength = MAX_PATTERN_LENGTH, exact = true }: PlanOptions = {},
 ): BestiaryPlan {
   const targets = wanted.map(linesOf);
   const avoid = unwanted.map(linesOf);
-  if (targets.length === 0) return { steps: [], unreachable: [] };
+  if (targets.length === 0) {
+    return { steps: [], unreachable: [], falsePositives: [] };
+  }
 
-  // Zero false positives, no exceptions — that is the whole point.
-  const usable = [...candidatesFor(targets, avoid).values()].filter(
-    (candidate) => candidate.hits === 0,
-  );
+  const all = [...candidatesFor(targets, avoid).values()];
+  // Exact: zero false positives, no exceptions. Otherwise a fragment may drag
+  // unwanted beasts along, it just has to earn them.
+  const usable = exact ? all.filter((c) => c.hits.size === 0) : all;
 
   const uncovered = new Set(targets.map((_, i) => i));
-  const picked: { fragment: string; covers: number[] }[] = [];
+  const picked: { fragment: string; covers: number[]; extras: number[] }[] = [];
+  const dragged = new Set<number>();
 
   while (uncovered.size > 0) {
     let best: Candidate | null = null;
+    let bestScore = -Infinity;
     let bestGain = 0;
 
     for (const candidate of usable) {
@@ -277,14 +324,22 @@ export function planBestiaryPatterns(
       for (const i of candidate.covers) if (uncovered.has(i)) gain++;
       if (gain === 0) continue;
 
-      // Most beasts per fragment, shortest fragment on a tie.
+      // Beasts already dragged in cost nothing a second time.
+      let cost = 0;
+      for (const i of candidate.hits) if (!dragged.has(i)) cost++;
+
+      // Most beasts per fragment, fewest newcomers, shortest on a tie.
+      const score = gain - cost;
       const better =
         best === null ||
-        gain > bestGain ||
-        (gain === bestGain &&
-          emit(candidate.fragment).length < emit(best.fragment).length);
+        score > bestScore ||
+        (score === bestScore &&
+          (gain > bestGain ||
+            (gain === bestGain &&
+              emit(candidate.fragment).length < emit(best.fragment).length)));
       if (better) {
         best = candidate;
+        bestScore = score;
         bestGain = gain;
       }
     }
@@ -292,15 +347,25 @@ export function planBestiaryPatterns(
     if (best === null) break;
 
     const covers = [...best.covers].filter((i) => uncovered.has(i));
+    const extras = [...best.hits].filter((i) => !dragged.has(i));
     for (const i of covers) uncovered.delete(i);
-    picked.push({ fragment: emit(best.fragment), covers });
+    for (const i of extras) dragged.add(i);
+    picked.push({ fragment: emit(best.fragment), covers, extras });
   }
 
   // Pack the fragments into as few searches as the field allows.
   const steps: BestiaryStep[] = [];
-  let current: { fragments: string[]; covers: number[] } | null = null;
+  let current: { fragments: string[]; covers: number[]; extras: number[] } | null =
+    null;
 
-  for (const { fragment, covers } of picked) {
+  const close = (open: NonNullable<typeof current>) =>
+    steps.push({
+      pattern: open.fragments.join("|"),
+      covers: open.covers.map((i) => wanted[i].name),
+      extras: open.extras.map((i) => unwanted[i].name),
+    });
+
+  for (const { fragment, covers, extras } of picked) {
     const wouldBe = current
       ? current.fragments.join("|").length + 1 + fragment.length
       : fragment.length;
@@ -308,25 +373,17 @@ export function planBestiaryPatterns(
     if (current && wouldBe <= maxLength) {
       current.fragments.push(fragment);
       current.covers.push(...covers);
+      current.extras.push(...extras);
       continue;
     }
-    if (current) {
-      steps.push({
-        pattern: current.fragments.join("|"),
-        covers: current.covers.map((i) => wanted[i].name),
-      });
-    }
-    current = { fragments: [fragment], covers: [...covers] };
+    if (current) close(current);
+    current = { fragments: [fragment], covers: [...covers], extras: [...extras] };
   }
-  if (current) {
-    steps.push({
-      pattern: current.fragments.join("|"),
-      covers: current.covers.map((i) => wanted[i].name),
-    });
-  }
+  if (current) close(current);
 
   return {
     steps,
     unreachable: [...uncovered].map((i) => wanted[i].name),
+    falsePositives: [...dragged].map((i) => unwanted[i].name),
   };
 }

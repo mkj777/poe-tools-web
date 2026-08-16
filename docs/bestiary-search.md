@@ -295,6 +295,19 @@ Paste these one at a time and note whether Wild Hellion Alpha appears:
 
 ---
 
+## Simulating the window instead of guessing
+
+`/simulation` holds every beast with a listing, with the lines this model says
+the search reads, and applies a pasted pattern the way `matchesBestiaryPattern`
+does. Each tile shows the price and the fragment that matched, so a probe can
+be checked against the model before it is checked against the game — and, more
+useful, the two can be compared. Where the simulation shows a beast the game
+does not, or the game shows one the simulation does not, the model is wrong and
+the difference says where.
+
+The simulation cannot know the two lines that vary per capture: the generated
+name and the modifiers rolled. Test 14 is exactly that gap.
+
 ## Open questions, and the probes that would settle them
 
 Run one at a time in the Bestiary search, note everything that appears.

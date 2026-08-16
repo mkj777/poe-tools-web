@@ -19,28 +19,32 @@ generated Bestiary search pattern for the ones worth farming.
   or everything from it up.
 - **Bestiary searches** for that selection, ready to paste into the in-game
   Bestiary window.
+- **Simulation**: the same beasts in a mock Bestiary window, where a pattern
+  can be tried out with every price on screen before anything is released.
 
-## Precision over brevity
+## The two modes want opposite things
 
-One pattern for a large selection cannot be exact: the search field stops at
-249 characters, so something has to give, and what gives is that a few beasts
-you wanted to keep come along.
+Trashing is destructive. A pattern that shows one expensive beast among the
+junk gets it released at the altar, so **no search may ever show a beast above
+the threshold** — whatever that costs in extra searches, and even if a beast
+has to be left out because nothing can single it out.
 
-This does the opposite. Only fragments that match **nothing** outside the
-selection are used, and when they no longer fit in one pattern they spill into
-the next. Run every search and you have selected exactly the beasts you asked
-for — three searches instead of one, but no beast lost by accident.
+Selling is not destructive. The point is to have every valuable beast in front
+of you, and a 1c beast in that list costs nothing. So coverage wins: **every
+beast above the threshold is selected**, in as few searches as possible, and
+the cheap ones that ride along are named rather than avoided.
 
-| Threshold | Sell | Trash |
+| Threshold | Sell — coverage first | Trash — precision first |
 | --- | --- | --- |
-| 1c | 202 beasts, 3 searches | 16 beasts, 1 search |
-| 3c | 183 beasts, 4 searches | 35 beasts, 1 search |
-| 20c | 16 beasts, 1 search | 202 beasts, 4 searches |
-| 150c | 5 beasts, 1 search | 213 beasts, 3 searches |
+| 1c | 202 beasts, 2 searches, 12 extras | 16 beasts, 1 search |
+| 2c | 185 beasts, 2 searches, 24 extras | 33 beasts, 1 search |
+| 4c | 32 beasts, 1 search, 3 extras | 186 beasts, 4 searches, 3 left out |
+| 20c | 16 beasts, 1 search, 4 extras | 202 beasts, 4 searches, 2 left out |
 
-A handful can never be singled out — "Parasite" sits inside its own genus line
-"Parasites", so no fragment reaches it alone. Those are named so you can handle
-them by hand, rather than silently dragged in.
+"Left out" is not a shortfall in the budget. "Goatman" sits inside "Goatman
+Fire-raiser", so every search that finds the one finds the other, and no number
+of extra searches changes that. Those beasts are named so they can be handled
+by hand.
 
 ## Data
 
@@ -139,6 +143,21 @@ tests are measured against it rather than against `RegExp.test`.
 
 Every probe behind the model, including the ones that disproved earlier
 theories, is written up in [docs/bestiary-search.md](docs/bestiary-search.md).
+
+### Trying a pattern without the game
+
+`/simulation` is that model made visible: every beast with a listing, the lines
+the search reads, and a field to paste a pattern into. What comes back is what
+the Bestiary would show — except each tile carries the beast's price and the
+fragment that matched it, so a trash pattern that turns up something expensive
+is visible before the beast is released rather than after. Set the warning line
+to the threshold and any match at or above it turns red.
+
+It only knows the lines this project can enumerate. A captured beast also
+carries its generated name and its modifiers, and that is exactly where the
+last surprise came from, so a clean simulation is necessary rather than
+sufficient — and a disagreement between it and the game is the most useful bug
+report there is.
 
 ### The length budget
 

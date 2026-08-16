@@ -17,12 +17,14 @@ export type SolveRequest = {
   id: number;
   wanted: BeastEntry[];
   unwanted: BeastEntry[];
+  /** Trashing demands it; selling trades it for coverage. */
+  exact: boolean;
 };
 
 export type SolveResponse = BestiaryPlan & { id: number };
 
 self.onmessage = ({ data }: MessageEvent<SolveRequest>) => {
-  const { id, wanted, unwanted } = data;
-  const plan = planBestiaryPatterns(wanted, unwanted);
+  const { id, wanted, unwanted, exact } = data;
+  const plan = planBestiaryPatterns(wanted, unwanted, { exact });
   self.postMessage({ id, ...plan } satisfies SolveResponse);
 };

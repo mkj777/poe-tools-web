@@ -10,6 +10,7 @@ const IDLE: PatternState = {
   id: 0,
   steps: [],
   unreachable: [],
+  falsePositives: [],
   pending: true,
 };
 
@@ -18,7 +19,11 @@ const IDLE: PatternState = {
  * the newest request counts — earlier answers are dropped, so holding a key
  * down does not paint stale patterns on the way through.
  */
-export function useBestiaryPattern(wanted: BeastEntry[], unwanted: BeastEntry[]) {
+export function useBestiaryPattern(
+  wanted: BeastEntry[],
+  unwanted: BeastEntry[],
+  exact: boolean,
+) {
   const worker = useRef<Worker | null>(null);
   const latest = useRef(0);
   const [state, setState] = useState<PatternState>(IDLE);
@@ -43,8 +48,13 @@ export function useBestiaryPattern(wanted: BeastEntry[], unwanted: BeastEntry[])
     if (!worker.current) return;
     const id = ++latest.current;
     setState((previous) => ({ ...previous, pending: true }));
-    worker.current.postMessage({ id, wanted, unwanted } satisfies SolveRequest);
-  }, [wanted, unwanted]);
+    worker.current.postMessage({
+      id,
+      wanted,
+      unwanted,
+      exact,
+    } satisfies SolveRequest);
+  }, [wanted, unwanted, exact]);
 
   return state;
 }

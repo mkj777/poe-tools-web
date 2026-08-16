@@ -1,17 +1,10 @@
 import Image from "next/image";
-import {
-  getAllBeastNames,
-  getBeasts,
-  getDivinePrice,
-  getLeagues,
-  getScarabPrices,
-  type Beast,
-} from "@/lib/ninja";
-import { getTradePrices } from "@/lib/trade-prices";
-import { rarityOf } from "@/lib/beast-rarity";
+import { getDivinePrice, getLeagues, getScarabPrices } from "@/lib/ninja";
+import { loadBeasts } from "@/lib/beasts";
 import { BeastTable } from "@/components/beast-table";
 import { LeagueSelect } from "@/components/league-select";
 import { ScarabPrices } from "@/components/scarab-prices";
+import { SimulationLink } from "@/components/simulation-link";
 
 export const metadata = {
   title: "PoE Beast Prices",
@@ -24,37 +17,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const league =
     leagues.find((l) => l.id === requested)?.id ?? leagues[0]?.id ?? "Standard";
 
-  const [priced, allNames, scarabs, divine] = await Promise.all([
-    getBeasts(league),
-    getAllBeastNames().catch(() => [] as string[]),
+  const [beasts, scarabs, divine] = await Promise.all([
+    loadBeasts(league),
     getScarabPrices(league).catch(() => []),
     getDivinePrice(league).catch(() => undefined),
   ]);
-
-  // poe.ninja only prices beasts with live listings. The rest come from the
-  // trade site via the cron-warmed cache, and 0c means nobody is selling one.
-  const known = new Set(priced.map((b) => b.name));
-  const missing = allNames.filter((name) => !known.has(name)).sort();
-  const tradePrices = await getTradePrices(league, missing);
-
-  const beasts: Beast[] = [
-    ...priced.map((b) => ({
-      ...b,
-      source: "ninja" as const,
-      rarity: rarityOf(b.name),
-    })),
-    ...missing.map((name, i) => {
-      const price = tradePrices.get(name);
-      return {
-        id: -(i + 1),
-        name,
-        chaosValue: price?.chaosValue,
-        listingCount: price?.listingCount ?? 0,
-        source: "trade" as const,
-        rarity: rarityOf(name),
-      };
-    }),
-  ];
 
   return (
     <div className="relative">
@@ -82,12 +49,13 @@ export default async function Page({ searchParams }: PageProps<"/">) {
             priority
             className="h-auto w-full"
           />
-          <div className="px-3">
+          <div className="space-y-2 px-3">
             <LeagueSelect
               leagues={leagues}
               value={league}
               className="w-full"
             />
+            <SimulationLink league={league} />
           </div>
         </div>
 

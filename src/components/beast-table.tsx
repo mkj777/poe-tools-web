@@ -2,7 +2,15 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
-import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  ChevronsUpDown,
+  Copy,
+  FlaskConical,
+} from "lucide-react";
 import { leagueSlug, type Beast } from "@/lib/ninja";
 import { CurrencyIcon, Price } from "@/components/currency";
 import {
@@ -96,15 +104,17 @@ function Notice({
   );
 }
 
-/** One search of the plan: exact on its own, copyable, numbered. */
+/** One search of the plan: copyable, numbered, and testable. */
 function StepRow({
   index,
   total,
   step,
+  league,
 }: {
   index: number;
   total: number;
   step: BestiaryStep;
+  league: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -137,6 +147,15 @@ function StepRow({
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           {copied ? "Copied" : "Copy"}
         </Button>
+        <Button variant="ghost" asChild className="shrink-0">
+          <Link
+            href={`/simulation?league=${encodeURIComponent(league)}&q=${encodeURIComponent(step.pattern)}`}
+            title="Run it against the simulated Bestiary"
+          >
+            <FlaskConical className="size-4" />
+            Test
+          </Link>
+        </Button>
       </div>
     </div>
   );
@@ -146,10 +165,12 @@ function BestiaryRegex({
   beasts,
   threshold,
   mode,
+  league,
 }: {
   beasts: Beast[];
   threshold: number;
   mode: Mode;
+  league: string;
 }) {
   // Cheap: the planning itself happens in a worker, see useBestiaryPattern.
   const { wanted, unwanted } = useMemo(() => {
@@ -172,7 +193,16 @@ function BestiaryRegex({
       : { wanted: trash.map(entry), unwanted: sell.map(entry) };
   }, [beasts, threshold, mode]);
 
-  const { steps, unreachable, pending } = useBestiaryPattern(wanted, unwanted);
+  // Trashing throws beasts away, so it may never show an expensive one.
+  // Selling only has to put every valuable beast in front of you; a cheap one
+  // in the list costs nothing, and insisting on exactness there would cost
+  // searches and leave beasts out.
+  const exact = mode === "trash";
+  const { steps, unreachable, falsePositives, pending } = useBestiaryPattern(
+    wanted,
+    unwanted,
+    exact,
+  );
 
   const idle = threshold <= 0;
 
@@ -199,11 +229,13 @@ function BestiaryRegex({
               value to plan the searches.
             </p>
           ) : (
-            !pending &&
-            steps.length > 1 && (
+            !pending && (
               <p className="text-muted-foreground text-sm">
-                Too many for one search. Run all {steps.length} — together they
-                hit exactly those beasts and nothing else.
+                {exact
+                  ? steps.length > 1
+                    ? `Too many for one search. Run all ${steps.length} — no step shows anything above the threshold.`
+                    : "Nothing above the threshold can show up in this search."
+                  : `Every beast at or above the threshold, in ${steps.length === 1 ? "one search" : `${steps.length} searches`}. Cheaper ones may ride along.`}
               </p>
             )
           )}
@@ -230,6 +262,7 @@ function BestiaryRegex({
               index={i}
               total={steps.length}
               step={step}
+              league={league}
             />
           ))}
 
@@ -245,6 +278,15 @@ function BestiaryRegex({
               text={`No search can single out ${unreachable.length} of them — their own genus or a longer name contains them, so handle these by hand:`}
             >
               {unreachable}
+            </Notice>
+          )}
+
+          {falsePositives.length > 0 && (
+            <Notice
+              tone="amber"
+              text={`Also brings up ${falsePositives.length} beast${falsePositives.length === 1 ? "" : "s"} below the threshold — harmless when you are picking what to sell:`}
+            >
+              {falsePositives}
             </Notice>
           )}
         </div>
@@ -276,10 +318,12 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
               everywhere else.
             </p>
             <p>
-              Paste each search into the Bestiary window in turn. Precision
-              comes first here: rather than one pattern that also drags in a few
-              beasts you wanted to keep, you get as many exact searches as it
-              takes, none of which touches anything outside the selection.
+              Paste each search into the Bestiary window in turn. The two modes
+              want opposite things. <strong>Trash</strong> is destructive, so no
+              search may show a beast above the threshold, whatever that costs
+              in extra searches. <strong>Sell</strong> only has to put every
+              valuable beast in front of you, so a cheap one riding along is
+              fine and gets named rather than avoided.
             </p>
             <p>
               The search reads more than the type name: genus, family, every
@@ -410,13 +454,13 @@ export function BeastTable({
           {threshold > 0 ? (
             mode === "sell" ? (
               <>
-                Selects every beast worth <Price value={threshold} size={15} />{" "}
-                and above.
+                Every beast worth <Price value={threshold} size={15} /> and
+                above, cheap ones allowed to ride along.
               </>
             ) : (
               <>
-                Selects every beast worth less than{" "}
-                <Price value={threshold} size={15} />.
+                Only beasts worth less than{" "}
+                <Price value={threshold} size={15} /> — never a dearer one.
               </>
             )
           ) : (
@@ -425,7 +469,12 @@ export function BeastTable({
         </span>
       </div>
 
-      <BestiaryRegex beasts={found} threshold={threshold} mode={mode} />
+      <BestiaryRegex
+        beasts={found}
+        threshold={threshold}
+        mode={mode}
+        league={league}
+      />
 
       <div className="flex flex-wrap items-center gap-3">
         <Input
