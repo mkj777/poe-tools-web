@@ -249,11 +249,11 @@ function BestiaryRegex({
           &ldquo;Farric Presence&rdquo;.
         </p>
         <p>
-          <span className="text-foreground">Known gap:</span> each captured beast
-          also shows a generated name — Darkmauler, Stonegrowl, Grimtooth. Those
-          are searched too, they change per capture, and no reachable data source
-          lists the words they are built from, so a fragment can still collide
-          with one. See{" "}
+          Each captured beast also shows a generated name — Darkmauler,
+          Stonegrowl, Grimtooth — which the search reads as well. The game spells
+          those from a fixed pool of 167 prefixes and 211 suffixes, so all 35,237
+          of them are checked too, and a fragment that could land inside one is
+          refused. See{" "}
           <code className="font-mono">docs/bestiary-search.md</code>.
         </p>
       </div>

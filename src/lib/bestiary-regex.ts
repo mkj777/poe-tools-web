@@ -19,6 +19,11 @@
 
 // Explicit extension: Node's test runner resolves this file directly.
 import { BESTIARY_MOD_TEXT } from "./bestiary-mods.ts";
+import {
+  MONSTER_NAME_PREFIXES,
+  MONSTER_NAME_SUFFIXES,
+  MONSTER_NAME_TITLES,
+} from "./monster-words.ts";
 
 const MIN_FRAGMENT = 3;
 const MAX_FRAGMENT = 14;
@@ -82,6 +87,65 @@ function startsWith(prefix: string, line: string) {
   return true;
 }
 
+function endsWith(tail: string, line: string) {
+  if (tail.length > line.length) return false;
+  const offset = line.length - tail.length;
+  for (let i = 0; i < tail.length; i++) {
+    if (tail[i] !== " " && tail[i] !== line[offset + i]) return false;
+  }
+  return true;
+}
+
+/**
+ * The pool the game builds a captured beast's own name from: a prefix word, a
+ * suffix word glued straight onto it, and sometimes a title. "Darkmauler" is
+ * "Dark" + "mauler". The Bestiary search reads that name, so a fragment that
+ * can occur inside any possible one matches beasts at random.
+ */
+const NAME_PREFIXES = MONSTER_NAME_PREFIXES.map(normalize);
+const NAME_SUFFIXES = MONSTER_NAME_SUFFIXES.map(normalize);
+const NAME_TITLES = MONSTER_NAME_TITLES.map((t) => normalize(` ${t}`));
+
+function canOccurInGeneratedName({ body, anchored }: Fragment) {
+  if (anchored) {
+    // A generated name begins with a prefix word.
+    if (NAME_PREFIXES.some((p) => startsWith(body, p))) return true;
+    return NAME_PREFIXES.some(
+      (p) =>
+        p.length < body.length &&
+        startsWith(p, body) &&
+        NAME_SUFFIXES.some((s) => startsWith(body.slice(p.length), s)),
+    );
+  }
+
+  if (
+    NAME_PREFIXES.some((p) => containedIn(body, p)) ||
+    NAME_SUFFIXES.some((s) => containedIn(body, s)) ||
+    NAME_TITLES.some((t) => containedIn(body, t))
+  ) {
+    return true;
+  }
+
+  // Or it straddles a seam: prefix|suffix, or suffix|title.
+  for (let cut = 1; cut < body.length; cut++) {
+    const head = body.slice(0, cut);
+    const tail = body.slice(cut);
+    if (
+      NAME_PREFIXES.some((p) => endsWith(head, p)) &&
+      NAME_SUFFIXES.some((s) => startsWith(tail, s))
+    ) {
+      return true;
+    }
+    if (
+      NAME_SUFFIXES.some((s) => endsWith(head, s)) &&
+      NAME_TITLES.some((t) => startsWith(tail, t))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** One alternative of a pattern, kept in solver form (spaces, not dots). */
 type Fragment = { body: string; anchored: boolean };
 
@@ -125,8 +189,10 @@ function candidatesFor(targets: string[][], avoid: string[][]) {
     const key = emit(fragment);
     if (out.has(key)) return;
 
-    // Modifier text rides along on any beast, so it disqualifies outright.
+    // Modifier text and generated names ride along on any beast, so either
+    // disqualifies a fragment outright.
     if (fragmentHits(fragment, MOD_LINES)) return;
+    if (canOccurInGeneratedName(fragment)) return;
 
     const covers = new Set<number>();
     targets.forEach((lines, i) => {

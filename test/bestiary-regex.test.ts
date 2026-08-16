@@ -7,6 +7,11 @@ import {
   MAX_PATTERN_LENGTH,
 } from "../src/lib/bestiary-regex.ts";
 import { BESTIARY_MOD_TEXT } from "../src/lib/bestiary-mods.ts";
+import {
+  MONSTER_NAME_PREFIXES,
+  MONSTER_NAME_SUFFIXES,
+  MONSTER_NAME_TITLES,
+} from "../src/lib/monster-words.ts";
 
 type Fixture = { name: string; chaosValue: number; baseType?: string };
 
@@ -96,6 +101,32 @@ test("never builds on text a modifier also carries", () => {
         `${threshold}c pattern hits modifier text "${mod}": ${pattern}`,
       );
     }
+  }
+});
+
+test("never builds on text a generated name could contain", () => {
+  // Every captured beast shows a name the game spells out of a prefix word and
+  // a suffix word — Dark + mauler. The search reads it, so a fragment that can
+  // land inside one would match beasts at random.
+  const names: string[] = [];
+  for (const prefix of MONSTER_NAME_PREFIXES) {
+    for (const suffix of MONSTER_NAME_SUFFIXES) names.push(prefix + suffix);
+  }
+  for (const title of MONSTER_NAME_TITLES.slice(0, 20)) {
+    names.push(`${MONSTER_NAME_PREFIXES[0]}${MONSTER_NAME_SUFFIXES[0]} ${title}`);
+  }
+
+  for (const threshold of [4, 20, 150]) {
+    const { wanted, unwanted } = split(threshold);
+    const { pattern } = buildBestiaryRegex(wanted, unwanted);
+    assert.ok(pattern, `no pattern at ${threshold}c`);
+
+    const collision = names.find((name) => matchesBestiaryPattern(pattern, name));
+    assert.equal(
+      collision,
+      undefined,
+      `${threshold}c pattern "${pattern}" matches the name "${collision}"`,
+    );
   }
 });
 

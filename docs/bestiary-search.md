@@ -40,30 +40,36 @@ beast type name.
    (`src/lib/bestiary-mods.ts`, 28 entries). Those ride along on any beast, so
    such a fragment matches at random — `far` catches every beast holding
    "Farric Presence".
-4. A fragment is rejected if it hits any line of an unwanted beast — name,
+4. A fragment is rejected if it could occur inside a **generated name**
+   (`src/lib/monster-words.ts`) — inside a prefix word, a suffix word, a title,
+   or across the seam where they are glued together.
+5. A fragment is rejected if it hits any line of an unwanted beast — name,
    genus, family, habitat — as a substring, or as a line prefix when anchored.
-5. Word breaks are emitted as `.`, never as a literal space.
-6. If nothing fits 249 characters, the pattern is refused rather than truncated.
+6. Word breaks are emitted as `.`, never as a literal space.
+7. If nothing fits 249 characters, the pattern is refused rather than truncated.
 
 Anchors changed the picture completely. Before them, every large selection was
-refused; now all of them build:
+refused; now all of them build, and they survive the name-pool ban too:
 
 | Threshold | Keep | Reverse |
 | --- | --- | --- |
-| 1c | 165 chars, 11 false positives | 66 chars, **0** |
-| 4c | 123 chars, 3 | 214 chars, 22 |
-| 20c | 69 chars, 4 | 175 chars, 9 |
-| 150c | 22 chars, 4 | 183 chars, **0** |
+| 1c | 228 chars, 13 false positives | 83 chars, **0** |
+| 4c | 144 chars, 3 | 216 chars, 22 |
+| 20c | 78 chars, 4 | 143 chars, 12 |
+| 150c | 25 chars, 4 | 74 chars, 5 |
+
+Banning the name pool costs roughly 20 characters and pushes the solver towards
+fragments that span a word break — `cic.c`, `mal.pl`, `ild.h`. That is exactly
+right: prefix and suffix words are single words, so nothing spanning a space can
+ever sit inside a generated name.
 
 The four at 150c are the Parasite variants, and they are honest: their **genus
 line reads "Parasites"**, so `^parasite` matches it. No pattern can separate a
 beast from a genus that starts with its name.
 
-**The known hole:** every captured beast also shows a generated name
-(Darkmauler, Stonegrowl, Whiteback, Grimtooth, Marrowthirst, Razordroll the
-Relentless). Those are searched, they differ per capture, and no reachable data
-source lists the word pool they are built from — so a fragment can collide with
-one and there is currently no way to check for it.
+**Closed:** the generated names are checked too. See the `Words.dat` section
+below — the pool turned out to be 167 prefixes and 211 suffixes, so all 35,237
+possible names are known and a fragment that could land inside one is refused.
 
 ---
 
@@ -276,11 +282,20 @@ Source: [poe-tool-dev/dat-schema](https://github.com/poe-tool-dev/dat-schema),
 `dat-schema/_Core.gql`. `Dark`+`mauler`, `Stone`+`growl`, `Grim`+`tooth`,
 `Razor`+`droll` + `the Relentless` — prefix, suffix and title, exactly.
 
-**To extract it:** open [poe-dat-viewer](https://snosme.github.io/poe-dat-viewer/),
-load `Data/Words.dat64` from the game install, filter `Wordlist` to
-`MONSTER_PREFIX`, `MONSTER_SUFFIX` and `MONSTER_TITLE`, export the `Text`
-column. Feeding those three lists into the ban list closes the last source of
-false positives — every name the game can generate becomes checkable.
+**Extracted, and now in use.** Export `Data/Words.dat64` from
+[poe-dat-viewer](https://snosme.github.io/poe-dat-viewer/) as JSON and run
+`node scripts/update-monster-words.mjs <words.json>`. The `Wordlist` column
+comes through as the enum index counting from 1, so 3, 4 and 5 are the monster
+lists:
+
+| Wordlist | Count | Examples |
+| --- | --- | --- |
+| 3 MONSTER_PREFIX | 167 | Dark, Stone, Grim, Marrow, White, Razor |
+| 4 MONSTER_SUFFIX | 211 | mauler, growl, tooth, thirst, back |
+| 5 MONSTER_TITLE | 217 | the Accursed, the Relentless, the Ancient |
+
+167 × 211 = **35,237** possible names, all of them known. A test builds every
+one and asserts no generated pattern matches any.
 
 While in there, `BestiaryCapturableMonsters.dat64` is worth exporting too. It
 joins to `MonsterVarieties` (the name), `BestiaryGenus` and `BestiaryGroups`,
