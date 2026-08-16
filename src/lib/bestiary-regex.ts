@@ -8,6 +8,9 @@
  * repeatedly take the fragment that covers the most still uncovered beasts.
  */
 
+// Explicit extension: Node's test runner resolves this file directly.
+import { BESTIARY_MOD_TEXT } from "./bestiary-mods.ts";
+
 const MIN_FRAGMENT = 3;
 const MAX_FRAGMENT = 14;
 
@@ -48,46 +51,41 @@ function fragmentsOf(name: string) {
 }
 
 /**
- * Does `fragment` hit `name` under the loosest reading of the search field?
+ * Does `fragment` hit `text`?
  *
- * The field is not a plain substring search: patterns matched beasts that share
- * no substring with the target at all ("Farric Ursa" came back for a pattern
- * containing `fir` and `ris`). The only reading that explains every observed
- * hit is subsequence matching — the characters have to appear in order, but not
- * next to each other. A fragment counts as unsafe if it hits either way, so the
- * result holds whichever the game actually does.
+ * Plain case-insensitive substring. Subsequence matching was ruled out: the
+ * search `wldbrstl` returned nothing, not even "Wild Bristle Matron". Earlier
+ * hits that looked like subsequences turned out to be substrings of text the
+ * row shows besides the beast type — the generated name ("km" matched
+ * Dar**km**auler), the genus and family, and the modifiers.
  *
  * A ` ` inside the fragment is the `.` wildcard, and matches any character.
  */
-function hits(fragment: string, name: string) {
-  if (substringHit(fragment, name)) return true;
-
-  let i = 0;
-  for (const ch of name) {
-    if (fragment[i] === " " || fragment[i] === ch) i++;
-    if (i === fragment.length) return true;
-  }
-  return false;
-}
-
-function substringHit(fragment: string, name: string) {
-  outer: for (let start = 0; start + fragment.length <= name.length; start++) {
+function hits(fragment: string, text: string) {
+  outer: for (let start = 0; start + fragment.length <= text.length; start++) {
     for (let i = 0; i < fragment.length; i++) {
       const f = fragment[i];
-      if (f !== " " && f !== name[start + i]) continue outer;
+      if (f !== " " && f !== text[start + i]) continue outer;
     }
     return true;
   }
   return false;
 }
 
-/** Does a finished pattern hit this beast name? Used by the UI and the tests. */
-export function matchesBestiaryPattern(pattern: string, name: string) {
-  const target = normalize(name);
+/** Does a finished pattern hit this row text? Used by the UI and the tests. */
+export function matchesBestiaryPattern(pattern: string, text: string) {
+  const target = normalize(text);
   return pattern
     .split("|")
     .some((alternative) => hits(alternative.split(".").join(" "), target));
 }
+
+/**
+ * Text every beast can carry regardless of type: the modifier names and
+ * descriptions. A fragment found in here matches beasts at random, so it is
+ * never usable.
+ */
+const MOD_TEXT = BESTIARY_MOD_TEXT.map(normalize);
 
 function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -107,6 +105,9 @@ function candidatesFor(targets: string[], avoid: string[]) {
   for (const target of targets) {
     for (const fragment of fragmentsOf(target)) {
       if (out.has(fragment)) continue;
+
+      // A fragment that appears in any modifier text is unusable outright.
+      if (MOD_TEXT.some((mod) => hits(fragment, mod))) continue;
 
       const covers = new Set<number>();
       targets.forEach((name, i) => {

@@ -6,6 +6,7 @@ import {
   matchesBestiaryPattern,
   MAX_PATTERN_LENGTH,
 } from "../src/lib/bestiary-regex.ts";
+import { BESTIARY_MOD_TEXT } from "../src/lib/bestiary-mods.ts";
 
 type Fixture = { name: string; chaosValue: number; baseType?: string };
 
@@ -54,21 +55,31 @@ test("reports beasts no fragment can exclude", () => {
   assert.deepEqual(overmatched.sort(), ["Plated Parasite", "Vicious Parasite"]);
 });
 
-test("survives a search that matches subsequences", () => {
-  // "Farric Ursa" came back in game for a pattern containing "fir" and "ris":
-  // both appear in "fa-r-r-ic u-r-s-a" in order but not next to each other.
-  // A fragment that hits a cheap beast that way must never be picked.
-  const { wanted, unwanted } = split(4);
-  const { pattern, overmatched } = buildBestiaryRegex(wanted, unwanted);
-  assert.ok(pattern);
+test("matches substrings, not subsequences", () => {
+  // Searching "wldbrstl" in game returned nothing at all, not even "Wild
+  // Bristle Matron", so the field does not skip characters.
+  const { pattern } = buildBestiaryRegex(
+    [{ name: "Wild Bristle Matron" }],
+    [{ name: "Craicic Croaker" }],
+  );
+  assert.ok(matchesBestiaryPattern(pattern!, "Wild Bristle Matron"));
+  assert.ok(!matchesBestiaryPattern("wldbrstl", "Wild Bristle Matron"));
+});
 
-  for (const name of ["Farric Ursa", "Farric Lynx Alpha"]) {
-    if (overmatched.includes(name)) continue;
-    const row = unwanted.find((e) => e.name === name);
-    assert.ok(
-      !matchesBestiaryPattern(pattern, row?.text ?? name),
-      `${name} matches unreported: ${pattern}`,
-    );
+test("never builds on text a modifier also carries", () => {
+  // Every beast can roll up to three modifiers and the search reads them, so
+  // "far" pulls in anything with "Farric Presence" whatever its type.
+  for (const threshold of [4, 20, 150]) {
+    const { wanted, unwanted } = split(threshold);
+    const { pattern } = buildBestiaryRegex(wanted, unwanted);
+    assert.ok(pattern, `no pattern at ${threshold}c`);
+
+    for (const mod of BESTIARY_MOD_TEXT) {
+      assert.ok(
+        !matchesBestiaryPattern(pattern, mod),
+        `${threshold}c pattern hits modifier text "${mod}": ${pattern}`,
+      );
+    }
   }
 });
 
@@ -126,39 +137,55 @@ test("matches accented names with an ASCII pattern", () => {
   assert.ok(matchesBestiaryPattern(pattern!, "Black Mórrigan"));
 });
 
+/**
+ * The contract: a pattern is either refused, or it fits the field, matches
+ * every beast it was built for, and has declared every beast it should not
+ * match. Refusal is a real outcome — barring modifier text from fragments
+ * leaves large selections with no pattern that fits.
+ */
+function assertSound(
+  label: string,
+  wanted: ReturnType<typeof entry>[],
+  unwanted: ReturnType<typeof entry>[],
+) {
+  const { pattern, overmatched } = buildBestiaryRegex(wanted, unwanted);
+  if (!pattern) {
+    assert.deepEqual(overmatched, [], `${label}: refused but still reported extras`);
+    return null;
+  }
+
+  assert.ok(
+    pattern.length <= MAX_PATTERN_LENGTH,
+    `${label}: ${pattern.length} chars`,
+  );
+
+  const missed = wanted
+    .filter((e) => !matchesBestiaryPattern(pattern, e.text))
+    .map((e) => e.name);
+  assert.deepEqual(missed, [], `${label}: missed ${missed.length} beasts`);
+
+  const extra = unwanted
+    .filter((e) => matchesBestiaryPattern(pattern, e.text))
+    .map((e) => e.name);
+  assert.deepEqual(extra.sort(), [...overmatched].sort(), `${label}: undeclared extras`);
+
+  return pattern;
+}
+
 for (const threshold of THRESHOLDS) {
-  test(`fits the search field at ${threshold}c`, () => {
+  test(`keep pattern is sound at ${threshold}c`, () => {
     const { wanted, unwanted } = split(threshold);
-    const { pattern } = buildBestiaryRegex(wanted, unwanted);
-    assert.ok(pattern, `no pattern produced for ${threshold}c`);
-    assert.ok(
-      pattern.length <= MAX_PATTERN_LENGTH,
-      `${pattern.length} chars at ${threshold}c`,
-    );
+    assertSound(`${threshold}c keep`, wanted, unwanted);
   });
 
-  test(`never misses a beast worth at least ${threshold}c`, () => {
+  test(`reverse pattern is sound at ${threshold}c`, () => {
     const { wanted, unwanted } = split(threshold);
-    const { pattern, overmatched } = buildBestiaryRegex(wanted, unwanted);
-
-    const missed = wanted.filter((e) => !matchesBestiaryPattern(pattern!, e.text)).map((e) => e.name);
-    assert.deepEqual(missed, [], `pattern missed ${missed.length} beasts`);
-
-    // Every false positive must be one the caller was told about.
-    const extra = unwanted.filter((e) => matchesBestiaryPattern(pattern!, e.text)).map((e) => e.name);
-    assert.deepEqual(extra.sort(), [...overmatched].sort());
-  });
-
-  test(`inverts cleanly at ${threshold}c`, () => {
-    const { wanted, unwanted } = split(threshold);
-    const { pattern, overmatched } = buildBestiaryRegex(unwanted, wanted);
-    assert.ok(pattern, `no inverse pattern produced for ${threshold}c`);
-    assert.ok(pattern.length <= MAX_PATTERN_LENGTH);
-
-    const missed = unwanted.filter((e) => !matchesBestiaryPattern(pattern, e.text)).map((e) => e.name);
-    assert.deepEqual(missed, [], `inverse missed ${missed.length} beasts`);
-
-    const extra = wanted.filter((e) => matchesBestiaryPattern(pattern, e.text)).map((e) => e.name);
-    assert.deepEqual(extra.sort(), [...overmatched].sort());
+    assertSound(`${threshold}c reverse`, unwanted, wanted);
   });
 }
+
+test("still produces a pattern for a small selection", () => {
+  const { wanted, unwanted } = split(150);
+  const pattern = assertSound("150c keep", wanted, unwanted);
+  assert.ok(pattern, "a handful of beasts must still be expressible");
+});

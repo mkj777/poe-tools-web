@@ -11,21 +11,41 @@ Status legend: ✅ confirmed · ❓ open · ❌ ruled out
 
 ## Current model
 
+Matching is **plain case-insensitive substring** — over far more text than the
+beast type name.
+
 | Property | Status | Evidence |
 | --- | --- | --- |
+| Matching is plain substring | ✅ | Test 8 |
+| Matching is **not** subsequence | ✅ ruled out | Test 8 |
 | A literal space is not a plain character | ✅ | Test 1 |
-| `.` behaves as a wildcard | ✅ | Test 6, and every pattern using `.` has worked since |
+| `.` behaves as a wildcard | ✅ | Every pattern using `.` has worked |
 | `\|` alternation works | ✅ | Every generated pattern relies on it |
-| Matching is **not** plain substring | ✅ | Tests 2, 5, 6 |
-| Matching includes **subsequences** (characters in order, gaps allowed) | ✅ | Test 5 |
-| The searched text includes **genus, family and habitat**, not just the name | ✅ | Test 5 |
 | `!` negation | ❌ | Test 4 |
-| Field limit is 249 characters | ✅ | Stated by the user after in-game testing; 250 truncates |
-| Something beyond name+genus+family+habitat is searched | ❓ | Test 6 — unexplained |
+| Field limit is 249 characters | ✅ | In-game testing; 250 truncates |
+| **Searched:** beast type name | ✅ | Every working pattern |
+| **Searched:** genus and family | ✅ | Test 9 |
+| **Searched:** modifier names and descriptions | ✅ | Tests 7, 10 |
+| **Searched:** the generated per-capture name | ✅ | Test 10 |
+| `^` anchors | ❓ | Test 11 inconclusive |
 
-The generator therefore treats a fragment as unsafe if it matches an unwanted
-beast's **row text** (name + genus + family + habitat) *either* as a substring
-*or* as a subsequence, and never emits a literal space.
+### What the generator does with that
+
+1. Fragments are cut from the beast type name, since that is what identifies it.
+2. A fragment is rejected if it appears in **any** modifier name or description
+   (`src/lib/bestiary-mods.ts`, 28 entries). Those ride along on any beast, so
+   such a fragment matches at random — `far` catches every beast holding
+   "Farric Presence".
+3. A fragment is rejected if it appears in an unwanted beast's row text —
+   name, genus, family, habitat.
+4. Word breaks are emitted as `.`, never as a literal space.
+5. If nothing fits 249 characters, the pattern is refused rather than truncated.
+
+**The known hole:** every captured beast also shows a generated name
+(Darkmauler, Stonegrowl, Whiteback, Grimtooth, Marrowthirst, Razordroll the
+Relentless). Those are searched, they differ per capture, and no reachable data
+source lists the word pool they are built from — so a fragment can collide with
+one and there is currently no way to check for it.
 
 ---
 
@@ -129,6 +149,52 @@ Gargantuan is not among them.
 modifiers, the Beastcrafting recipes it is a component of, or an internal id.
 Also worth re-checking that the field was empty before typing.
 
+### Test 7 — `far` and `^far`
+**Observed:** both appear to return the same set, and it includes beasts whose
+type name has nothing to do with "far" — they carry the modifier
+**Farric Presence**.
+
+→ Modifier names are searched. `^` is untestable this way: the modifier line
+itself starts with "Far", so an anchored search would match it too.
+
+### Test 8 — `wldbrstl` (subsequence ruled out)
+**Observed:** nothing. Not even Wild Bristle Matron.
+
+→ The search does not skip characters. **Subsequence matching is dead**, and
+with it the conclusions drawn in Tests 2, 5 and 6. Those hits came from
+substrings of text the row shows besides the type name.
+
+### Test 9 — `ursae`
+**Observed:** every beast of the Ursae family, none of which has "ursae" in its
+name.
+
+→ Family is searched directly. Confirms the row-text part of Test 5 by a much
+cleaner route.
+
+### Test 10 — `km` explained
+**Observed:** two beasts, both **Darkmauler** — an Ursae, type Farric
+Gargantuan, each carrying Farric Presence, Fertile Presence and Satyr Storm.
+
+Dar**km**auler. A plain substring of the generated name.
+
+→ Test 6's anomaly is closed. The generated per-capture name is searched, and
+nothing exotic is going on.
+
+### Test 11 — what a Bestiary row actually contains
+From inspecting captured beasts:
+
+| Generated name | Type | Modifiers | Description text |
+| --- | --- | --- | --- |
+| Darkmauler | Farric Gargantuan (Ursae) | Farric Presence, Fertile Presence, Satyr Storm | — |
+| Stonegrowl | Farric Lynx Alpha | Fertile Presence, Aspect of the Hellion, Spectral Swipe | extra chaos damage, energy shield aura, lightning mirage when hit, 10% chance not to be consumed at the Blood Altar |
+| Whiteback | Farric Frost Hellion Alpha | Spectral Swipe, Farric Presence, Satyr Storm | periodically enrages, exploding crystals when hit, leeches life |
+
+So one row carries: generated name, type name, genus, family, up to three
+modifier names, and their descriptions. Free-text search reads all of it.
+
+Note that modifier names are not tied to a type — Farric Presence appears on a
+Gargantuan and on a Frost Hellion Alpha alike.
+
 ---
 
 ## Open questions, and the probes that would settle them
@@ -137,17 +203,33 @@ Run one at a time in the Bestiary search, note everything that appears.
 
 | Probe | Question | How to read it |
 | --- | --- | --- |
-| `km` again, field cleared first | Is Test 6 reproducible? | If Farric Gargantuan does not come back, Test 6 was an artefact |
-| `k` | Does a single letter absent from the row text still match? | If Farric Gargantuan shows, matching is not character-based at all |
-| `ursae` | Is the *family* searched directly? | All Ursae beasts appearing confirms it — a stronger form of Test 5 |
-| `wilds` | Is the *habitat* searched? | Same idea for the third field |
-| `wldbrstl` | Subsequence, cleanly | Matches Wild Bristle Matron only as a subsequence; nothing as a substring |
-| `^far` | Are anchors supported? | Only Farric beasts → `^` works and would sharpen every fragment |
-| `[kx]m` | Are character classes supported? | Same result as `km` → classes work |
-| `craicic maw` (with the space) | Is a literal space usable when it sits inside a phrase? | Test 1 suggests no |
+| `^darkm` | Do anchors work? | Nothing → `^` is literal or unsupported. Darkmauler still showing → `^` binds to the start of *some* line, which is what matters |
+| `^resence` vs `resence` | Does `^` actually exclude mid-word matches? | If `^resence` finds nothing while `resence` finds the Presence mods, anchoring is real and usable |
+| `wilds` | Is the habitat searched, or only genus and family? | Ursae already confirmed family (Test 9); habitat is still assumed |
+| `[kx]m` | Character classes? | Same result as `km` → classes work, and a class would let one fragment cover two beasts cheaply |
+| `mauler` | Is the generated name searchable in full? | Confirms Test 10 from the other direction |
+| `chaos damage` | Are modifier *descriptions* searched, or only their names? | Stonegrowl showing → descriptions too, which widens the ban list |
 
-Anchors are the most valuable of these: `^` would let fragments bind to the
-start of a name and cut the false-positive rate sharply.
+Anchors are the prize. `^` would let a fragment bind to the start of the type
+name, which would rule out most collisions with generated names and modifier
+text in one stroke.
+
+### The generated names
+
+Grimtooth, Darkmauler, Stonegrowl, Whiteback, Marrowthirst, Razordroll the
+Relentless. Compound of two words, sometimes with an "X the Y" title — the shape
+of PoE's rare monster name generator, which builds from a fixed word pool in the
+game data rather than being truly random.
+
+Reachable sources checked, none of which carries it:
+
+- poe.ninja, GGG trade data, Awakened PoE Trade bundled data — type names only
+- PoE Wiki cargo tables (`bestiary_components`, `bestiary_recipes`, `mods`)
+- poedb `MonsterNames` / `Monster_Names` — both 404
+
+Left to try: a `.dat` export of the monster-name tables via poe-dat-viewer or
+the poe-tool-dev schema repos. With that pool the last source of false positives
+becomes checkable; without it, a fragment can always collide with a name.
 
 ---
 
@@ -159,6 +241,7 @@ start of a name and cut the false-positive rate sharply.
 | `pathofexile.com/api/trade/data/items` → Itemised Monsters | 361 beast **names** | No prices |
 | `pathofexile.com/api/trade/search/{league}` | Live listings per beast | 5 req/10 s, 30 req/300 s — 143 lookups take ~25 min |
 | Awakened PoE Trade `renderer/public/data/en/items.ndjson` | 220 `CAPTURED_BEAST` names + icons | Subset of GGG's list, no prices, no genus |
+| PoE Wiki `List_of_bestiary_modifiers` + `mods` cargo table | 28 modifier names and descriptions | Committed as `src/lib/bestiary-mods.ts`; refresh with `pnpm mods:update` |
 
 The app uses GGG's 361 as the universe and poe.ninja for prices. The 143
 without a price are held as **unknown**, not trash: no pattern claims them, and

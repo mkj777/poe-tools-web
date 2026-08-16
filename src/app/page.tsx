@@ -25,7 +25,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
           <h1 className="text-4xl font-semibold tracking-tight">Beast Prices</h1>
           <p className="text-muted-foreground">
             All Path of Exile 1 beasts on the market — data from poe.ninja,
-            refreshed every 15 minutes.
+            refreshed hourly.
           </p>
         </div>
         <LeagueSelect leagues={leagues} value={league} />

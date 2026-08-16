@@ -118,7 +118,8 @@ function PatternRow({
         </Notice>
       )}
 
-      {missing.length > 0 && (
+      {/* Only meaningful when a pattern exists — a refusal already says it all. */}
+      {pattern && missing.length > 0 && (
         <Notice
           tone="red"
           text={`Does not match ${missing.length} of the ${wanted.length} it should:`}
@@ -234,10 +235,19 @@ function BestiaryRegex({
           neither pattern claims them. Both patterns still avoid matching them.
         </p>
         <p>
-          Beyond that list are the randomly named rare beasts — Grimsucker,
-          Sharptooth, Deathclaw the Mad. The game generates those names per
-          capture, so no catalogue contains them and no pattern can account for
-          them.
+          The search reads more than the type name: genus, family, the up-to-three
+          modifiers a beast carries, and their descriptions. Fragments found in
+          any modifier text are refused outright — otherwise{" "}
+          <code className="font-mono">far</code> would drag in everything holding
+          &ldquo;Farric Presence&rdquo;.
+        </p>
+        <p>
+          <span className="text-foreground">Known gap:</span> each captured beast
+          also shows a generated name — Darkmauler, Stonegrowl, Grimtooth. Those
+          are searched too, they change per capture, and no reachable data source
+          lists the words they are built from, so a fragment can still collide
+          with one. See{" "}
+          <code className="font-mono">docs/bestiary-search.md</code>.
         </p>
       </div>
     </div>

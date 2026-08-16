@@ -19,8 +19,8 @@ generated Bestiary search pattern for the ones worth farming.
 
 Prices come from the [poe.ninja economy API](https://poe.ninja/docs/api)
 (`/poe1/api/economy/...`). Requests happen server-side with a descriptive
-User-Agent and are cached for 15 minutes, which is roughly how often poe.ninja
-refreshes PoE 1 overviews.
+User-Agent and are cached for an hour — poe.ninja refreshes PoE 1 overviews
+about every 15 minutes, but beast prices do not move that fast.
 
 ## The Bestiary regex
 
