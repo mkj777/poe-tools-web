@@ -75,6 +75,9 @@ const num = (value: number | undefined, digits = 0) =>
 
 type Mode = "sell" | "trash";
 
+/** The thresholds a beast run is actually judged at. */
+const PRESETS = [1, 2, 3, 5, 9];
+
 /** Warning line: the sentence and the beast names get their own colours. */
 function Notice({
   tone,
@@ -436,6 +439,26 @@ export function BeastTable({
             Min
             <CurrencyIcon currency="chaos" size={20} />
           </label>
+
+          {/* The thresholds worth farming at, one click away. */}
+          <div className="bg-secondary/60 flex rounded-full p-1">
+            {PRESETS.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setMinChaos(String(preset))}
+                aria-pressed={threshold === preset}
+                className={`w-9 rounded-full py-1.5 text-sm tabular-nums transition-colors ${
+                  threshold === preset
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+
           <Input
             id="min-chaos"
             type="number"
@@ -446,7 +469,7 @@ export function BeastTable({
             onChange={(e) => setMinChaos(e.target.value)}
             placeholder="0"
             // No spinner: the arrows are useless at these ranges and steal room.
-            className="h-11 w-24 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="h-11 w-20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
 
@@ -460,7 +483,7 @@ export function BeastTable({
             ) : (
               <>
                 Only beasts worth less than{" "}
-                <Price value={threshold} size={15} /> — never a dearer one.
+                <Price value={threshold} size={15} />.
               </>
             )
           ) : (
