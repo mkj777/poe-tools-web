@@ -9,8 +9,9 @@ generated Bestiary search pattern for the ones worth farming.
 
 - Lists **all** beasts for the selected league with their chaos value, 7-day
   change and listing count, linked to their poe.ninja page for that league.
-- Both Bestiary scarabs and the current divine rate sit in the top corner, so
-  the cost of setting a run up is next to what the run is worth.
+- The scarabs a run needs and the current divine rate sit in the top corner,
+  with a total for one full setup — 20 Duplicating, 40 of the Herd, 40
+  Kalguuran — so the cost is next to what the run is worth.
 - Sort by any column, search by beast name, genus or habitat.
 - **Red or yellow** per row, drawn with the minimap marker the beast actually
   uses, so it is obvious whether the expensive ones are worth the detour.

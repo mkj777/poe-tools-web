@@ -9,7 +9,7 @@ function Card({
   title,
   children,
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
   name: string;
   title?: string;
   children: ReactNode;
@@ -33,9 +33,10 @@ function Card({
 }
 
 /**
- * What a beast run costs to set up. Both scarabs are bought by the stack, so
- * the price of a full stack of 20 matters as much as the unit price. The
- * divine rate rides along because every larger price is quoted in it.
+ * What a beast run costs to set up. Scarabs are bought by the stack, so the
+ * bulk figures matter more than the unit price, and the total is one full
+ * setup: 20 Duplicating, 40 of the Herd, 40 Kalguuran. The divine rate rides
+ * along because every larger price is quoted in it.
  */
 export function ScarabPrices({
   scarabs,
@@ -45,6 +46,9 @@ export function ScarabPrices({
   divine?: number;
 }) {
   if (scarabs.length === 0 && divine === undefined) return null;
+
+  const total = scarabs.reduce((sum, s) => sum + s.chaosValue * s.run, 0);
+  const composition = scarabs.map((s) => `${s.run} ${s.name}`).join(" + ");
 
   return (
     <div className="flex flex-col items-stretch gap-2">
@@ -63,17 +67,29 @@ export function ScarabPrices({
             />
           }
         >
-          <Price
-            value={scarab.chaosValue}
-            size={15}
-            className="text-foreground"
-          />
-          <span className="flex items-center gap-1">
-            20×
-            <Price value={scarab.chaosValue * 20} size={15} />
-          </span>
+          {scarab.show.map((count) =>
+            count === 1 ? (
+              <Price
+                key={count}
+                value={scarab.chaosValue}
+                size={15}
+                className="text-foreground"
+              />
+            ) : (
+              <span key={count} className="flex items-center gap-1">
+                {count}×
+                <Price value={scarab.chaosValue * count} size={15} />
+              </span>
+            ),
+          )}
         </Card>
       ))}
+
+      {scarabs.length > 0 && (
+        <Card name="Total" title={composition}>
+          <Price value={total} size={15} className="text-foreground" />
+        </Card>
+      )}
 
       {divine !== undefined && (
         <Card

@@ -73,21 +73,37 @@ export type Scarab = {
   icon: string;
   /** Chaos each, from the currency exchange. */
   chaosValue: number;
+  /** Stack sizes the card prints. 1 is the unit price. */
+  show: number[];
+  /** How many of it a full setup uses — what the total is built from. */
+  run: number;
 };
 
-/** The two scarabs that decide whether a beast run is worth setting up. */
+/** The scarabs that decide whether a beast run is worth setting up. */
 const BESTIARY_SCARABS = [
   {
     id: "bestiary-scarab-of-duplicating",
     name: "Duplicating",
     fullName: "Bestiary Scarab of Duplicating",
     icon: "/duplicating_scarab.png",
+    show: [1, 20],
+    run: 20,
   },
   {
     id: "bestiary-scarab-of-the-herd",
     name: "The Herd",
     fullName: "Bestiary Scarab of the Herd",
     icon: "/herd_scarab.png",
+    show: [1, 20],
+    run: 40,
+  },
+  {
+    id: "kalguuran-scarab",
+    name: "Kalguuran",
+    fullName: "Kalguuran Scarab",
+    icon: "/kalguuran_scarab.png",
+    show: [20],
+    run: 40,
   },
 ];
 
