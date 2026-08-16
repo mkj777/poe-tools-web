@@ -15,20 +15,24 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Names per run. Four every ten minutes is ~575 lookups a day against 143
- * beasts, so each one comes up several times and is actually fetched once,
- * when its 24 hour entry has expired.
+ * Names per run. The cron is daily, because that is all a Hobby plan allows,
+ * and a run has to finish inside maxDuration — ten lookups 5s apart is 45s of
+ * a 60s budget. Which walks the 143 unpriced beasts in a fortnight; the
+ * committed snapshot is what carries the rest, this only tops it up. On a plan
+ * with more frequent crons, raise the schedule rather than the slice.
  */
-const SLICE = Number(process.env.PRICE_REFRESH_SLICE ?? 4);
+const SLICE = Number(process.env.PRICE_REFRESH_SLICE ?? 10);
 
 /**
- * Spacing between lookups. The tightest rule is 30 requests per 300s and
- * breaking it locks the IP out for half an hour, so four requests spread over
- * 36s uses an eighth of that bucket and leaves the rest to the player.
+ * Spacing between lookups. The tightest rules are 5 requests per 10s and 30
+ * per 300s, and breaking the latter locks the IP out for half an hour — the
+ * game client with it. Ten requests over 45s stays a third of the way inside
+ * both and leaves the rest of the budget to the player.
  */
-const SPACING_MS = Number(process.env.PRICE_REFRESH_SPACING_MS ?? 12_000);
+const SPACING_MS = Number(process.env.PRICE_REFRESH_SPACING_MS ?? 5_000);
 
-const SLOT_MS = 10 * 60 * 1000;
+/** One slice per day, so consecutive runs walk different beasts. */
+const SLOT_MS = 24 * 60 * 60 * 1000;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 

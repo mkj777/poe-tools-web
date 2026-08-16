@@ -72,14 +72,15 @@ what took the 4c keep pattern from 155 characters down to 127.
 That API allows 5 requests per 10 seconds and 30 per 300, so no page render ever
 touches it. Instead:
 
-- **`/api/refresh-prices`** runs on a Vercel cron every ten minutes and refreshes
-  a slice of eight, paced 2.2s apart. Which slice comes from the clock, so no
-  state is carried between runs. Entries inside their 24 hour TTL are served
-  from the Next.js data cache and cost no request at all, so in practice each
-  beast is looked up once a day. Set `CRON_SECRET` to lock the route down; tune
-  with `PRICE_REFRESH_SLICE` and `PRICE_REFRESH_SPACING_MS`.
-  *Vercel's Hobby plan only permits daily crons — on that plan raise the slice
-  instead.*
+- **`/api/refresh-prices`** runs on a Vercel cron once a day — Hobby plans
+  reject anything more frequent, and a deployment carrying `*/10 * * * *` does
+  not deploy at all. Each run walks ten names, 5s apart, which is 45s of the
+  60s a function gets and about a fortnight to get round all 143. Which slice
+  comes from the date, so no state is carried between runs, and entries inside
+  their 24 hour TTL cost no request at all. Set `CRON_SECRET` to lock the route
+  down; tune with `PRICE_REFRESH_SLICE` and `PRICE_REFRESH_SPACING_MS`. On a
+  plan with frequent crons, raise the schedule rather than the slice — the
+  limit that matters is GGG's, not Vercel's.
 - **`src/lib/trade-prices.fallback.json`** is a committed snapshot, served when
   the cache is cold: a fresh deployment shows real prices immediately rather
   than a table full of dashes. Regenerate it with `pnpm prices:snapshot`. It
