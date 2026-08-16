@@ -452,18 +452,25 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
                 <TableRow key={beast.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      {beast.icon ? (
-                        <Image
-                          src={beast.icon}
-                          alt=""
-                          width={34}
-                          height={34}
-                          className="shrink-0"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="size-[34px] shrink-0" />
-                      )}
+                      {/* The minimap marker, not the item icon — every beast
+                          shares the same orb, but red versus yellow is the
+                          thing worth seeing at a glance. */}
+                      <Image
+                        src={
+                          beast.rarity === "red"
+                            ? "/BestiaryLegendaryBeast.webp"
+                            : "/BestiaryRareMonster.webp"
+                        }
+                        alt={beast.rarity === "red" ? "Red beast" : "Yellow beast"}
+                        title={
+                          beast.rarity === "red"
+                            ? "Red beast — two mods, cannot spawn normally"
+                            : "Yellow beast"
+                        }
+                        width={26}
+                        height={26}
+                        className="shrink-0"
+                      />
                       <div className="min-w-0">
                         {beast.detailsId ? (
                           <a

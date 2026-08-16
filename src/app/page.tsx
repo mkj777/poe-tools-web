@@ -1,5 +1,6 @@
 import { getAllBeastNames, getBeasts, getLeagues, type Beast } from "@/lib/ninja";
 import { getTradePrices } from "@/lib/trade-prices";
+import { rarityOf } from "@/lib/beast-rarity";
 import { BeastTable } from "@/components/beast-table";
 import { LeagueSelect } from "@/components/league-select";
 
@@ -26,7 +27,11 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   const tradePrices = await getTradePrices(league, missing);
 
   const beasts: Beast[] = [
-    ...priced.map((b) => ({ ...b, source: "ninja" as const })),
+    ...priced.map((b) => ({
+      ...b,
+      source: "ninja" as const,
+      rarity: rarityOf(b.name),
+    })),
     ...missing.map((name, i) => {
       const price = tradePrices.get(name);
       return {
@@ -35,6 +40,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
         chaosValue: price?.chaosValue,
         listingCount: price?.listingCount ?? 0,
         source: "trade" as const,
+        rarity: rarityOf(name),
       };
     }),
   ];

@@ -1,3 +1,5 @@
+import type { BeastRarity } from "./beast-rarity";
+
 const BASE = "https://poe.ninja/poe1/api/economy";
 const UA = "poe-beast-prices/0.1 (personal price browser; maxikie02@gmail.com)";
 
@@ -24,6 +26,8 @@ export type Beast = {
   sparkLine?: { totalChange: number };
   /** Where the price came from, for the table to explain itself. */
   source?: "ninja" | "trade";
+  /** How it shows up on the minimap. Red beasts carry two mods and far more life. */
+  rarity?: BeastRarity;
 };
 
 async function ninja<T>(path: string): Promise<T> {

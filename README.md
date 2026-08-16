@@ -10,6 +10,8 @@ generated Bestiary search pattern for the ones worth farming.
 - Lists **all** beasts for the selected league with Chaos value, Divine value,
   7-day change and listing count.
 - Sort by any column, search by beast name, genus or habitat.
+- **Red or yellow** per row, drawn with the minimap marker the beast actually
+  uses, so it is obvious whether the expensive ones are worth the detour.
 - **Trash / Sell switch** with a chaos threshold — select everything under it,
   or everything from it up.
 - **Bestiary searches** for that selection, ready to paste into the in-game
@@ -155,8 +157,9 @@ pnpm dev              # http://localhost:3000
 pnpm test             # regex tests against a real 218-beast fixture
 pnpm build
 
-pnpm prices:snapshot            # refresh the committed price fallback (~25 min)
+pnpm prices:snapshot            # refresh the committed price fallback (~1 h)
 pnpm mods:update                # re-scrape the Bestiary modifier list
+pnpm rarity:update              # re-derive which beasts are red
 pnpm words:update <words.json>  # re-import the name pool from a Words.dat export
 ```
 
