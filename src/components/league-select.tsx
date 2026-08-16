@@ -13,9 +13,11 @@ import {
 export function LeagueSelect({
   leagues,
   value,
+  className = "w-[220px]",
 }: {
   leagues: League[];
   value: string;
+  className?: string;
 }) {
   const router = useRouter();
 
@@ -24,7 +26,7 @@ export function LeagueSelect({
       value={value}
       onValueChange={(id) => router.push(`/?league=${encodeURIComponent(id)}`)}
     >
-      <SelectTrigger className="w-[220px]">
+      <SelectTrigger className={className}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

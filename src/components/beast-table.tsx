@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
 import type { Beast } from "@/lib/ninja";
+import { CurrencyIcon, Price } from "@/components/currency";
 import {
   MAX_PATTERN_LENGTH,
   type BeastEntry,
@@ -31,12 +32,28 @@ import {
 
 type SortKey = "name" | "chaosValue" | "divineValue" | "listingCount" | "change";
 
-const COLUMNS: { key: SortKey; label: string; numeric: boolean }[] = [
-  { key: "name", label: "Beast", numeric: false },
-  { key: "chaosValue", label: "Chaos", numeric: true },
-  { key: "divineValue", label: "Divine", numeric: true },
-  { key: "change", label: "7d", numeric: true },
-  { key: "listingCount", label: "Listings", numeric: true },
+/** `label` is what the header shows, `name` what a screen reader reads. */
+const COLUMNS: {
+  key: SortKey;
+  name: string;
+  label: ReactNode;
+  numeric: boolean;
+}[] = [
+  { key: "name", name: "Beast", label: "Beast", numeric: false },
+  {
+    key: "chaosValue",
+    name: "Chaos value",
+    label: <CurrencyIcon currency="chaos" size={20} />,
+    numeric: true,
+  },
+  {
+    key: "divineValue",
+    name: "Divine value",
+    label: <CurrencyIcon currency="divine" size={20} />,
+    numeric: true,
+  },
+  { key: "change", name: "7 day change", label: "7d", numeric: true },
+  { key: "listingCount", name: "Listings", label: "Listings", numeric: true },
 ];
 
 /**
@@ -171,7 +188,9 @@ function BestiaryRegex({
       <div className="bg-card rounded-xl border p-5">
         <h2 className="text-lg font-medium">Bestiary regex</h2>
         <p className="text-muted-foreground text-sm">
-          Set a min chaos value to plan the searches.
+          Set a minimum{" "}
+          <CurrencyIcon currency="chaos" size={16} className="align-middle" />{" "}
+          value to plan the searches.
         </p>
       </div>
     );
@@ -357,8 +376,12 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <label htmlFor="min-chaos" className="text-muted-foreground">
-            Min chaos
+          <label
+            htmlFor="min-chaos"
+            className="text-muted-foreground flex items-center gap-1.5"
+          >
+            Min
+            <CurrencyIcon currency="chaos" size={20} />
           </label>
           <Input
             id="min-chaos"
@@ -369,16 +392,27 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
             value={minChaos}
             onChange={(e) => setMinChaos(e.target.value)}
             placeholder="0"
-            className="h-11 w-24"
+            // No spinner: the arrows are useless at these ranges and steal room.
+            className="h-11 w-24 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
 
         <span className="text-muted-foreground text-sm">
-          {threshold > 0
-            ? mode === "sell"
-              ? `Selects every beast worth ${threshold}c and above.`
-              : `Selects every beast worth less than ${threshold}c.`
-            : "Set a threshold to plan the searches."}
+          {threshold > 0 ? (
+            mode === "sell" ? (
+              <>
+                Selects every beast worth <Price value={threshold} size={15} />{" "}
+                and above.
+              </>
+            ) : (
+              <>
+                Selects every beast worth less than{" "}
+                <Price value={threshold} size={15} />.
+              </>
+            )
+          ) : (
+            "Set a threshold to plan the searches."
+          )}
         </span>
       </div>
 
@@ -432,6 +466,7 @@ export function BeastTable({ beasts }: { beasts: Beast[] }) {
                     <button
                       type="button"
                       onClick={() => toggle(col.key)}
+                      aria-label={`Sort by ${col.name}`}
                       className={`inline-flex items-center gap-1 hover:text-foreground ${
                         active ? "text-foreground font-medium" : ""
                       } ${col.numeric ? "flex-row-reverse" : ""}`}

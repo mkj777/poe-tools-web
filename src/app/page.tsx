@@ -55,36 +55,51 @@ export default async function Page({ searchParams }: PageProps<"/">) {
   ];
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 py-12">
-      <header className="mb-10 flex flex-wrap items-start justify-between gap-6">
-        <div className="flex items-center gap-4">
+    <>
+      {/* Full width on purpose: logo and scarabs belong in the window corners,
+          not inside the centred column the rest of the page lives in. The
+          logo fills the whole left gutter, so it ends exactly where the
+          heading below it starts — same 72rem/px-6 geometry as <main>. */}
+      <div className="flex items-start justify-between gap-6 pt-4">
+        <div
+          className="shrink-0 space-y-3"
+          style={{ width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" }}
+        >
           <Image
             src="/poe_logo.png"
             alt="Path of Exile"
-            width={64}
-            height={64}
+            width={800}
+            height={578}
             priority
-            className="shrink-0"
+            className="h-auto w-full"
           />
-          <div className="space-y-1">
-            <h1 className="text-4xl font-semibold tracking-tight">
-              Beast Prices
-            </h1>
-            <p className="text-muted-foreground">
-              Every beast — priced by poe.ninja where it has data, by the
-              official trade site everywhere else.
-            </p>
+          <div className="px-3">
+            <LeagueSelect
+              leagues={leagues}
+              value={league}
+              className="w-full"
+            />
           </div>
         </div>
 
-        {/* ml-auto keeps this right-aligned even once it wraps onto its own row. */}
-        <div className="ml-auto flex flex-col items-end gap-3">
-          <LeagueSelect leagues={leagues} value={league} />
+        <div className="px-6 pt-2">
           <ScarabPrices scarabs={scarabs} />
         </div>
-      </header>
+      </div>
 
-      <BeastTable beasts={beasts} />
-    </main>
+      <main className="mx-auto w-full max-w-6xl px-6 pt-8 pb-12">
+        <header className="mb-10 space-y-1">
+          <h1 className="text-4xl font-semibold tracking-tight">
+            Beast Prices
+          </h1>
+          <p className="text-muted-foreground">
+            Every beast — priced by poe.ninja where it has data, by the official
+            trade site everywhere else.
+          </p>
+        </header>
+
+        <BeastTable beasts={beasts} />
+      </main>
+    </>
   );
 }
