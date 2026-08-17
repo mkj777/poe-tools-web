@@ -3,10 +3,9 @@ import type { BeastRarity } from "./beast-rarity";
 const BASE = "https://poe.ninja/poe1/api/economy";
 const UA = "poe-beast-prices/0.1 (personal price browser; maxikie02@gmail.com)";
 
-// poe.ninja refreshes PoE1 overviews roughly every 15 minutes, and the market
-// does move that fast, so match it: ten minutes is the shortest interval that
-// still lands on fresh data rather than re-fetching the same numbers.
-const REVALIDATE = 600;
+// poe.ninja recomputes its PoE1 overviews roughly every 15 minutes, so that is
+// the interval: anything shorter re-fetches numbers that have not changed yet.
+const REVALIDATE = 900;
 
 export type League = { id: string; name: string };
 

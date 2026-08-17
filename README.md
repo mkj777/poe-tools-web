@@ -50,7 +50,7 @@ by hand.
 
 | Source | Gives | Refresh |
 | --- | --- | --- |
-| [poe.ninja economy API](https://poe.ninja/docs/api) | prices, genus, family, habitat for the ~218 beasts with live listings | every 10 min |
+| [poe.ninja economy API](https://poe.ninja/docs/api) | prices, genus, family, habitat for the ~218 beasts with live listings | every 15 min |
 | `pathofexile.com/api/trade/data/items` | the full roster of 361 beast names | daily |
 | `pathofexile.com/api/trade/search` | prices for the ~143 beasts poe.ninja has no data on | daily, a slice at a time |
 
