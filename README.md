@@ -198,6 +198,25 @@ Parasite`, `Goatman` inside `Goatman Fire-raiser`), no fragment can separate
 them, and no number of extra searches helps — a search that finds the one finds
 the other. Those beasts are named as unreachable rather than quietly dragged in.
 
+### Where the planning happens
+
+Planning is the only expensive thing the app does, and almost all of it used to
+go into one question: can this fragment sit inside any of the 35,237 generated
+names? Asked by walking the three word lists it costs ~0.6ms, and a plan asks it
+nine thousand times. Every form of the question is a membership test, so the
+answers are precomputed into sets once — prefixes, suffixes, substrings and the
+seams between them. Ten plans went from **34s to 2.9s**, with byte-identical
+output, and a single plan is now 50–550ms.
+
+That is fast enough to stay in the browser for an unusual threshold, in a worker
+so the field keeps typing smoothly, and remembered for the session so going back
+is instant. The five preset thresholds do not wait at all: both modes for each
+are planned on the server and shipped with the page (~26 KB, ~6 gzipped).
+
+Those ten are cached on the **split** — which beasts fall either side of 1, 2, 3,
+5 and 9 chaos — not on the prices. Prices move every quarter of an hour, a beast
+crosses a preset far more rarely, so most refreshes cost nothing.
+
 ## Development
 
 ```bash

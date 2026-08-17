@@ -1,6 +1,11 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import {
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import Image from "next/image";
 import {
   ArrowDown,
@@ -17,6 +22,11 @@ import {
   type BestiaryStep,
 } from "@/lib/bestiary-regex";
 import { useBestiaryPattern } from "@/lib/use-bestiary-pattern";
+import {
+  PRESET_THRESHOLDS,
+  presetKey,
+  type PresetPlans,
+} from "@/lib/preset-plans";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,8 +83,33 @@ const num = (value: number | undefined, digits = 0) =>
 
 type Mode = "sell" | "trash";
 
-/** The thresholds a beast run is actually judged at. */
-const PRESETS = [1, 2, 3, 5, 9];
+/** The thresholds a beast run is actually judged at, and the ones the server
+    has already planned for — see src/lib/preset-plans.ts. */
+const PRESETS = PRESET_THRESHOLDS;
+
+/**
+ * Which side of the switch the last visit ended on. Kept in a tiny store
+ * rather than in state, so the server can render its own answer ("sell") and
+ * the browser can correct it on hydration without a mismatch.
+ */
+const MODE_KEY = "beast-prices:mode";
+
+const modeStore = {
+  listeners: new Set<() => void>(),
+  read(): Mode {
+    return localStorage.getItem(MODE_KEY) === "trash" ? "trash" : "sell";
+  },
+  write(next: Mode) {
+    localStorage.setItem(MODE_KEY, next);
+    for (const listener of modeStore.listeners) listener();
+  },
+  subscribe(listener: () => void) {
+    modeStore.listeners.add(listener);
+    return () => {
+      modeStore.listeners.delete(listener);
+    };
+  },
+};
 
 /** Warning line: the sentence and the beast names get their own colours. */
 function Notice({
@@ -155,10 +190,12 @@ function BestiaryRegex({
   beasts,
   threshold,
   mode,
+  plans,
 }: {
   beasts: Beast[];
   threshold: number;
   mode: Mode;
+  plans: PresetPlans;
 }) {
   // Cheap: the planning itself happens in a worker, see useBestiaryPattern.
   const { wanted, unwanted } = useMemo(() => {
@@ -190,6 +227,7 @@ function BestiaryRegex({
     wanted,
     unwanted,
     exact,
+    plans[presetKey(threshold, mode)],
   );
 
   const idle = threshold <= 0;
@@ -353,17 +391,24 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
 export function BeastTable({
   beasts,
   league,
+  plans,
 }: {
   beasts: Beast[];
   /** poe.ninja detail pages live under the league, so links need it. */
   league: string;
+  /** Planned on the server for the preset thresholds, so they need no wait. */
+  plans: PresetPlans;
 }) {
   const [query, setQuery] = useState("");
   const [minChaos, setMinChaos] = useState("");
   const [sort, setSort] = useState<SortKey>("chaosValue");
   const [desc, setDesc] = useState(true);
   const [showNotFound, setShowNotFound] = useState(false);
-  const [mode, setMode] = useState<Mode>("sell");
+  const mode = useSyncExternalStore(
+    modeStore.subscribe,
+    modeStore.read,
+    () => "sell" as Mode,
+  );
 
   const threshold = Number(minChaos) || 0;
   /** A value the preset buttons do not cover, so the free field owns it. */
@@ -420,7 +465,7 @@ export function BeastTable({
             <button
               key={option}
               type="button"
-              onClick={() => setMode(option)}
+              onClick={() => modeStore.write(option)}
               aria-pressed={mode === option}
               className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
                 mode === option
@@ -500,7 +545,12 @@ export function BeastTable({
         )}
       </div>
 
-      <BestiaryRegex beasts={found} threshold={threshold} mode={mode} />
+      <BestiaryRegex
+        beasts={found}
+        threshold={threshold}
+        mode={mode}
+        plans={plans}
+      />
 
       <div className="flex flex-wrap items-center gap-3">
         <Input

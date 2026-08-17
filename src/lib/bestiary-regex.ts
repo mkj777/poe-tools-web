@@ -82,34 +82,7 @@ const MOD_LINES = [
   ...OBSERVED_MOD_LINES,
 ].map(normalize);
 
-/** `fragment` may contain ' ' as the `.` wildcard, matching any character. */
-function containedIn(fragment: string, line: string) {
-  outer: for (let start = 0; start + fragment.length <= line.length; start++) {
-    for (let i = 0; i < fragment.length; i++) {
-      const f = fragment[i];
-      if (f !== " " && f !== line[start + i]) continue outer;
-    }
-    return true;
-  }
-  return false;
-}
-
-function startsWith(prefix: string, line: string) {
-  if (prefix.length > line.length) return false;
-  for (let i = 0; i < prefix.length; i++) {
-    if (prefix[i] !== " " && prefix[i] !== line[i]) return false;
-  }
-  return true;
-}
-
-function endsWith(tail: string, line: string) {
-  if (tail.length > line.length) return false;
-  const offset = line.length - tail.length;
-  for (let i = 0; i < tail.length; i++) {
-    if (tail[i] !== " " && tail[i] !== line[offset + i]) return false;
-  }
-  return true;
-}
+const MOD_BLOB = MOD_LINES.join("\n");
 
 /**
  * The pool the game builds a captured beast's own name from: a prefix word, a
@@ -121,61 +94,119 @@ const NAME_PREFIXES = MONSTER_NAME_PREFIXES.map(normalize);
 const NAME_SUFFIXES = MONSTER_NAME_SUFFIXES.map(normalize);
 const NAME_TITLES = MONSTER_NAME_TITLES.map((t) => normalize(` ${t}`));
 
-function canOccurInGeneratedName({ body, anchored, terminated }: Fragment) {
-  if (anchored && terminated) {
-    // A whole line has to equal the fragment, so only a generated name of the
-    // very same length collides: prefix + suffix, optionally plus a title.
-    const equals = (name: string) =>
-      body.length === name.length && startsWith(body, name);
-    for (const p of NAME_PREFIXES) {
-      if (p.length > body.length) continue;
-      for (const s of NAME_SUFFIXES) {
-        const base = p + s;
-        if (base.length > body.length) continue;
-        if (equals(base)) return true;
-        if (NAME_TITLES.some((t) => equals(base + t))) return true;
-      }
+/**
+ * Asking "could this fragment sit inside any of the 35,237 names?" by walking
+ * the three word lists costs about 0.6ms, and the solver asks it nine thousand
+ * times — which was 96% of the time a plan took. Every question it needs is a
+ * membership test, so the answers are precomputed once instead.
+ */
+function setOf(words: string[], take: (w: string) => string[]) {
+  const out = new Set<string>();
+  for (const word of words) for (const part of take(word)) out.add(part);
+  return out;
+}
+const prefixesOf = (w: string) =>
+  Array.from({ length: Math.min(w.length, MAX_FRAGMENT) }, (_, i) =>
+    w.slice(0, i + 1),
+  );
+const suffixesOf = (w: string) =>
+  Array.from({ length: Math.min(w.length, MAX_FRAGMENT) }, (_, i) =>
+    w.slice(w.length - i - 1),
+  );
+const substringsOf = (w: string) => {
+  const out: string[] = [];
+  for (let i = 0; i < w.length; i++) {
+    for (let len = 1; len <= MAX_FRAGMENT && i + len <= w.length; len++) {
+      out.push(w.slice(i, i + len));
     }
-    return false;
+  }
+  return out;
+};
+
+const WORDS_P = new Set(NAME_PREFIXES);
+const PRE_P = setOf(NAME_PREFIXES, prefixesOf);
+const SUF_P = setOf(NAME_PREFIXES, suffixesOf);
+const SUB_P = setOf(NAME_PREFIXES, substringsOf);
+const PRE_S = setOf(NAME_SUFFIXES, prefixesOf);
+const SUF_S = setOf(NAME_SUFFIXES, suffixesOf);
+const SUB_S = setOf(NAME_SUFFIXES, substringsOf);
+const PRE_T = setOf(NAME_TITLES, prefixesOf);
+const SUB_T = setOf(NAME_TITLES, substringsOf);
+
+/** All 35,237 base names, built on first use — only full-line fragments ask. */
+let fullNames: Set<string> | null = null;
+function baseNames() {
+  if (!fullNames) {
+    fullNames = new Set<string>();
+    for (const p of NAME_PREFIXES) {
+      for (const s of NAME_SUFFIXES) fullNames.add(p + s);
+    }
+  }
+  return fullNames;
+}
+
+/**
+ * The corpus holds no spaces inside a word, but a fragment's space is a
+ * wildcard, so it has to be spelled out before a set can answer for it.
+ */
+const NAME_ALPHABET = [
+  ...new Set(
+    [...NAME_PREFIXES, ...NAME_SUFFIXES, ...NAME_TITLES].join("").split(""),
+  ),
+];
+const MAX_VARIANTS = 4000;
+
+function spellOut(body: string) {
+  if (!body.includes(" ")) return [body];
+  const wildcards = body.split(" ").length - 1;
+  if (NAME_ALPHABET.length ** wildcards > MAX_VARIANTS) return null;
+
+  let out = [""];
+  for (const ch of body) {
+    out =
+      ch === " "
+        ? out.flatMap((head) => NAME_ALPHABET.map((a) => head + a))
+        : out.map((head) => head + ch);
+  }
+  return out;
+}
+
+function occursInName(v: string, anchored: boolean, terminated: boolean) {
+  if (anchored && terminated) {
+    // The whole line has to equal it: a base name, or one carrying a title.
+    if (baseNames().has(v)) return true;
+    return NAME_TITLES.some(
+      (t) => v.endsWith(t) && baseNames().has(v.slice(0, -t.length)),
+    );
   }
 
   if (anchored) {
     // A generated name begins with a prefix word.
-    if (NAME_PREFIXES.some((p) => startsWith(body, p))) return true;
-    return NAME_PREFIXES.some(
-      (p) =>
-        p.length < body.length &&
-        startsWith(p, body) &&
-        NAME_SUFFIXES.some((s) => startsWith(body.slice(p.length), s)),
-    );
+    if (PRE_P.has(v)) return true;
+    for (let cut = 1; cut < v.length; cut++) {
+      if (WORDS_P.has(v.slice(0, cut)) && PRE_S.has(v.slice(cut))) return true;
+    }
+    return false;
   }
 
-  if (
-    NAME_PREFIXES.some((p) => containedIn(body, p)) ||
-    NAME_SUFFIXES.some((s) => containedIn(body, s)) ||
-    NAME_TITLES.some((t) => containedIn(body, t))
-  ) {
-    return true;
-  }
+  if (SUB_P.has(v) || SUB_S.has(v) || SUB_T.has(v)) return true;
 
   // Or it straddles a seam: prefix|suffix, or suffix|title.
-  for (let cut = 1; cut < body.length; cut++) {
-    const head = body.slice(0, cut);
-    const tail = body.slice(cut);
-    if (
-      NAME_PREFIXES.some((p) => endsWith(head, p)) &&
-      NAME_SUFFIXES.some((s) => startsWith(tail, s))
-    ) {
-      return true;
-    }
-    if (
-      NAME_SUFFIXES.some((s) => endsWith(head, s)) &&
-      NAME_TITLES.some((t) => startsWith(tail, t))
-    ) {
-      return true;
-    }
+  for (let cut = 1; cut < v.length; cut++) {
+    const head = v.slice(0, cut);
+    const tail = v.slice(cut);
+    if (SUF_P.has(head) && PRE_S.has(tail)) return true;
+    if (SUF_S.has(head) && PRE_T.has(tail)) return true;
   }
   return false;
+}
+
+function canOccurInGeneratedName({ body, anchored, terminated }: Fragment) {
+  const variants = spellOut(body);
+  // Too many wildcards to enumerate. Refusing costs a little pattern length;
+  // guessing would cost a beast.
+  if (!variants) return true;
+  return variants.some((v) => occursInName(v, anchored, Boolean(terminated)));
 }
 
 /**
@@ -190,16 +221,25 @@ const emit = (f: Fragment) =>
   f.body.split(" ").join(".") +
   (f.terminated ? "$" : "");
 
-function fragmentHits({ body, anchored, terminated }: Fragment, lines: string[]) {
-  return lines.some((line) => {
-    if (anchored && terminated) {
-      return body.length === line.length && startsWith(body, line);
-    }
-    if (anchored) return startsWith(body, line);
-    if (terminated) return endsWith(body, line);
-    return containedIn(body, line);
-  });
-}
+/**
+ * The lines of one row, joined for matching. `.` never matches a newline and
+ * `^`/`$` bind per line under `m`, so a blob behaves exactly like the lines it
+ * was built from — and hands the work to the regex engine instead of to a
+ * character loop, which is the difference between the solver taking seconds and
+ * taking milliseconds.
+ */
+const blobOf = (lines: string[]) => lines.join("\n");
+
+/**
+ * A fragment as a regex. Bodies only ever hold `[a-z ]` (see SAFE_FRAGMENT), so
+ * the space is the one character that needs translating and nothing needs
+ * escaping.
+ */
+const fragmentRegExp = ({ body, anchored, terminated }: Fragment) =>
+  new RegExp(
+    `${anchored ? "^" : ""}${body.split(" ").join(".")}${terminated ? "$" : ""}`,
+    "m",
+  );
 
 /**
  * The game's engine, as far as it has been probed: one regex, tried against
@@ -257,25 +297,35 @@ type Candidate = {
 
 function candidatesFor(targets: string[][], avoid: string[][]) {
   const out = new Map<string, Candidate>();
+  // Every beast whose name contains a fragment offers it again, and "farric"
+  // alone sits in some forty names. Without this, each of them pays for the
+  // same rejection.
+  const rejected = new Set<string>();
+  const targetBlobs = targets.map(blobOf);
+  const avoidBlobs = avoid.map(blobOf);
 
   const consider = (fragment: Fragment) => {
     const key = emit(fragment);
-    if (out.has(key)) return;
+    if (out.has(key) || rejected.has(key)) return;
+
+    const re = fragmentRegExp(fragment);
 
     // Modifier text and generated names ride along on any beast, so either
     // disqualifies a fragment outright.
-    if (fragmentHits(fragment, MOD_LINES)) return;
-    if (canOccurInGeneratedName(fragment)) return;
+    if (re.test(MOD_BLOB) || canOccurInGeneratedName(fragment)) {
+      rejected.add(key);
+      return;
+    }
 
     const covers = new Set<number>();
-    targets.forEach((lines, i) => {
-      if (fragmentHits(fragment, lines)) covers.add(i);
+    targetBlobs.forEach((blob, i) => {
+      if (re.test(blob)) covers.add(i);
     });
     if (covers.size === 0) return;
 
     const hits = new Set<number>();
-    avoid.forEach((lines, i) => {
-      if (fragmentHits(fragment, lines)) hits.add(i);
+    avoidBlobs.forEach((blob, i) => {
+      if (re.test(blob)) hits.add(i);
     });
     out.set(key, { fragment, covers, hits });
   };

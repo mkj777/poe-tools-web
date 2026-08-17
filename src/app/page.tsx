@@ -5,6 +5,7 @@ import { BeastTable } from "@/components/beast-table";
 import { LeagueSelect } from "@/components/league-select";
 import { ScarabPrices } from "@/components/scarab-prices";
 import { SimulationLink } from "@/components/simulation-link";
+import { getPresetPlans, presetSplits } from "@/lib/preset-plans";
 
 export const metadata = {
   title: "PoE Beast Prices",
@@ -22,6 +23,10 @@ export default async function Page({ searchParams }: PageProps<"/">) {
     getScarabPrices(league).catch(() => []),
     getDivinePrice(league).catch(() => undefined),
   ]);
+
+  // Planning is the one slow thing here, so the preset thresholds arrive ready
+  // made and only an unusual threshold ever reaches the worker in the browser.
+  const plans = await getPresetPlans(presetSplits(beasts));
 
   return (
     <div className="relative">
@@ -70,7 +75,7 @@ export default async function Page({ searchParams }: PageProps<"/">) {
       </div>
 
       <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
-        <BeastTable beasts={beasts} league={league} />
+        <BeastTable beasts={beasts} league={league} plans={plans} />
       </main>
     </div>
   );
