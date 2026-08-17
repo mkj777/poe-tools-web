@@ -90,14 +90,8 @@ function Tile({ row, danger }: { row: Row; danger: boolean }) {
  * risk panel answers the same question without rolling, by asking whether a
  * fragment could ever land in a generated name or a modifier at all.
  */
-export function BestiarySimulator({
-  beasts,
-  initialPattern = "",
-}: {
-  beasts: Beast[];
-  initialPattern?: string;
-}) {
-  const [pattern, setPattern] = useState(initialPattern);
+export function BestiarySimulator({ beasts }: { beasts: Beast[] }) {
+  const [pattern, setPattern] = useState("");
   const [dangerAbove, setDangerAbove] = useState("");
   const [roll, setRoll] = useState(0);
   const [showRest, setShowRest] = useState(false);

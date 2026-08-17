@@ -140,7 +140,7 @@ async function lookup(league: string, name: string): Promise<TradePrice> {
 
 /**
  * `use cache` supersedes this in Next 16, but that needs Cache Components
- * enabled app-wide, and this page renders dynamically off searchParams.
+ * enabled app-wide, which is a far larger change than one memo is worth.
  * unstable_cache still persists across requests and deployments, which is all
  * that is wanted here.
  */

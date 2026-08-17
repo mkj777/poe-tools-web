@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { League } from "@/lib/ninja";
+import { leagueSlug, type League } from "@/lib/ninja";
 import {
   Select,
   SelectContent,
@@ -24,7 +24,7 @@ export function LeagueSelect({
   return (
     <Select
       value={value}
-      onValueChange={(id) => router.push(`/?league=${encodeURIComponent(id)}`)}
+      onValueChange={(id) => router.push(`/${leagueSlug(id)}`)}
     >
       <SelectTrigger className={className}>
         <SelectValue />

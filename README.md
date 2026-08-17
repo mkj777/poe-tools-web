@@ -169,7 +169,7 @@ theories, is written up in [docs/bestiary-search.md](docs/bestiary-search.md).
 
 ### Trying a pattern without the game
 
-`/simulation` is that model made visible: every beast with a listing, the lines
+`/<league>/simulation` is that model made visible: every beast with a listing, the lines
 the search reads, and a field to paste a pattern into. What comes back is what
 the Bestiary would show — except each tile carries the beast's price and the
 fragment that matched it, so a trash pattern that turns up something expensive
@@ -216,6 +216,33 @@ are planned on the server and shipped with the page (~26 KB, ~6 gzipped).
 Those ten are cached on the **split** — which beasts fall either side of 1, 2, 3,
 5 and 9 chaos — not on the prices. Prices move every quarter of an hour, a beast
 crosses a preset far more rarely, so most refreshes cost nothing.
+
+### Nothing renders per request
+
+Every visitor sees the same page and poe.ninja recomputes every fifteen minutes,
+so there is nothing to render per request. The league lives in the **path**, not
+in a query string — `/allflame`, `/allflame/simulation` — which is what lets the
+pages be prerendered:
+
+```
+○ /                        15m    (redirects to the current league)
+● /allflame                15m
+● /allflame/simulation     15m
+● /standard, /standard/simulation, /hardcore, /allflamehc …
+ƒ /api/refresh-prices             (the cron, the only dynamic route)
+```
+
+`export const revalidate = 900` plus `generateStaticParams` gives ISR: the HTML
+is served from Vercel's CDN with `s-maxage=900, stale-while-revalidate` and
+rebuilt in the background once it is that old. On a Hobby plan that matters
+twice over — almost no function invocations, and the seconds of pattern planning
+happen during the background rebuild rather than in front of somebody.
+
+The live leagues are prerendered at build time; a league that starts later
+renders on its first visit and is cached from then on, and a slug that matches no
+league 404s. Page renders never reach the trade API — `lookup()` throws unless
+the cron has called `allowLiveLookups()` — so a rebuild every quarter of an hour
+cannot walk into GGG's rate limit.
 
 ## Development
 

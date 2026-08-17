@@ -327,7 +327,7 @@ the wiki's note. Both then carry a few ordinary ones, and a beast that survived
 the altar keeps "10% chance not to be consumed when sacrificed at the Blood
 Altar" as another line.
 
-All of that is now rolled per beast in `/simulation`, and `patternRisks()`
+All of that is now rolled per beast in the Bestiary Sim, and `patternRisks()`
 answers the question without rolling: can this fragment land in *any* generated
 name or *any* modifier name? A test asserts the planner never emits one that
 can, at every threshold and in both modes.
@@ -422,7 +422,7 @@ the trash side.
 
 ## Simulating the window instead of guessing
 
-`/simulation` holds every beast with a listing, with the lines this model says
+the Bestiary Sim holds every beast with a listing, with the lines this model says
 the search reads, and applies a pasted pattern the way `matchesBestiaryPattern`
 does. Each tile shows the price and the fragment that matched, so a probe can
 be checked against the model before it is checked against the game — and, more

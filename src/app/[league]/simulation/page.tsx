@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
-import { getLeagues } from "@/lib/ninja";
+import { notFound } from "next/navigation";
 import { hasListing, loadBeasts } from "@/lib/beasts";
+import { leagueParams, resolveLeague } from "@/lib/league";
+import { leagueSlug } from "@/lib/ninja";
 import { BestiarySimulator } from "@/components/bestiary-simulator";
 
 export const metadata = {
@@ -10,13 +12,16 @@ export const metadata = {
   description: "Try a Bestiary search against every beast that has a listing.",
 };
 
-export default async function Page({ searchParams }: PageProps<"/simulation">) {
-  const leagues = await getLeagues();
-  const params = await searchParams;
-  const requested = params.league;
-  const league =
-    leagues.find((l) => l.id === requested)?.id ?? leagues[0]?.id ?? "Standard";
-  const pattern = typeof params.q === "string" ? params.q : "";
+/** Same beasts, same 15 minute window as the prices page. */
+export const revalidate = 900;
+
+export const generateStaticParams = leagueParams;
+
+export default async function Page({
+  params,
+}: PageProps<"/[league]/simulation">) {
+  const { league } = await resolveLeague((await params).league);
+  if (!league) notFound();
 
   // Only beasts the game still hands out — the rest can never show up in a
   // Bestiary window, so having them here would only mislead.
@@ -41,7 +46,7 @@ export default async function Page({ searchParams }: PageProps<"/simulation">) {
           />
           <div className="px-3 pt-3">
             <Link
-              href={`/?league=${encodeURIComponent(league)}`}
+              href={`/${leagueSlug(league)}`}
               className="bg-secondary/60 hover:bg-secondary text-foreground flex h-10 w-full items-center justify-center gap-2 rounded-md border text-sm font-medium transition-colors"
             >
               <ArrowLeft className="size-4" />
@@ -61,7 +66,7 @@ export default async function Page({ searchParams }: PageProps<"/simulation">) {
           </p>
         </header>
 
-        <BestiarySimulator beasts={beasts} initialPattern={pattern} />
+        <BestiarySimulator beasts={beasts} />
       </main>
     </div>
   );
