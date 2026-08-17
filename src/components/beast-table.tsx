@@ -278,7 +278,7 @@ function BestiaryRegex({
           {unreachable.length > 0 && (
             <Notice
               tone="red"
-              text={`No search can single out ${unreachable.length} of them — their own genus or a longer name contains them, so handle these by hand:`}
+              text={`No search can single out ${unreachable.length} of them — a beast you are keeping carries the same name as a line of its own, so handle these by hand:`}
             >
               {unreachable}
             </Notice>

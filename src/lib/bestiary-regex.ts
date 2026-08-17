@@ -8,13 +8,19 @@
  * What the search actually does, established by in-game probing and written up
  * in docs/bestiary-search.md:
  *
- * - Plain case-insensitive **substring** matching (`wldbrstl` finds nothing).
- * - `|` alternation and the `.` wildcard work; `!` negation does not.
- * - `^` anchors to the start of a **line**, not of the whole row
- *   (`^resence` finds nothing while `resence` finds the Presence modifiers).
+ * - A row is matched **line by line** and shown if any single line matches, so
+ *   a row offers several targets: the type name, its genus and family, the name
+ *   the game generated for that capture, and every modifier name.
+ * - It is a real regex engine, not substring matching with three special
+ *   characters: `|`, `.`, `^`, `$`, groups, `[^x]` and `(?!…)` all work. `!`
+ *   and `"quotes"` do not, and `.` does not cross a line break.
+ * - `^` and `$` both bind per line, so `^goatman$` selects "Goatman" without
+ *   "Goatman Fire-raiser" — the one form nothing else can match by accident.
  * - A literal space is not a plain character, so word breaks travel as `.`.
- * - Each row offers several lines to match against: the beast type name, its
- *   genus and family, and up to three modifier names with their descriptions.
+ *
+ * Only the subset that earns its keep is used. Negation cannot help here: a row
+ * is shown when *any* line matches, and a modifier line lacking the term always
+ * satisfies a `(?!…)`, so per-line negation cannot exclude a row.
  *
  * Finding the smallest set of fragments covering every wanted beast is set
  * cover, so this uses the usual greedy approximation.
@@ -110,7 +116,24 @@ const NAME_PREFIXES = MONSTER_NAME_PREFIXES.map(normalize);
 const NAME_SUFFIXES = MONSTER_NAME_SUFFIXES.map(normalize);
 const NAME_TITLES = MONSTER_NAME_TITLES.map((t) => normalize(` ${t}`));
 
-function canOccurInGeneratedName({ body, anchored }: Fragment) {
+function canOccurInGeneratedName({ body, anchored, terminated }: Fragment) {
+  if (anchored && terminated) {
+    // A whole line has to equal the fragment, so only a generated name of the
+    // very same length collides: prefix + suffix, optionally plus a title.
+    const equals = (name: string) =>
+      body.length === name.length && startsWith(body, name);
+    for (const p of NAME_PREFIXES) {
+      if (p.length > body.length) continue;
+      for (const s of NAME_SUFFIXES) {
+        const base = p + s;
+        if (base.length > body.length) continue;
+        if (equals(base)) return true;
+        if (NAME_TITLES.some((t) => equals(base + t))) return true;
+      }
+    }
+    return false;
+  }
+
   if (anchored) {
     // A generated name begins with a prefix word.
     if (NAME_PREFIXES.some((p) => startsWith(body, p))) return true;
@@ -150,23 +173,44 @@ function canOccurInGeneratedName({ body, anchored }: Fragment) {
   return false;
 }
 
-/** One alternative of a pattern, kept in solver form (spaces, not dots). */
-type Fragment = { body: string; anchored: boolean };
+/**
+ * One alternative of a pattern, kept in solver form (spaces, not dots).
+ * `anchored` is a leading `^`, `terminated` a trailing `$`; both together mean
+ * the line has to equal the fragment outright.
+ */
+type Fragment = { body: string; anchored: boolean; terminated?: boolean };
 
 const emit = (f: Fragment) =>
-  (f.anchored ? "^" : "") + f.body.split(" ").join(".");
+  (f.anchored ? "^" : "") +
+  f.body.split(" ").join(".") +
+  (f.terminated ? "$" : "");
 
-const parse = (alternative: string): Fragment => ({
-  anchored: alternative.startsWith("^"),
-  body: alternative.replace(/^\^/, "").split(".").join(" "),
-});
+function fragmentHits({ body, anchored, terminated }: Fragment, lines: string[]) {
+  return lines.some((line) => {
+    if (anchored && terminated) {
+      return body.length === line.length && startsWith(body, line);
+    }
+    if (anchored) return startsWith(body, line);
+    if (terminated) return endsWith(body, line);
+    return containedIn(body, line);
+  });
+}
 
-function fragmentHits(fragment: Fragment, lines: string[]) {
-  return lines.some((line) =>
-    fragment.anchored
-      ? startsWith(fragment.body, line)
-      : containedIn(fragment.body, line),
-  );
+/**
+ * The game's engine, as far as it has been probed: one regex, tried against
+ * each line on its own. Going through `RegExp` rather than the solver's own
+ * fragment forms is what lets the simulator answer for a hand-typed `[^x]` or
+ * `(?!…)` — the solver never emits those, but a player may well try them.
+ *
+ * A space is not a plain character in the field, so it travels as a wildcard.
+ * An unfinished pattern (`^craicic(`) simply matches nothing.
+ */
+function compile(pattern: string) {
+  try {
+    return new RegExp(pattern.split(" ").join("."), "i");
+  } catch {
+    return null;
+  }
 }
 
 /** Does a finished pattern hit this beast? Used by the UI and the tests. */
@@ -175,7 +219,8 @@ export function matchesBestiaryPattern(
   beast: string | string[],
 ) {
   const lines = (Array.isArray(beast) ? beast : [beast]).map(normalize);
-  return pattern.split("|").some((alt) => fragmentHits(parse(alt), lines));
+  const re = compile(pattern);
+  return re !== null && lines.some((line) => re.test(line));
 }
 
 /**
@@ -187,10 +232,12 @@ export function matchingFragments(pattern: string, beast: string[]) {
   const lines = beast.map(normalize);
   const out: { fragment: string; line: string }[] = [];
 
+  // Splitting on `|` is only for attribution. A hand-typed group leaves halves
+  // that do not compile; those are skipped, and the tile still shows as matched.
   for (const alternative of pattern.split("|")) {
-    if (!alternative) continue;
-    const fragment = parse(alternative);
-    const i = lines.findIndex((line) => fragmentHits(fragment, [line]));
+    const re = alternative ? compile(alternative) : null;
+    if (!re) continue;
+    const i = lines.findIndex((line) => re.test(line));
     if (i !== -1) out.push({ fragment: alternative, line: beast[i] });
   }
   return out;
@@ -230,6 +277,16 @@ function candidatesFor(targets: string[][], avoid: string[][]) {
 
   for (const lines of targets) {
     const name = lines[0];
+
+    // The full name with both anchors. Costs every character of the name plus
+    // two, and in exchange nothing but an identical line can match it — which
+    // is the only way to single out a name that another beast's name contains
+    // ("Goatman" inside "Goatman Fire-raiser"). The solver reaches for it last,
+    // since any shorter fragment covering the same beast scores better.
+    if (SAFE_FRAGMENT.test(name)) {
+      consider({ body: name, anchored: true, terminated: true });
+    }
+
     for (let len = MIN_ANCHORED_FRAGMENT; len <= MAX_FRAGMENT; len++) {
       // Anchored: bound to the start of a line, which rules out mid-word
       // collisions and costs a single character.

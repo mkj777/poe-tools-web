@@ -38,13 +38,12 @@ the cheap ones that ride along are named rather than avoided.
 | --- | --- | --- |
 | 1c | 202 beasts, 2 searches, 12 extras | 16 beasts, 1 search |
 | 2c | 185 beasts, 2 searches, 24 extras | 33 beasts, 1 search |
-| 4c | 32 beasts, 1 search, 3 extras | 186 beasts, 4 searches, 3 left out |
-| 20c | 16 beasts, 1 search, 4 extras | 202 beasts, 4 searches, 2 left out |
+| 4c | 32 beasts, 1 search, no extras | 186 beasts, 4 searches |
+| 20c | 16 beasts, 1 search, no extras | 202 beasts, 4 searches |
 
-"Left out" is not a shortfall in the budget. "Goatman" sits inside "Goatman
-Fire-raiser", so every search that finds the one finds the other, and no number
-of extra searches changes that. Those beasts are named so they can be handled
-by hand.
+Nothing is left out any more. "Goatman" sits inside "Goatman Fire-raiser", so
+for a long time it could not be singled out at all and was named for the player
+to handle by hand. `^goatman$` does it — see the full-line form below.
 
 ## Data
 
@@ -101,8 +100,11 @@ Two things that bit us and are now guarded:
 
 ## The Bestiary regex
 
-The in-game search is plain case-insensitive substring matching with `|` and
-`.` support, so a pattern is an alternation of short name fragments:
+The in-game search turned out to be a real, case-insensitive regex engine —
+`|`, `.`, `^`, `$`, groups, `[^x]` and `(?!…)` all work, `!` and `"quotes"` do
+not, and `.` stops at a line break. What it is *not* is row-oriented: every line
+of a row is matched separately and the row is shown if any one of them matches.
+A pattern is therefore an alternation of short name fragments:
 
 ```
 wine.r|rric.g|cic.sa|rric.f|umal.s|wine.c|rric.w|rric.l|wine.v|icic.m|rric.m
@@ -138,6 +140,21 @@ name, a genus or a modifier.
 
 A literal space is never emitted either: word breaks travel as a `.` wildcard,
 because the field does not treat a space as a plain character.
+
+### The full-line form
+
+`^goatman$` is the one fragment that cannot go wrong. Both anchors bind per
+line, so the whole line has to equal the fragment — which no generated name and
+no modifier ever will. It costs every character of the name plus two, so the
+solver reaches for it last, but it is what finally solved the beasts whose name
+another beast's name contains: Goatman, Devourer, Plummeting Ursa and the four
+Parasite variants. Nothing is unreachable now.
+
+Negation is the one part of the dialect that cannot help. `(?!…)` works, but a
+row is shown when *any* of its lines matches, and a modifier line that lacks the
+term always satisfies the lookahead — so per-line negation cannot exclude a row.
+"Everything except the expensive ones" stays un-expressible, and the cheap
+beasts have to be enumerated.
 
 `matchesBestiaryPattern()` implements this reading, and the UI warnings and the
 tests are measured against it rather than against `RegExp.test`.

@@ -107,14 +107,30 @@ test("anchoring isolates a name that ends other names", () => {
   assert.ok(steps[0].pattern.startsWith("^"), steps[0].pattern);
 });
 
-test("names what no search can single out", () => {
-  // A name that begins another one cannot be isolated even with an anchor.
+test("both anchors isolate a name that begins another name", () => {
+  // A leading `^` is not enough here — "Craicic Maw" begins "Craicic
+  // Mawbeast". `$` binds per line too (in game: `goatman$` returns both
+  // goatmen, `alph$` returns nothing), so the full line can be pinned.
   const { steps, unreachable } = planBestiaryPatterns(
     [{ name: "Craicic Maw" }],
     [{ name: "Craicic Mawbeast" }],
   );
+  assert.deepEqual(unreachable, []);
+  assert.equal(steps.length, 1);
+  assert.ok(steps[0].pattern.endsWith("$"), steps[0].pattern);
+  assert.ok(matchesBestiaryPattern(steps[0].pattern, "Craicic Maw"));
+  assert.ok(!matchesBestiaryPattern(steps[0].pattern, "Craicic Mawbeast"));
+});
+
+test("names what no search can single out", () => {
+  // What survives: an unwanted beast carrying the wanted name as a whole line
+  // of its own. Nothing distinguishes the two lines, at any length.
+  const { steps, unreachable } = planBestiaryPatterns(
+    [{ name: "Maw" }],
+    [{ name: "Craicic Maw", lines: ["Maws", "Amphibians", "Maw"] }],
+  );
   assert.deepEqual(steps, []);
-  assert.deepEqual(unreachable, ["Craicic Maw"]);
+  assert.deepEqual(unreachable, ["Maw"]);
 });
 
 test("splits into more searches rather than losing precision", () => {

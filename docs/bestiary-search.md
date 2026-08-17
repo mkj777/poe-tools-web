@@ -11,17 +11,26 @@ Status legend: ✅ confirmed · ❓ open · ❌ ruled out
 
 ## Current model
 
-Matching is **plain case-insensitive substring** — over far more text than the
-beast type name.
+A **real regex engine, applied per line**. Each line of a row is matched on its
+own and the row is shown if any single line matches.
 
 | Property | Status | Evidence |
 | --- | --- | --- |
-| Matching is plain substring | ✅ | Test 8 |
-| Matching is **not** subsequence | ✅ ruled out | Test 8 |
+| Matching is per line, row shown on any hit | ✅ | Tests 7, 12, 16 |
+| Matching is plain substring, not subsequence | ✅ | Test 8 |
 | A literal space is not a plain character | ✅ | Test 1 |
 | `.` behaves as a wildcard | ✅ | Every pattern using `.` has worked |
+| `.` does **not** cross a line break | ✅ | Test 16 I |
 | `\|` alternation works | ✅ | Every generated pattern relies on it |
-| `!` negation | ❌ | Test 4 |
+| Groups `( )` | ✅ | Test 16 A |
+| Negated character classes `[^x]` | ✅ | Test 16 B |
+| Quantifiers `.*` | ✅ | Test 16 D |
+| `$` anchors, per line | ✅ | Test 16 C2, H1 |
+| Full-line `^name$` | ✅ | Test 16 H2 |
+| Negative lookahead `(?!…)` | ✅ parsed **and** applied | Test 16 F1, F2 |
+| Row-level negation | ❌ impossible | Test 16 — per-line OR defeats any lookahead |
+| `!` negation | ❌ | Test 4 — and `!` is not regex syntax at all |
+| `"quotes"` as exact match | ❌ | Test 16 G |
 | Field limit is 249 characters | ✅ | In-game testing; 250 truncates |
 | **Searched:** beast type name | ✅ | Every working pattern |
 | **Searched:** genus and family | ✅ | Test 9 |
@@ -322,6 +331,56 @@ All of that is now rolled per beast in `/simulation`, and `patternRisks()`
 answers the question without rolling: can this fragment land in *any* generated
 name or *any* modifier name? A test asserts the planner never emits one that
 can, at every threshold and in both modes.
+
+### Test 16 — it is a real regex engine
+
+Test 4 had `!parasite` doing nothing, and that was read as "no negation". Wrong
+read: `!` is item-filter syntax, not regex, so its failure said nothing about
+the dialect. Meanwhile `.`, `|` and a per-line `^` are exactly a regex engine in
+multiline mode. So the whole dialect was probed properly, each probe paired with
+a control that had to match — an unsupported metacharacter is most likely
+treated as a literal, so "nothing came back" alone proves nothing.
+
+| Probe | Control | Result | Conclusion |
+| --- | --- | --- | --- |
+| `(wild\|craicic)` | `wild\|craicic` | identical | groups are parsed |
+| `f[^x]rric` | `f[^a]rric` | farric / empty | negated classes work |
+| `wild.*hellion` | `wild.hellion` | both | quantifiers work |
+| `alph$` | `alpha` | empty / matches | `$` is a real anchor |
+| `goatman$` | — | both goatmen | `$` binds **per line** |
+| `^farric.goatman$` | — | Farric Goatman only | full-line matching works |
+| `^elder(?!.*zzzz)` | `^elder` | identical, all three | `(?!…)` is parsed, not literal |
+| `^elder(?!.*goatman)` | `^elder` | Goatman **gone** | `(?!…)` is applied |
+| `ragetusk.*spectral` | `ragetusk`, `spectral` | empty / both match | `.` does not cross a line break |
+| `"goatman"` | `goatman` | empty / matches | quotes are literal, no exact-match form |
+
+`\b` was probed too and the probe was worthless: `\bgoatman` *must* return
+Goatman Fire-raiser even when `\b` works, because "Goatman" inside it does begin
+at a word boundary. Word boundaries cannot separate a name from a longer name
+containing it. Line anchors can, which is why H2 is the useful result.
+
+**What this gave the generator.** A third fragment form: the full name with both
+anchors. Nothing but an identical line can match it, so it is immune to
+generated names and modifier text by construction. Measured on the 218-beast
+fixture, it emptied the unreachable list entirely:
+
+| Threshold | Sell extras | Trash searches | Left out, before → after |
+| --- | --- | --- | --- |
+| 1c | 12 | 1 | 0 → 0 |
+| 2c | 24 | 1 | 0 → 0 |
+| 4c | 3 → **0** | 4 | 3 → **0** (`^goatman$ ^devourer$ ^plummeting.ursa$`) |
+| 20c | 4 → **0** | 4 | 2 → **0** (`^goatman$ ^devourer$`) |
+
+Search counts did not move. The extras at 4c and 20c dropping to zero was not
+expected — a collision-proof fragment helps the coverage mode too.
+
+**What it did not give.** Negation, despite `(?!…)` working. A row is shown when
+*any* line matches, and on a beast whose type line contains the term, the
+modifier lines do not — so they satisfy the lookahead and bring the row back.
+Row-level exclusion cannot be expressed by a per-line pattern at all, however
+good the dialect. `^(?!.*goatman)` returns everything, and that is not a bug in
+the engine, it is the line-oriented model. Enumeration stays the only option for
+the trash side.
 
 ---
 
