@@ -401,6 +401,9 @@ export function BeastTable({
 }) {
   const [query, setQuery] = useState("");
   const [minChaos, setMinChaos] = useState("");
+  /** What the free field shows. A preset click empties it, so it never mirrors
+      the buttons and always reads as somewhere to type. */
+  const [typed, setTyped] = useState("");
   const [sort, setSort] = useState<SortKey>("chaosValue");
   const [desc, setDesc] = useState(true);
   const [showNotFound, setShowNotFound] = useState(false);
@@ -494,7 +497,10 @@ export function BeastTable({
               <button
                 key={preset}
                 type="button"
-                onClick={() => setMinChaos(String(preset))}
+                onClick={() => {
+                  setMinChaos(String(preset));
+                  setTyped("");
+                }}
                 aria-pressed={threshold === preset}
                 className={`w-9 rounded-full py-1.5 text-sm tabular-nums transition-colors ${
                   threshold === preset
@@ -514,15 +520,18 @@ export function BeastTable({
               min={0}
               step={1}
               inputMode="numeric"
-              value={minChaos}
-              onChange={(e) => setMinChaos(e.target.value)}
-              placeholder="…"
+              value={typed}
+              onChange={(e) => {
+                setTyped(e.target.value);
+                setMinChaos(e.target.value);
+              }}
+              placeholder="Other"
               aria-label="Any other minimum"
               // No spinner: the arrows are useless at these ranges and steal room.
-              className={`placeholder:text-muted-foreground w-14 rounded-full py-1.5 text-center text-sm tabular-nums transition-colors outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+              className={`placeholder:text-muted-foreground/70 w-[4.5rem] rounded-full border py-1.5 text-center text-sm tabular-nums transition-colors outline-none [appearance:textfield] focus:border-transparent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
                 custom
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground bg-transparent"
+                  ? "bg-background text-foreground border-transparent shadow-sm"
+                  : "text-foreground border-border/80 hover:border-foreground/40 focus:bg-background border-dashed bg-transparent focus:shadow-sm"
               }`}
             />
           </div>
