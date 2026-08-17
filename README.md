@@ -19,8 +19,9 @@ generated Bestiary search pattern for the ones worth farming.
   or everything from it up.
 - **Bestiary searches** for that selection, ready to paste into the in-game
   Bestiary window.
-- **Simulation**: the same beasts in a mock Bestiary window, where a pattern
-  can be tried out with every price on screen before anything is released.
+- **Bestiary Sim**: the same beasts in a mock Bestiary window, where a pattern
+  can be tried out with every price on screen before anything is released. An
+  empty search shows all of them, as the game does.
 
 ## The two modes want opposite things
 

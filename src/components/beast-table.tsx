@@ -2,14 +2,12 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
   ArrowDown,
   ArrowUp,
   Check,
   ChevronsUpDown,
   Copy,
-  FlaskConical,
 } from "lucide-react";
 import { leagueSlug, type Beast } from "@/lib/ninja";
 import { CurrencyIcon, Price } from "@/components/currency";
@@ -107,17 +105,15 @@ function Notice({
   );
 }
 
-/** One search of the plan: copyable, numbered, and testable. */
+/** One search of the plan: copyable and numbered. */
 function StepRow({
   index,
   total,
   step,
-  league,
 }: {
   index: number;
   total: number;
   step: BestiaryStep;
-  league: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -150,15 +146,6 @@ function StepRow({
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           {copied ? "Copied" : "Copy"}
         </Button>
-        <Button variant="ghost" asChild className="shrink-0">
-          <Link
-            href={`/simulation?league=${encodeURIComponent(league)}&q=${encodeURIComponent(step.pattern)}`}
-            title="Run it against the simulated Bestiary"
-          >
-            <FlaskConical className="size-4" />
-            Test
-          </Link>
-        </Button>
       </div>
     </div>
   );
@@ -168,12 +155,10 @@ function BestiaryRegex({
   beasts,
   threshold,
   mode,
-  league,
 }: {
   beasts: Beast[];
   threshold: number;
   mode: Mode;
-  league: string;
 }) {
   // Cheap: the planning itself happens in a worker, see useBestiaryPattern.
   const { wanted, unwanted } = useMemo(() => {
@@ -265,7 +250,6 @@ function BestiaryRegex({
               index={i}
               total={steps.length}
               step={step}
-              league={league}
             />
           ))}
 
@@ -313,35 +297,51 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
         </TooltipTrigger>
         {/* One child: the content itself is a flex row, so several would
             become columns. */}
-        <TooltipContent side="left" className="max-w-96 py-2.5 text-sm">
+        <TooltipContent
+          side="left"
+          className="max-h-[85vh] max-w-[26rem] overflow-y-auto py-2.5 text-[13px] leading-relaxed"
+        >
           <div className="space-y-2">
             <p>
-              <span className="font-medium">Beast Prices.</span> Every beast —
-              priced by poe.ninja where it has data, by the official trade site
-              everywhere else.
+              <span className="font-medium">Beast Prices.</span> Every beast,
+              priced by poe.ninja where it has data and by the trade site
+              everywhere else. Pick a threshold and a mode, then paste each
+              search into the Bestiary in turn.
             </p>
             <p>
-              Paste each search into the Bestiary window in turn. The two modes
-              want opposite things. <strong>Trash</strong> is destructive, so no
-              search may show a beast above the threshold, whatever that costs
-              in extra searches. <strong>Sell</strong> only has to put every
-              valuable beast in front of you, so a cheap one riding along is
-              fine and gets named rather than avoided.
+              <span className="font-medium">The in-game search</span> is a real
+              regex engine — <code>|</code> <code>.</code> <code>^</code>{" "}
+              <code>$</code> <code>[^x]</code> <code>(?!…)</code> work,{" "}
+              <code>!</code> and quotes do not, a space acts as <code>.</code>.
+              It matches <strong>per line</strong>, and a row has more lines than
+              the type name: genus, family, the modifiers that capture rolled,
+              and its random name. Hence surprise hits — <code>rar</code> sits
+              inside &ldquo;Tempo<em>rar</em>ily Revives&rdquo;, which any beast
+              can roll.
             </p>
             <p>
-              The search reads more than the type name: genus, family, every
-              modifier the beast rolled — Bestiary ones and ordinary rare
-              monster ones — with their descriptions, plus the generated name it
-              was captured under. Fragments that could land in any of those are
-              refused, and an unanchored one has to be at least six characters,
-              because no list of modifier text is ever complete and something
-              like <code>rar</code> sits inside &ldquo;Rare pack minions&rdquo;.
+              <span className="font-medium">So a fragment is refused</span> if it
+              could land in a modifier name or in any of the 35,237 generated
+              names, and an unanchored one needs six characters.{" "}
+              <code>^goatman$</code> pins a whole line, the only way to separate
+              &ldquo;Goatman&rdquo; from &ldquo;Goatman Fire-raiser&rdquo;. Past
+              249 characters you get a second search, never a truncated one.
             </p>
             <p>
-              Built from {beasts.length} beasts, {fromNinja} of them with
-              poe.ninja data. Beasts with no listings at all are left out
-              entirely — anything the game still drops has someone selling it,
-              so an empty search means the beast is gone, not cheap.
+              <span className="font-medium">Trash and Sell are opposites.</span>{" "}
+              Trash is destructive, so no search may ever show a beast above the
+              threshold. Sell only needs every valuable beast on screen, so a
+              cheap one riding along is fine. Negation would fix trashing in one
+              line, but a row returns as soon as any other line matches.
+            </p>
+            <p>
+              <span className="font-medium">Bestiary Sim</span> tries a pattern
+              against every listed beast, rolled and priced, so an expensive
+              beast in a trash pattern shows up before it is gone.
+            </p>
+            <p className="text-muted-foreground">
+              {beasts.length} beasts, {fromNinja} from poe.ninja. No listing
+              anywhere means the beast is gone, not cheap, so those are left out.
             </p>
           </div>
         </TooltipContent>
@@ -492,12 +492,7 @@ export function BeastTable({
         </span>
       </div>
 
-      <BestiaryRegex
-        beasts={found}
-        threshold={threshold}
-        mode={mode}
-        league={league}
-      />
+      <BestiaryRegex beasts={found} threshold={threshold} mode={mode} />
 
       <div className="flex flex-wrap items-center gap-3">
         <Input

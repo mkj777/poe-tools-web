@@ -18,7 +18,7 @@ export function SimulationLink({
       className="bg-secondary/60 hover:bg-secondary text-foreground flex h-10 w-full items-center justify-center gap-2 rounded-md border text-sm font-medium transition-colors"
     >
       <FlaskConical className="size-4" />
-      Simulation
+      Bestiary Sim
     </Link>
   );
 }

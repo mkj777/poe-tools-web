@@ -113,10 +113,11 @@ export function BestiarySimulator({
     const byValue = (a: Row, b: Row) =>
       (b.beast.chaosValue ?? 0) - (a.beast.chaosValue ?? 0);
 
+    // An empty search shows the whole Bestiary in game, so it does here too.
     if (!trimmed) {
       return {
-        matched: [] as Row[],
-        rest: captures.map((c) => ({ ...c, hits: [] })).sort(byValue),
+        matched: captures.map((c) => ({ ...c, hits: [] })).sort(byValue),
+        rest: [] as Row[],
       };
     }
 
@@ -174,7 +175,7 @@ export function BestiarySimulator({
           <span className="text-muted-foreground tabular-nums">
             {pattern.trim()
               ? `${matched.length} of ${beasts.length} beasts shown`
-              : `${beasts.length} beasts, no search`}
+              : `all ${beasts.length} beasts, no search`}
           </span>
 
           <span className="text-muted-foreground flex items-center gap-2">
@@ -260,23 +261,26 @@ export function BestiarySimulator({
         </p>
       )}
 
-      <div className="space-y-3">
-        <button
-          type="button"
-          onClick={() => setShowRest((v) => !v)}
-          className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
-        >
-          {showRest ? "Hide" : "Show"} the {rest.length} beasts that stay hidden
-        </button>
+      {rest.length > 0 && (
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setShowRest((v) => !v)}
+            className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
+          >
+            {showRest ? "Hide" : "Show"} the {rest.length} beasts that stay
+            hidden
+          </button>
 
-        {showRest && (
-          <div className="grid gap-3 opacity-60 sm:grid-cols-2 lg:grid-cols-3">
-            {rest.map((row) => (
-              <Tile key={row.beast.name} row={row} danger={false} />
-            ))}
-          </div>
-        )}
-      </div>
+          {showRest && (
+            <div className="grid gap-3 opacity-60 sm:grid-cols-2 lg:grid-cols-3">
+              {rest.map((row) => (
+                <Tile key={row.beast.name} row={row} danger={false} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

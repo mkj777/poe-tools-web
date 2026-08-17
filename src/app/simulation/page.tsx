@@ -6,7 +6,7 @@ import { hasListing, loadBeasts } from "@/lib/beasts";
 import { BestiarySimulator } from "@/components/bestiary-simulator";
 
 export const metadata = {
-  title: "Bestiary Simulation",
+  title: "Bestiary Sim",
   description: "Try a Bestiary search against every beast that has a listing.",
 };
 
@@ -24,9 +24,11 @@ export default async function Page({ searchParams }: PageProps<"/simulation">) {
 
   return (
     <div className="relative">
-      <div className="flex items-start justify-between gap-6 pt-6 min-[1480px]:absolute min-[1480px]:inset-x-0 min-[1480px]:top-0">
+      {/* Above 1480px this row is absolute and spans the full width, so it
+          would sit on top of everything. Only its own column takes clicks. */}
+      <div className="pointer-events-none flex items-start justify-between gap-6 pt-6 min-[1480px]:absolute min-[1480px]:inset-x-0 min-[1480px]:top-0">
         <div
-          className="shrink-0"
+          className="pointer-events-auto shrink-0"
           style={{ width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" }}
         >
           <Image
@@ -51,12 +53,11 @@ export default async function Page({ searchParams }: PageProps<"/simulation">) {
 
       <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
         <header className="mb-6 space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Bestiary simulation
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Bestiary Sim</h1>
           <p className="text-muted-foreground">
             {beasts.length} beasts with a listing in {league}, searched the way
-            the game does — and priced, which the game will not do.
+            the game does — and priced, which the game will not do. An empty
+            search shows all of them, as in game.
           </p>
         </header>
 
