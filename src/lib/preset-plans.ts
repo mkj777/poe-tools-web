@@ -10,7 +10,12 @@ import type { Beast } from "./ninja";
 /** The thresholds the buttons offer, and the only ones worth precomputing. */
 export const PRESET_THRESHOLDS = [1, 2, 3, 4, 5];
 
-export type PlanMode = "sell" | "trash";
+/**
+ * The four plans a threshold has. `sell` and `trash` are the two modes; `clear`
+ * is the short pattern that removes what the sell search would otherwise drag
+ * in, and `band` selects the beasts worth exactly this much.
+ */
+export type PlanMode = "sell" | "trash" | "clear" | "band";
 export type PresetPlans = Record<string, BestiaryPlan>;
 
 export const presetKey = (threshold: number, mode: PlanMode) =>
@@ -27,7 +32,17 @@ const entry = (beast: Beast): BeastEntry => ({
   lines: (beast.baseType ?? "").split("|").filter(Boolean),
 });
 
-type Split = { threshold: number; above: BeastEntry[]; below: BeastEntry[] };
+type Split = {
+  threshold: number;
+  above: BeastEntry[];
+  below: BeastEntry[];
+  /** Worth this many chaos and not the next one up — 3c means 3.00 to 3.99. */
+  band: BeastEntry[];
+};
+
+/** The beasts a threshold calls "3c", as opposed to "3c and up". */
+export const inBand = (value: number, threshold: number) =>
+  value >= threshold && value < threshold + 1;
 
 /**
  * What the plans actually depend on: which beasts fall on each side of each
@@ -55,19 +70,38 @@ export function presetSplits(beasts: Beast[]): Split[] {
       .filter((b) => b.chaosValue! < threshold)
       .map(entry)
       .sort(byName),
+    band: priced
+      .filter((b) => inBand(b.chaosValue!, threshold))
+      .map(entry)
+      .sort(byName),
   }));
 }
 
 function build(splits: Split[]): PresetPlans {
   const plans: PresetPlans = {};
-  for (const { threshold, above, below } of splits) {
+  for (const { threshold, above, below, band } of splits) {
     // Selling wants coverage, trashing wants no false positive ever.
-    plans[presetKey(threshold, "sell")] = planBestiaryPatterns(above, below, {
-      exact: false,
-    });
+    const sell = planBestiaryPatterns(above, below, { exact: false });
+    plans[presetKey(threshold, "sell")] = sell;
     plans[presetKey(threshold, "trash")] = planBestiaryPatterns(below, above, {
       exact: true,
     });
+
+    // What the sell search drags in. Released first, the sell search after it
+    // holds nothing but beasts worth keeping.
+    const dragged = new Set(sell.falsePositives);
+    plans[presetKey(threshold, "clear")] = planBestiaryPatterns(
+      below.filter((b) => dragged.has(b.name)),
+      above,
+      { exact: true },
+    );
+
+    // Everything else has to stay out: the band is a price bracket, not a floor.
+    plans[presetKey(threshold, "band")] = planBestiaryPatterns(
+      band,
+      [...above, ...below].filter((b) => !band.some((x) => x.name === b.name)),
+      { exact: true },
+    );
   }
   return plans;
 }

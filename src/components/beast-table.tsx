@@ -27,6 +27,7 @@ import {
 } from "@/lib/use-bestiary-pattern";
 import {
   PRESET_THRESHOLDS,
+  inBand,
   presetKey,
   type PresetPlans,
 } from "@/lib/preset-plans";
@@ -203,13 +204,14 @@ const StepSkeleton = () => (
   </div>
 );
 
-/** Red for the pattern that destroys beasts, green for the one that sells. */
+/** Red for the patterns that destroy beasts, green for the one that sells. */
 const TONES = {
   trash: { frame: "border-red-500/50 bg-red-950/15", label: "text-red-400" },
   sell: {
     frame: "border-emerald-500/50 bg-emerald-950/15",
     label: "text-emerald-400",
   },
+  band: { frame: "border-sky-500/50 bg-sky-950/15", label: "text-sky-400" },
 } as const;
 
 /** One plan: its searches, and what the plan could not do cleanly. */
@@ -219,6 +221,7 @@ function PlanBlock({
   blurb,
   empty,
   plan,
+  handled,
 }: {
   tone: keyof typeof TONES;
   title: ReactNode;
@@ -226,8 +229,14 @@ function PlanBlock({
   /** What to say when the threshold leaves this half of the split empty. */
   empty: string;
   plan: PatternState;
+  /** Extras an earlier step already released, so this one no longer drags them
+      in. Naming them again would only contradict the step above. */
+  handled?: Set<string>;
 }) {
-  const { steps, unreachable, falsePositives, pending } = plan;
+  const { steps, unreachable, pending } = plan;
+  const falsePositives = handled
+    ? plan.falsePositives.filter((name) => !handled.has(name))
+    : plan.falsePositives;
   const { frame, label } = TONES[tone];
 
   return (
@@ -280,6 +289,12 @@ function PlanBlock({
 /** A stable empty list, so the hook it is passed to never re-plans. */
 const NONE: BeastEntry[] = [];
 
+/** A few names, then a count. A sentence is not the place for twenty-six. */
+const nameList = (names: string[], shown = 6) =>
+  names.length <= shown
+    ? names.join(", ")
+    : `${names.slice(0, shown).join(", ")} and ${names.length - shown} more`;
+
 function BestiaryRegex({
   beasts,
   threshold,
@@ -292,7 +307,7 @@ function BestiaryRegex({
   plans: PresetPlans;
 }) {
   // Cheap: the planning itself happens in a worker, see useBestiaryPattern.
-  const { sell, trash } = useMemo(() => {
+  const { sell, trash, band, offBand } = useMemo(() => {
     // Genus, family and habitat are separate lines in the Bestiary row, and
     // "^" binds to the start of any one of them.
     const entry = (b: Beast): BeastEntry => ({
@@ -307,6 +322,10 @@ function BestiaryRegex({
     return {
       sell: priced.filter((b) => b.chaosValue! >= threshold).map(entry),
       trash: priced.filter((b) => b.chaosValue! < threshold).map(entry),
+      band: priced.filter((b) => inBand(b.chaosValue!, threshold)).map(entry),
+      offBand: priced
+        .filter((b) => !inBand(b.chaosValue!, threshold))
+        .map(entry),
     };
   }, [beasts, threshold]);
 
@@ -331,6 +350,39 @@ function BestiaryRegex({
     selling ? trash : NONE,
     false,
     selling ? plans[presetKey(threshold, "sell")] : undefined,
+  );
+
+  // Step one of a sell run is not "trash everything cheap", it is "trash the
+  // few cheap ones this search cannot avoid" — after them the sell search
+  // shows keepers and nothing else.
+  const dragged = useMemo(() => {
+    const names = new Set(sellPlan.falsePositives);
+    return trash.filter((b) => names.has(b.name));
+  }, [sellPlan.falsePositives, trash]);
+
+  const clearPlan = useBestiaryPattern(
+    selling ? dragged : NONE,
+    selling ? sell : NONE,
+    true,
+    selling ? plans[presetKey(threshold, "clear")] : undefined,
+  );
+
+  // What step one actually gets rid of. A beast it cannot single out is still
+  // in the way afterwards, so the sell search goes on naming that one.
+  const released = useMemo(() => {
+    if (clearPlan.pending) return undefined;
+    const left = new Set(clearPlan.unreachable);
+    return new Set(
+      dragged.map((b) => b.name).filter((name) => !left.has(name)),
+    );
+  }, [clearPlan.pending, clearPlan.unreachable, dragged]);
+
+  // Everything worth exactly this much, whatever the mode is doing.
+  const bandPlan = useBestiaryPattern(
+    idle ? NONE : band,
+    idle ? NONE : offBand,
+    true,
+    idle ? undefined : plans[presetKey(threshold, "band")],
   );
 
   const price = <Price value={threshold} size={15} />;
@@ -365,8 +417,8 @@ function BestiaryRegex({
           ) : (
             selling && (
               <p className="text-muted-foreground text-sm">
-                Trash the cheap ones first, then the second search has only
-                beasts worth selling left to pick from.
+                Release the few cheap beasts the sell search cannot avoid, and
+                what it shows afterwards is worth keeping, all of it.
               </p>
             )
           )}
@@ -374,35 +426,72 @@ function BestiaryRegex({
         <HelpTip beasts={beasts} />
       </div>
 
-      {idle ? null : selling ? (
+      {idle ? null : (
         <div className="space-y-4">
+          {selling ? (
+            <>
+              {/* No extras, no first step: the sell search is already clean. */}
+              {dragged.length > 0 && (
+                <PlanBlock
+                  tone="trash"
+                  title={
+                    <>
+                      Step 1 — release the {dragged.length} cheap beast
+                      {dragged.length === 1 ? "" : "s"} in the way
+                    </>
+                  }
+                  blurb={
+                    clearPlan.pending
+                      ? "Planning…"
+                      : `${nameList(dragged.map((b) => b.name))} — the only beasts under the threshold the sell search cannot shake off. Nothing above it shows up in this one.`
+                  }
+                  empty="These cannot be singled out, so leave them and ignore them below."
+                  plan={clearPlan}
+                />
+              )}
+              <PlanBlock
+                tone="sell"
+                title={
+                  dragged.length > 0 ? (
+                    <>Step 2 — sell {price} and up</>
+                  ) : (
+                    <>Sell {price} and up</>
+                  )
+                }
+                blurb={
+                  sellPlan.pending
+                    ? "Planning…"
+                    : dragged.length > 0
+                      ? `Every beast at or above the threshold, in ${sellPlan.steps.length === 1 ? "one search" : `${sellPlan.steps.length} searches`} — and nothing else once step 1 is done.`
+                      : `Every beast at or above the threshold, in ${sellPlan.steps.length === 1 ? "one search" : `${sellPlan.steps.length} searches`}, with nothing cheaper riding along.`
+                }
+                empty="Nothing to sell at this threshold."
+                plan={sellPlan}
+                handled={released}
+              />
+            </>
+          ) : (
+            <PlanBlock
+              tone="trash"
+              title={<>Trash everything under {price}</>}
+              blurb={trashBlurb}
+              empty="Nothing to trash at this threshold."
+              plan={trashPlan}
+            />
+          )}
+
           <PlanBlock
-            tone="trash"
-            title={<>Step 1 — trash everything under {price}</>}
-            blurb={trashBlurb}
-            empty="Nothing is below the threshold, so there is nothing to trash first."
-            plan={trashPlan}
-          />
-          <PlanBlock
-            tone="sell"
-            title={<>Step 2 — sell {price} and up</>}
+            tone="band"
+            title={<>Worth exactly {price}</>}
             blurb={
-              sellPlan.pending
+              bandPlan.pending
                 ? "Planning…"
-                : `Every beast at or above the threshold, in ${sellPlan.steps.length === 1 ? "one search" : `${sellPlan.steps.length} searches`}. Cheaper ones may ride along — fewer of them once step 1 is done.`
+                : `The ${band.length} beast${band.length === 1 ? "" : "s"} priced at ${threshold}c and under ${threshold + 1}c, on their own — nothing dearer, nothing cheaper.`
             }
-            empty="Nothing to sell at this threshold."
-            plan={sellPlan}
+            empty="No beast is worth exactly this much right now."
+            plan={bandPlan}
           />
         </div>
-      ) : (
-        <PlanBlock
-          tone="trash"
-          title={<>Trash everything under {price}</>}
-          blurb={trashBlurb}
-          empty="Nothing to trash at this threshold."
-          plan={trashPlan}
-        />
       )}
     </div>
   );
