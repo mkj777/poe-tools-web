@@ -363,9 +363,11 @@ export function BeastTable({
   const [sort, setSort] = useState<SortKey>("chaosValue");
   const [desc, setDesc] = useState(true);
   const [showNotFound, setShowNotFound] = useState(false);
-  const [mode, setMode] = useState<Mode>("trash");
+  const [mode, setMode] = useState<Mode>("sell");
 
   const threshold = Number(minChaos) || 0;
+  /** A value the preset buttons do not cover, so the free field owns it. */
+  const custom = threshold > 0 && !PRESETS.includes(threshold);
 
   // Anything that drops is being sold by someone. A beast the trade site
   // returns nothing for is not a cheap beast, it is one the game no longer
@@ -414,7 +416,7 @@ export function BeastTable({
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <div className="bg-secondary/60 flex rounded-full p-1">
-          {(["trash", "sell"] as Mode[]).map((option) => (
+          {(["sell", "trash"] as Mode[]).map((option) => (
             <button
               key={option}
               type="button"
@@ -440,8 +442,9 @@ export function BeastTable({
             <CurrencyIcon currency="chaos" size={20} />
           </label>
 
-          {/* The thresholds worth farming at, one click away. */}
-          <div className="bg-secondary/60 flex rounded-full p-1">
+          {/* The thresholds worth farming at, plus anything else, in one
+              control — the free field is the last segment of the same pill. */}
+          <div className="bg-secondary/60 flex items-center rounded-full p-1">
             {PRESETS.map((preset) => (
               <button
                 key={preset}
@@ -457,25 +460,32 @@ export function BeastTable({
                 {preset}
               </button>
             ))}
-          </div>
 
-          <Input
-            id="min-chaos"
-            type="number"
-            min={0}
-            step={1}
-            inputMode="numeric"
-            value={minChaos}
-            onChange={(e) => setMinChaos(e.target.value)}
-            placeholder="0"
-            // No spinner: the arrows are useless at these ranges and steal room.
-            className="h-11 w-20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          />
+            <span className="bg-border mx-1 h-5 w-px shrink-0" />
+
+            <input
+              id="min-chaos"
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              value={minChaos}
+              onChange={(e) => setMinChaos(e.target.value)}
+              placeholder="…"
+              aria-label="Any other minimum"
+              // No spinner: the arrows are useless at these ranges and steal room.
+              className={`placeholder:text-muted-foreground w-14 rounded-full py-1.5 text-center text-sm tabular-nums transition-colors outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+                custom
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground bg-transparent"
+              }`}
+            />
+          </div>
         </div>
 
-        <span className="text-muted-foreground text-sm">
-          {threshold > 0 ? (
-            mode === "sell" ? (
+        {threshold > 0 && (
+          <span className="text-muted-foreground text-sm">
+            {mode === "sell" ? (
               <>
                 Every beast worth <Price value={threshold} size={15} /> and
                 above, cheap ones allowed to ride along.
@@ -485,11 +495,9 @@ export function BeastTable({
                 Only beasts worth less than{" "}
                 <Price value={threshold} size={15} />.
               </>
-            )
-          ) : (
-            "Set a threshold to plan the searches."
-          )}
-        </span>
+            )}
+          </span>
+        )}
       </div>
 
       <BestiaryRegex beasts={found} threshold={threshold} mode={mode} />
