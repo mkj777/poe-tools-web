@@ -9,6 +9,7 @@ import {
 } from "../src/lib/bestiary-regex.ts";
 import { BESTIARY_MOD_TEXT } from "../src/lib/bestiary-mods.ts";
 import { MONSTER_MOD_TEXT } from "../src/lib/monster-mods.ts";
+import { OBSERVED_MOD_LINES } from "../src/lib/observed-mods.ts";
 import { patternRisks } from "../src/lib/pattern-risk.ts";
 import { rollCapture } from "../src/lib/capture.ts";
 import {
@@ -158,6 +159,26 @@ test("never builds on text a modifier also carries", () => {
           !matchesBestiaryPattern(step.pattern, mod),
           `${threshold}c hits modifier text "${mod}": ${step.pattern}`,
         );
+      }
+    }
+  }
+});
+
+test("never builds on a modifier line only a screenshot has caught", () => {
+  // Neither wiki scrape knows "Stonemaul", "Spikes on Death" or the line a
+  // beast keeps for surviving the altar — that last one rides along on any
+  // beast at all, so a fragment inside it would be the worst kind of leak.
+  for (const threshold of [2, 4, 20, 150]) {
+    const { wanted, unwanted } = split(threshold);
+    for (const exact of [true, false]) {
+      const { steps } = planBestiaryPatterns(wanted, unwanted, { exact });
+      for (const step of steps) {
+        for (const mod of OBSERVED_MOD_LINES) {
+          assert.ok(
+            !matchesBestiaryPattern(step.pattern, mod),
+            `${threshold}c hits observed line "${mod}": ${step.pattern}`,
+          );
+        }
       }
     }
   }

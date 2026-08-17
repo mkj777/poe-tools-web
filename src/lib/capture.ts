@@ -1,5 +1,6 @@
 import { BESTIARY_MOD_NAMES } from "./bestiary-mods.ts";
 import { MONSTER_MOD_NAMES } from "./monster-mods.ts";
+import { BLOOD_ALTAR, OBSERVED_MOD_NAMES } from "./observed-mods.ts";
 import {
   MONSTER_NAME_PREFIXES,
   MONSTER_NAME_SUFFIXES,
@@ -68,12 +69,8 @@ function sample<T>(random: () => number, from: T[], count: number) {
   return out;
 }
 
-/**
- * A beast lucky enough to survive the altar keeps this, so it shows up on the
- * tooltip as an extra line.
- */
-const BLOOD_ALTAR =
-  "10% chance not to be consumed when sacrificed at the Blood Altar";
+/** Names the wiki scrape misses, so the roll can show them the way the game does. */
+const MONSTER_MODS = [...MONSTER_MOD_NAMES, ...OBSERVED_MOD_NAMES];
 
 export function rollCapture(beast: Beast, salt = 0): Capture {
   const random = mulberry32(seedFrom(beast.name, salt));
@@ -92,7 +89,7 @@ export function rollCapture(beast: Beast, salt = 0): Capture {
     BESTIARY_MOD_NAMES,
     beast.rarity === "red" ? 3 : 1,
   );
-  const monsterMods = sample(random, MONSTER_MOD_NAMES, 2 + Math.floor(random() * 3));
+  const monsterMods = sample(random, MONSTER_MODS, 2 + Math.floor(random() * 3));
   if (random() < 0.15) monsterMods.push(BLOOD_ALTAR);
 
   const traits = (beast.baseType ?? "").split("|").filter(Boolean);

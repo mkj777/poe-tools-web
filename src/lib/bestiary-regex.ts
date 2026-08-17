@@ -29,6 +29,7 @@
 // Explicit extension: Node's test runner resolves this file directly.
 import { BESTIARY_MOD_TEXT } from "./bestiary-mods.ts";
 import { MONSTER_MOD_TEXT } from "./monster-mods.ts";
+import { OBSERVED_MOD_LINES } from "./observed-mods.ts";
 import {
   MONSTER_NAME_PREFIXES,
   MONSTER_NAME_SUFFIXES,
@@ -75,7 +76,11 @@ const linesOf = (entry: BeastEntry) =>
  * matches beasts at random — `far` catches everything holding "Farric
  * Presence" — so it is never usable.
  */
-const MOD_LINES = [...BESTIARY_MOD_TEXT, ...MONSTER_MOD_TEXT].map(normalize);
+const MOD_LINES = [
+  ...BESTIARY_MOD_TEXT,
+  ...MONSTER_MOD_TEXT,
+  ...OBSERVED_MOD_LINES,
+].map(normalize);
 
 /** `fragment` may contain ' ' as the `.` wildcard, matching any character. */
 function containedIn(fragment: string, line: string) {

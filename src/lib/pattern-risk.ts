@@ -1,6 +1,7 @@
 import { matchesBestiaryPattern } from "./bestiary-regex.ts";
 import { BESTIARY_MOD_NAMES } from "./bestiary-mods.ts";
 import { MONSTER_MOD_NAMES } from "./monster-mods.ts";
+import { OBSERVED_MOD_LINES } from "./observed-mods.ts";
 import {
   MONSTER_NAME_PREFIXES,
   MONSTER_NAME_SUFFIXES,
@@ -35,7 +36,11 @@ function allGeneratedNames() {
   return out;
 }
 
-const MOD_NAMES = [...BESTIARY_MOD_NAMES, ...MONSTER_MOD_NAMES];
+const MOD_NAMES = [
+  ...BESTIARY_MOD_NAMES,
+  ...MONSTER_MOD_NAMES,
+  ...OBSERVED_MOD_LINES,
+];
 
 function riskOf(fragment: string): FragmentRisk | null {
   const name = allGeneratedNames().find((n) =>

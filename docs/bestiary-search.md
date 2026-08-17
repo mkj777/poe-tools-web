@@ -18,7 +18,7 @@ own and the row is shown if any single line matches.
 | --- | --- | --- |
 | Matching is per line, row shown on any hit | ✅ | Tests 7, 12, 16 |
 | Matching is plain substring, not subsequence | ✅ | Test 8 |
-| A literal space is not a plain character | ✅ | Test 1 |
+| A space in the query behaves as `.`, not as itself | ✅ | Test 16 spaces |
 | `.` behaves as a wildcard | ✅ | Every pattern using `.` has worked |
 | `.` does **not** cross a line break | ✅ | Test 16 I |
 | `\|` alternation works | ✅ | Every generated pattern relies on it |
@@ -373,6 +373,42 @@ fixture, it emptied the unreachable list entirely:
 
 Search counts did not move. The extras at 4c and 20c dropping to zero was not
 expected — a collision-proof fragment helps the coverage mode too.
+
+#### Test 16, spaces — and Test 1 finally closed
+
+Test 1 read `l p` matching Sulphuric Scorpion as "the space is dropped", since
+`l.p` cannot match "su**lp**huric" — there is no character between the l and the
+p. Two probes killed that reading:
+
+- `farric goatman` returns Farric Goatman. Under dropping, "farricgoatman"
+  appears nowhere and it would return nothing. **A space is a `.` wildcard.**
+- `k m|l p` was run again and twelve of its hits screenshotted. Every single one
+  is explained by a space-as-wildcard match inside a **modifier name** or a type
+  name — not one needed the "dropped" reading:
+
+| Matched text | Beasts |
+| --- | --- |
+| "Tempora**l P**roximity Shield" | Agonyguardian, Bluescreech, Wrathback, Shaggysucker, Crimsonraker, Ebonrumble, Ichorband, Shadowshiver |
+| "Fenuma**l P**resence" | Crimsongnaw, Cavetusks, **Slenderripper — a Sulphuric Scorpion** |
+| "Blac**k M**órrigan" | Shaggyscar |
+
+So Test 1's extras were never a hole in the model: they were modifier hits, the
+same mechanism as Test 10's `km` → "Dar**km**auler". Sulphuric Scorpion did not
+match on its own name at all.
+
+**Two corpus gaps found in those screenshots.** Checking all 39 modifier lines
+they show against both scrapes, 37 were already banned. The misses:
+
+- **"Spikes on Death"** — in neither scrape.
+- **the Blood Altar survival line** — it existed in `capture.ts` for the
+  simulator to roll, but was never in the ban list. It rides along on any beast
+  regardless of type, so a fragment inside it would have been the worst leak
+  available.
+
+Both, plus "Stonemaul" from Test 14, now live in `src/lib/observed-mods.ts` —
+hand-maintained, because `pnpm mods:update` overwrites the scraped files. A test
+asserts no emitted fragment touches them, at four thresholds in both modes.
+Plans did not change size, so the ban cost nothing.
 
 **What it did not give.** Negation, despite `(?!…)` working. A row is shown when
 *any* line matches, and on a beast whose type line contains the term, the

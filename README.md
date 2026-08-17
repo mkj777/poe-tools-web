@@ -130,6 +130,10 @@ somewhere in its modifier text. So three corpora are off limits to fragments:
 | Bestiary modifiers, names and effects | 28 | `pnpm mods:update` |
 | Generic rare monster modifiers | 224 | `pnpm mods:monsters` |
 | Words a generated name can be built from | 35,237 combinations | `pnpm words:update` |
+| Lines seen in game that neither scrape knows | 3 | `src/lib/observed-mods.ts`, by hand |
+
+That last one matters more than its size. One of the three is the line a beast
+keeps for surviving the altar, and it rides along on any beast of any type.
 
 No list of modifier text is ever complete, though, so length carries the rest
 of the weight: an **unanchored fragment must be at least six characters**,
