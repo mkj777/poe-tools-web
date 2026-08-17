@@ -214,7 +214,7 @@ is instant. The five preset thresholds do not wait at all: both modes for each
 are planned on the server and shipped with the page (~26 KB, ~6 gzipped).
 
 Those ten are cached on the **split** — which beasts fall either side of 1, 2, 3,
-5 and 9 chaos — not on the prices. Prices move every quarter of an hour, a beast
+4 and 5 chaos — not on the prices. Prices move every quarter of an hour, a beast
 crosses a preset far more rarely, so most refreshes cost nothing.
 
 ### Nothing renders per request

@@ -7,7 +7,7 @@ import {
 import type { Beast } from "./ninja";
 
 /** The thresholds the buttons offer, and the only ones worth precomputing. */
-export const PRESET_THRESHOLDS = [1, 2, 3, 5, 9];
+export const PRESET_THRESHOLDS = [1, 2, 3, 4, 5];
 
 export type PlanMode = "sell" | "trash";
 export type PresetPlans = Record<string, BestiaryPlan>;
