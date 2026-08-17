@@ -21,7 +21,10 @@ import {
   type BeastEntry,
   type BestiaryStep,
 } from "@/lib/bestiary-regex";
-import { useBestiaryPattern } from "@/lib/use-bestiary-pattern";
+import {
+  useBestiaryPattern,
+  type PatternState,
+} from "@/lib/use-bestiary-pattern";
 import {
   PRESET_THRESHOLDS,
   presetKey,
@@ -161,9 +164,9 @@ function StepRow({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-medium">
+        <h4 className="text-sm font-medium">
           {total > 1 ? `Search ${index + 1} of ${total}` : "Search"}
-        </h3>
+        </h4>
         <span className="text-muted-foreground text-sm tabular-nums">
           {step.covers.length} beasts · {step.pattern.length}/
           {MAX_PATTERN_LENGTH} chars
@@ -186,6 +189,97 @@ function StepRow({
   );
 }
 
+/** Loading shape of one search, so the card does not jump when a plan lands. */
+const StepSkeleton = () => (
+  <div className="space-y-2">
+    <div className="flex items-baseline justify-between gap-2">
+      <Skeleton className="h-5 w-32" />
+      <Skeleton className="h-5 w-44" />
+    </div>
+    <div className="flex gap-2">
+      <Skeleton className="h-11 flex-1" />
+      <Skeleton className="h-11 w-24 shrink-0" />
+    </div>
+  </div>
+);
+
+/** Red for the pattern that destroys beasts, green for the one that sells. */
+const TONES = {
+  trash: { frame: "border-red-500/50 bg-red-950/15", label: "text-red-400" },
+  sell: {
+    frame: "border-emerald-500/50 bg-emerald-950/15",
+    label: "text-emerald-400",
+  },
+} as const;
+
+/** One plan: its searches, and what the plan could not do cleanly. */
+function PlanBlock({
+  tone,
+  title,
+  blurb,
+  empty,
+  plan,
+}: {
+  tone: keyof typeof TONES;
+  title: ReactNode;
+  blurb: ReactNode;
+  /** What to say when the threshold leaves this half of the split empty. */
+  empty: string;
+  plan: PatternState;
+}) {
+  const { steps, unreachable, falsePositives, pending } = plan;
+  const { frame, label } = TONES[tone];
+
+  return (
+    <section className={`space-y-3 rounded-lg border-l-4 p-4 ${frame}`}>
+      <div className="space-y-0.5">
+        <h3 className={`font-medium ${label}`}>{title}</h3>
+        <p className="text-muted-foreground text-sm">{blurb}</p>
+      </div>
+
+      {pending ? (
+        <StepSkeleton />
+      ) : (
+        <>
+          {steps.map((step, i) => (
+            <StepRow
+              key={step.pattern}
+              index={i}
+              total={steps.length}
+              step={step}
+            />
+          ))}
+
+          {steps.length === 0 && (
+            <p className="text-sm text-amber-500">{empty}</p>
+          )}
+
+          {unreachable.length > 0 && (
+            <Notice
+              tone="red"
+              text={`No search can single out ${unreachable.length} of them — a beast you are keeping carries the same name as a line of its own, so handle these by hand:`}
+            >
+              {unreachable}
+            </Notice>
+          )}
+
+          {falsePositives.length > 0 && (
+            <Notice
+              tone="amber"
+              text={`Also brings up ${falsePositives.length} beast${falsePositives.length === 1 ? "" : "s"} below the threshold — harmless when you are picking what to sell:`}
+            >
+              {falsePositives}
+            </Notice>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
+/** A stable empty list, so the hook it is passed to never re-plans. */
+const NONE: BeastEntry[] = [];
+
 function BestiaryRegex({
   beasts,
   threshold,
@@ -198,7 +292,7 @@ function BestiaryRegex({
   plans: PresetPlans;
 }) {
   // Cheap: the planning itself happens in a worker, see useBestiaryPattern.
-  const { wanted, unwanted } = useMemo(() => {
+  const { sell, trash } = useMemo(() => {
     // Genus, family and habitat are separate lines in the Bestiary row, and
     // "^" binds to the start of any one of them.
     const entry = (b: Beast): BeastEntry => ({
@@ -210,27 +304,41 @@ function BestiaryRegex({
     // game does not hand them out, so no search can turn one up and there is
     // nothing to protect them from.
     const priced = beasts.filter((b) => b.chaosValue !== undefined);
-    const sell = priced.filter((b) => b.chaosValue! >= threshold);
-    const trash = priced.filter((b) => b.chaosValue! < threshold);
-
-    return mode === "sell"
-      ? { wanted: sell.map(entry), unwanted: trash.map(entry) }
-      : { wanted: trash.map(entry), unwanted: sell.map(entry) };
-  }, [beasts, threshold, mode]);
-
-  // Trashing throws beasts away, so it may never show an expensive one.
-  // Selling only has to put every valuable beast in front of you; a cheap one
-  // in the list costs nothing, and insisting on exactness there would cost
-  // searches and leave beasts out.
-  const exact = mode === "trash";
-  const { steps, unreachable, falsePositives, pending } = useBestiaryPattern(
-    wanted,
-    unwanted,
-    exact,
-    plans[presetKey(threshold, mode)],
-  );
+    return {
+      sell: priced.filter((b) => b.chaosValue! >= threshold).map(entry),
+      trash: priced.filter((b) => b.chaosValue! < threshold).map(entry),
+    };
+  }, [beasts, threshold]);
 
   const idle = threshold <= 0;
+
+  // Trashing throws beasts away, so it may never show an expensive one — and
+  // selling starts with exactly that pattern: clear the cheap ones out first
+  // and the sell search then runs over a Bestiary that only holds keepers.
+  const trashPlan = useBestiaryPattern(
+    idle ? NONE : trash,
+    idle ? NONE : sell,
+    true,
+    idle ? undefined : plans[presetKey(threshold, "trash")],
+  );
+
+  // Selling only has to put every valuable beast in front of you; a cheap one
+  // in the list costs nothing, and insisting on exactness there would cost
+  // searches and leave beasts out. Not planned at all while trashing.
+  const selling = !idle && mode === "sell";
+  const sellPlan = useBestiaryPattern(
+    selling ? sell : NONE,
+    selling ? trash : NONE,
+    false,
+    selling ? plans[presetKey(threshold, "sell")] : undefined,
+  );
+
+  const price = <Price value={threshold} size={15} />;
+  const trashBlurb = trashPlan.pending
+    ? "Planning…"
+    : trashPlan.steps.length > 1
+      ? `Too many for one search. Run all ${trashPlan.steps.length} — no step shows anything above the threshold.`
+      : "Nothing above the threshold can show up in this search.";
 
   return (
     <div className="bg-card space-y-5 rounded-xl border p-5">
@@ -255,13 +363,10 @@ function BestiaryRegex({
               value to plan the searches.
             </p>
           ) : (
-            !pending && (
+            selling && (
               <p className="text-muted-foreground text-sm">
-                {exact
-                  ? steps.length > 1
-                    ? `Too many for one search. Run all ${steps.length} — no step shows anything above the threshold.`
-                    : "Nothing above the threshold can show up in this search."
-                  : `Every beast at or above the threshold, in ${steps.length === 1 ? "one search" : `${steps.length} searches`}. Cheaper ones may ride along.`}
+                Trash the cheap ones first, then the second search has only
+                beasts worth selling left to pick from.
               </p>
             )
           )}
@@ -269,52 +374,35 @@ function BestiaryRegex({
         <HelpTip beasts={beasts} />
       </div>
 
-      {idle ? null : pending ? (
-        <div className="space-y-2">
-          <div className="flex items-baseline justify-between gap-2">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-5 w-44" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-11 flex-1" />
-            <Skeleton className="h-11 w-24 shrink-0" />
-          </div>
+      {idle ? null : selling ? (
+        <div className="space-y-4">
+          <PlanBlock
+            tone="trash"
+            title={<>Step 1 — trash everything under {price}</>}
+            blurb={trashBlurb}
+            empty="Nothing is below the threshold, so there is nothing to trash first."
+            plan={trashPlan}
+          />
+          <PlanBlock
+            tone="sell"
+            title={<>Step 2 — sell {price} and up</>}
+            blurb={
+              sellPlan.pending
+                ? "Planning…"
+                : `Every beast at or above the threshold, in ${sellPlan.steps.length === 1 ? "one search" : `${sellPlan.steps.length} searches`}. Cheaper ones may ride along — fewer of them once step 1 is done.`
+            }
+            empty="Nothing to sell at this threshold."
+            plan={sellPlan}
+          />
         </div>
       ) : (
-        <div className="space-y-4">
-          {steps.map((step, i) => (
-            <StepRow
-              key={step.pattern}
-              index={i}
-              total={steps.length}
-              step={step}
-            />
-          ))}
-
-          {steps.length === 0 && (
-            <p className="text-sm text-amber-500">
-              Nothing to select at this threshold.
-            </p>
-          )}
-
-          {unreachable.length > 0 && (
-            <Notice
-              tone="red"
-              text={`No search can single out ${unreachable.length} of them — a beast you are keeping carries the same name as a line of its own, so handle these by hand:`}
-            >
-              {unreachable}
-            </Notice>
-          )}
-
-          {falsePositives.length > 0 && (
-            <Notice
-              tone="amber"
-              text={`Also brings up ${falsePositives.length} beast${falsePositives.length === 1 ? "" : "s"} below the threshold — harmless when you are picking what to sell:`}
-            >
-              {falsePositives}
-            </Notice>
-          )}
-        </div>
+        <PlanBlock
+          tone="trash"
+          title={<>Trash everything under {price}</>}
+          blurb={trashBlurb}
+          empty="Nothing to trash at this threshold."
+          plan={trashPlan}
+        />
       )}
     </div>
   );
@@ -369,8 +457,12 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
               <span className="font-medium">Trash and Sell are opposites.</span>{" "}
               Trash is destructive, so no search may ever show a beast above the
               threshold. Sell only needs every valuable beast on screen, so a
-              cheap one riding along is fine. Negation would fix trashing in one
-              line, but a row returns as soon as any other line matches.
+              cheap one riding along is fine. Sell mode hands you both, in the
+              order they are run: the <span className="text-red-400">red</span>{" "}
+              search clears the cheap ones out at the altar, then the{" "}
+              <span className="text-emerald-400">green</span> one picks up what
+              is left. Negation would fix trashing in one line, but a row
+              returns as soon as any other line matches.
             </p>
             <p>
               <span className="font-medium">Bestiary Sim</span> tries a pattern

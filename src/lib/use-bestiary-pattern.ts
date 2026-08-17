@@ -4,21 +4,31 @@ import { useEffect, useRef, useState } from "react";
 import type { BeastEntry, BestiaryPlan } from "./bestiary-regex";
 import type { SolveRequest, SolveResponse } from "./bestiary.worker";
 
-export type PatternState = SolveResponse & { pending: boolean };
+export type PatternState = BestiaryPlan & { pending: boolean };
 
 const IDLE: PatternState = {
-  id: 0,
   steps: [],
   unreachable: [],
   falsePositives: [],
   pending: true,
 };
 
+/** Which inputs the state in hand belongs to, so the plan for the threshold
+    left behind is never shown as the answer to the current one. */
+type Held = PatternState & { key: string };
+
 /** What a plan depends on, short enough to use as a cache key. */
 const signature = (wanted: BeastEntry[], unwanted: BeastEntry[], exact: boolean) =>
   `${exact ? "x" : "o"}|${wanted.length}:${unwanted.length}|${wanted
     .map((b) => b.name)
     .join(",")}`;
+
+/**
+ * Every plan the worker has answered this session, keyed the same way. It
+ * outlives the components that asked for it on purpose: switching mode or
+ * league mounts new ones, and the answers are just as good there.
+ */
+const remembered = new Map<string, BestiaryPlan>();
 
 /**
  * Plans the searches in a worker, keeping the threshold field responsive. Only
@@ -29,7 +39,8 @@ const signature = (wanted: BeastEntry[], unwanted: BeastEntry[], exact: boolean)
  * the server precomputed for the preset thresholds, which are the ones most
  * people ever use, and everything the worker does answer is remembered for the
  * rest of the session — so going back to a threshold is instant even when it
- * was not a preset.
+ * was not a preset. Both are read while rendering rather than from an effect,
+ * so a plan already in hand paints in the same frame as the click.
  */
 export function useBestiaryPattern(
   wanted: BeastEntry[],
@@ -39,8 +50,12 @@ export function useBestiaryPattern(
 ) {
   const worker = useRef<Worker | null>(null);
   const latest = useRef(0);
-  const seen = useRef(new Map<string, BestiaryPlan>());
-  const [state, setState] = useState<PatternState>(IDLE);
+  const [state, setState] = useState<Held>({ ...IDLE, key: "" });
+
+  const key = signature(wanted, unwanted, exact);
+  const known = ready ?? remembered.get(key);
+  /** What the outstanding request asked for; the answer carries only its id. */
+  const pending = useRef(key);
 
   useEffect(() => {
     const instance = new Worker(
@@ -49,7 +64,14 @@ export function useBestiaryPattern(
     );
     instance.onmessage = ({ data }: MessageEvent<SolveResponse>) => {
       if (data.id !== latest.current) return;
-      setState({ ...data, pending: false });
+      const plan = {
+        steps: data.steps,
+        unreachable: data.unreachable,
+        falsePositives: data.falsePositives,
+      };
+      // The id is only ever the newest request's, so this is that request's key.
+      remembered.set(pending.current, plan);
+      setState({ ...plan, pending: false, key: pending.current });
     };
     worker.current = instance;
     return () => {
@@ -59,33 +81,16 @@ export function useBestiaryPattern(
   }, []);
 
   useEffect(() => {
-    const key = signature(wanted, unwanted, exact);
-    const known = ready ?? seen.current.get(key);
-    if (known) {
-      setState({ id: latest.current, ...known, pending: false });
-      return;
-    }
-
-    if (!worker.current) return;
-    const id = ++latest.current;
-    setState((previous) => ({ ...previous, pending: true }));
+    if (known || !worker.current) return;
+    pending.current = key;
     worker.current.postMessage({
-      id,
+      id: ++latest.current,
       wanted,
       unwanted,
       exact,
     } satisfies SolveRequest);
-  }, [wanted, unwanted, exact, ready]);
+  }, [wanted, unwanted, exact, key, known]);
 
-  // Remember whatever the worker did answer, keyed the same way.
-  useEffect(() => {
-    if (state.pending) return;
-    seen.current.set(signature(wanted, unwanted, exact), {
-      steps: state.steps,
-      unreachable: state.unreachable,
-      falsePositives: state.falsePositives,
-    });
-  }, [state, wanted, unwanted, exact]);
-
-  return state;
+  if (known) return { ...known, pending: false };
+  return state.key === key ? state : IDLE;
 }

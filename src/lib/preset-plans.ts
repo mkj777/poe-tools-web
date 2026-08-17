@@ -4,6 +4,7 @@ import {
   type BeastEntry,
   type BestiaryPlan,
 } from "./bestiary-regex";
+import { hasListing } from "./beasts";
 import type { Beast } from "./ninja";
 
 /** The thresholds the buttons offer, and the only ones worth precomputing. */
@@ -31,11 +32,17 @@ type Split = { threshold: number; above: BeastEntry[]; below: BeastEntry[] };
 /**
  * What the plans actually depend on: which beasts fall on each side of each
  * preset, never the prices themselves. Prices move every quarter of an hour,
- * but a beast only rarely crosses 1, 2, 3, 5 or 9 chaos — so keying the cache
+ * but a beast only rarely crosses 1, 2, 3, 4 or 5 chaos — so keying the cache
  * on the split rather than on the prices turns most refreshes into a cache hit.
  */
 export function presetSplits(beasts: Beast[]): Split[] {
-  const priced = beasts.filter((b) => b.chaosValue !== undefined);
+  // hasListing is the same cut the table makes. Without it the 142 beasts the
+  // game no longer hands out come in at their snapshot price of 0 and fill the
+  // trash plans with fragments for beasts that cannot turn up: at 3c that is
+  // four searches for 174 beasts instead of one for 35.
+  const priced = beasts.filter(
+    (b) => hasListing(b) && b.chaosValue !== undefined,
+  );
   const byName = (a: BeastEntry, b: BeastEntry) => a.name.localeCompare(b.name);
 
   return PRESET_THRESHOLDS.map((threshold) => ({

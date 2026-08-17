@@ -18,7 +18,9 @@ generated Bestiary search pattern for the ones worth farming.
 - **Trash / Sell switch** with a chaos threshold — select everything under it,
   or everything from it up.
 - **Bestiary searches** for that selection, ready to paste into the in-game
-  Bestiary window.
+  Bestiary window. Sell mode gives both halves of the run in order — a red
+  search that trashes everything below the threshold, then a green one over
+  what is left.
 - **Bestiary Sim**: the same beasts in a mock Bestiary window, where a pattern
   can be tried out with every price on screen before anything is released. An
   empty search shows all of them, as the game does.
@@ -34,6 +36,13 @@ Selling is not destructive. The point is to have every valuable beast in front
 of you, and a 1c beast in that list costs nothing. So coverage wins: **every
 beast above the threshold is selected**, in as few searches as possible, and
 the cheap ones that ride along are named rather than avoided.
+
+They are also two halves of one run, which is why sell mode shows both plans:
+the trash pattern goes first and empties the Bestiary of everything below the
+threshold, so the sell search afterwards runs over a window that holds keepers
+only, and its extras are whatever survived. Red is the destructive one, green
+the one that only selects — the colour is the reminder of which order they go
+in.
 
 | Threshold | Sell — coverage first | Trash — precision first |
 | --- | --- | --- |
