@@ -46,7 +46,7 @@ export function Price({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 align-middle tabular-nums whitespace-nowrap",
+        "inline-flex items-center gap-1 align-baseline tabular-nums whitespace-nowrap",
         className,
       )}
     >

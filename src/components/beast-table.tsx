@@ -183,7 +183,7 @@ function BeastCount({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 align-middle tabular-nums whitespace-nowrap ${className ?? ""}`}
+      className={`inline-flex items-center gap-1 align-baseline tabular-nums whitespace-nowrap ${className ?? ""}`}
     >
       {num(value)}
       <Image
