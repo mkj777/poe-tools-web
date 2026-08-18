@@ -445,71 +445,61 @@ function BestiaryRegex({
   /** Where the sell search starts: above the bulk pile, or at the threshold. */
   const floor = <Price value={banded ? threshold + 1 : threshold} size={15} />;
 
+  // Nothing to plan at a threshold of nothing, and the buttons above say so
+  // better than a sentence in the empty space would.
+  if (idle) return null;
+
   return (
     <div className="space-y-4">
-      {idle ? (
-        <p className="text-muted-foreground text-sm">
-          Set a minimum{" "}
-          <CurrencyIcon currency="chaos" size={16} className="align-middle" />{" "}
-          value to plan the searches.
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {selling ? (
-            <>
-              {/* No extras, no first step: the sell search is already clean. */}
-              {hasClear && (
-                <PlanBlock
-                  tone="trash"
-                  step="Step 1:"
-                  title={
-                    <>
-                      release the {dragged.length} cheap beast
-                      {dragged.length === 1 ? "" : "s"} in the way
-                    </>
-                  }
-                  empty="These cannot be singled out, so leave them and ignore them below."
-                  plan={clearPlan}
-                />
-              )}
-              <PlanBlock
-                tone="sell"
-                step={steps > 1 ? `Step ${hasClear ? 2 : 1}:` : undefined}
-                title={
-                  steps > 1 ? (
-                    <>sell {floor} and up</>
-                  ) : (
-                    <>Sell {floor} and up</>
-                  )
-                }
-                empty="Nothing to sell at this threshold."
-                plan={sellPlan}
-                handled={handled}
-              />
-            </>
-          ) : (
+      {selling ? (
+        <>
+          {/* No extras, no first step: the sell search is already clean. */}
+          {hasClear && (
             <PlanBlock
               tone="trash"
-              title={<>Trash everything under {price}</>}
-              empty="Nothing to trash at this threshold."
-              plan={trashPlan}
-            />
-          )}
-
-          {bulk && (
-            <PlanBlock
-              tone="band"
-              step={`Step ${steps}:`}
+              step="Step 1:"
               title={
                 <>
-                  bulk sell the {band.length} worth exactly {price}
+                  release the {dragged.length} cheap beast
+                  {dragged.length === 1 ? "" : "s"} in the way
                 </>
               }
-              empty="No beast is worth exactly this much right now."
-              plan={bandPlan}
+              empty="These cannot be singled out, so leave them and ignore them below."
+              plan={clearPlan}
             />
           )}
-        </div>
+          <PlanBlock
+            tone="sell"
+            step={steps > 1 ? `Step ${hasClear ? 2 : 1}:` : undefined}
+            title={
+              steps > 1 ? <>sell {floor} and up</> : <>Sell {floor} and up</>
+            }
+            empty="Nothing to sell at this threshold."
+            plan={sellPlan}
+            handled={handled}
+          />
+        </>
+      ) : (
+        <PlanBlock
+          tone="trash"
+          title={<>Trash everything under {price}</>}
+          empty="Nothing to trash at this threshold."
+          plan={trashPlan}
+        />
+      )}
+
+      {bulk && (
+        <PlanBlock
+          tone="band"
+          step={`Step ${steps}:`}
+          title={
+            <>
+              bulk sell the {band.length} worth exactly {price}
+            </>
+          }
+          empty="No beast is worth exactly this much right now."
+          plan={bandPlan}
+        />
       )}
     </div>
   );
