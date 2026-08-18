@@ -58,10 +58,12 @@ export default async function Page({
 
       <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
         <header className="mb-6 space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight">Bestiary Sim</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Bestiary Sim
+          </h1>
           <p className="text-muted-foreground">
             {beasts.length} beasts with a listing in {league}, searched the way
-            the game does — and priced, which the game will not do. An empty
+            the game does, and priced, which the game will not do. An empty
             search shows all of them, as in game.
           </p>
         </header>

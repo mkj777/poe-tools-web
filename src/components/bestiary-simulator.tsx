@@ -232,7 +232,7 @@ export function BestiarySimulator({ beasts }: { beasts: Beast[] }) {
           Names and modifiers are rolled per beast, the way the game rolls them
           on capture: a prefix and a suffix word, sometimes a title, three
           Bestiary modifiers on a red beast and one on a yellow, plus a few
-          ordinary monster modifiers. Reroll for a different draw — the risk
+          ordinary monster modifiers. Reroll for a different draw, the risk
           panel above covers every draw at once.
         </p>
       </div>
@@ -251,7 +251,7 @@ export function BestiarySimulator({ beasts }: { beasts: Beast[] }) {
 
       {pattern.trim() && matched.length === 0 && (
         <p className="text-muted-foreground text-sm">
-          Nothing matches — the Bestiary would show an empty list.
+          Nothing matches, so the Bestiary would show an empty list.
         </p>
       )}
 

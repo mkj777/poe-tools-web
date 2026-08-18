@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 import type { Scarab } from "@/lib/ninja";
 import { CurrencyIcon, Price } from "@/components/currency";
 
-function Card({
+/** One line of a card: what it is on the left, what it costs under it. */
+function Row({
   icon,
   name,
   title,
@@ -15,10 +16,7 @@ function Card({
   children: ReactNode;
 }) {
   return (
-    <div
-      title={title ?? name}
-      className="bg-card flex items-center gap-2.5 rounded-xl border px-3 py-2"
-    >
+    <div title={title ?? name} className="flex items-center gap-2.5 px-3 py-2">
       {icon}
       <div className="min-w-0">
         <div className="truncate text-sm font-medium">{name}</div>
@@ -32,76 +30,123 @@ function Card({
   );
 }
 
+/** A card is one or more rows, ruled off from each other. */
+function Card({ children }: { children: ReactNode }) {
+  return <div className="bg-card divide-y rounded-xl border">{children}</div>;
+}
+
 /**
- * What a beast run costs to set up. Scarabs are bought by the stack, so the
- * bulk figures matter more than the unit price, and "Map" is one map's worth
- * of them: 20 Duplicating, 40 of the Herd, 40 Kalguuran. The divine rate
- * rides along because every larger price is quoted in it.
+ * The rates at the top of the economy, then what a beast run costs to set up.
+ * Scarabs are bought by the stack, so the bulk figures matter more than the
+ * unit price, and they share one card because the total under them — 20
+ * Duplicating, 40 of the Herd, 40 Kalguuran, one map's worth — is the number
+ * the three of them add up to.
  */
 export function ScarabPrices({
   scarabs,
   divine,
+  mirror,
+  mirrorChaos,
 }: {
   scarabs: Scarab[];
+  /** Chaos per Divine Orb. */
   divine?: number;
+  /** Divines per Mirror of Kalandra. */
+  mirror?: number;
+  /** The same mirror in chaos, for the line under it. */
+  mirrorChaos?: number;
 }) {
-  if (scarabs.length === 0 && divine === undefined) return null;
+  if (scarabs.length === 0 && divine === undefined && mirror === undefined) {
+    return null;
+  }
 
   const total = scarabs.reduce((sum, s) => sum + s.chaosValue * s.run, 0);
   const composition = scarabs.map((s) => `${s.run} ${s.name}`).join(" + ");
 
   return (
     <div className="flex flex-col items-stretch gap-2">
-      {scarabs.map((scarab, i) => (
-        <Card
-          key={scarab.id}
-          name={scarab.name}
-          title={scarab.fullName}
-          icon={
-            <Image
-              src={scarab.icon}
-              alt=""
-              width={26}
-              height={26}
-              className="shrink-0"
-            />
-          }
-        >
-          {scarab.show.map((count) =>
-            count === 1 ? (
-              <Price
-                key={count}
-                value={scarab.chaosValue}
-                size={15}
-                className="text-foreground"
+      {mirror !== undefined && (
+        <Card>
+          <Row
+            name="Mirror"
+            title="Mirror of Kalandra"
+            icon={
+              <Image
+                src="/Mirror_of_Kalandra_inventory_icon.png"
+                alt=""
+                width={26}
+                height={26}
+                className="shrink-0"
               />
-            ) : (
-              <span key={count} className="flex items-center">
-                {count}×
-                <Price value={scarab.chaosValue * count} size={15} />
-              </span>
-            ),
-          )}
-
-          {/* What one map's worth of scarabs costs, on the last card's line. */}
-          {i === scarabs.length - 1 && (
-            <span
-              title={composition}
-              className="text-foreground flex items-center gap-1"
-            >
-              Map
-              <Price value={total} size={15} />
-            </span>
-          )}
+            }
+          >
+            <Price
+              value={mirror}
+              currency="divine"
+              size={15}
+              className="text-foreground"
+            />
+            {mirrorChaos !== undefined && (
+              <Price value={mirrorChaos} size={15} />
+            )}
+          </Row>
         </Card>
-      ))}
+      )}
 
       {divine !== undefined && (
-        <Card
-          name="Divine Orb"
-          icon={<CurrencyIcon currency="divine" size={26} />}
-        >
-          <Price value={divine} size={15} className="text-foreground" />
+        <Card>
+          <Row
+            name="Divine Orb"
+            icon={<CurrencyIcon currency="divine" size={26} />}
+          >
+            <Price value={divine} size={15} className="text-foreground" />
+          </Row>
+        </Card>
+      )}
+
+      {scarabs.length > 0 && (
+        <Card>
+          {scarabs.map((scarab) => (
+            <Row
+              key={scarab.id}
+              name={scarab.name}
+              title={scarab.fullName}
+              icon={
+                <Image
+                  src={scarab.icon}
+                  alt=""
+                  width={26}
+                  height={26}
+                  className="shrink-0"
+                />
+              }
+            >
+              {scarab.show.map((count) =>
+                count === 1 ? (
+                  <Price
+                    key={count}
+                    value={scarab.chaosValue}
+                    size={15}
+                    className="text-foreground"
+                  />
+                ) : (
+                  <span key={count} className="flex items-center">
+                    {count}×
+                    <Price value={scarab.chaosValue * count} size={15} />
+                  </span>
+                ),
+              )}
+            </Row>
+          ))}
+
+          {/* What one map's worth of all three costs, under the three. */}
+          <div
+            title={composition}
+            className="text-foreground flex flex-wrap items-center justify-between gap-x-2.5 px-3 py-2 text-sm font-medium"
+          >
+            Total
+            <Price value={total} size={15} />
+          </div>
         </Card>
       )}
     </div>

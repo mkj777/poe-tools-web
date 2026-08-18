@@ -1,12 +1,15 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getDivinePrice, getScarabPrices } from "@/lib/ninja";
+import {
+  getCurrencyPrices,
+  getScarabPrices,
+  type CurrencyPrices,
+} from "@/lib/ninja";
 import { loadBeasts } from "@/lib/beasts";
 import { leagueParams, resolveLeague } from "@/lib/league";
 import { BeastTable } from "@/components/beast-table";
 import { LeagueSelect } from "@/components/league-select";
 import { ScarabPrices } from "@/components/scarab-prices";
-import { SimulationLink } from "@/components/simulation-link";
 import { getPresetPlans, presetSplits } from "@/lib/preset-plans";
 
 export const metadata = {
@@ -30,11 +33,15 @@ export default async function Page({ params }: PageProps<"/[league]">) {
   const { leagues, league } = await resolveLeague((await params).league);
   if (!league) notFound();
 
-  const [beasts, scarabs, divine] = await Promise.all([
+  const [beasts, scarabs, currency] = await Promise.all([
     loadBeasts(league),
     getScarabPrices(league).catch(() => []),
-    getDivinePrice(league).catch(() => undefined),
+    getCurrencyPrices(league).catch((): CurrencyPrices => ({})),
   ]);
+
+  // A mirror is quoted in divines, never in chaos — nobody counts that high.
+  const { divine, mirror } = currency;
+  const mirrorInDivine = divine && mirror ? mirror / divine : undefined;
 
   // Planning is the one slow thing here, so the preset thresholds arrive ready
   // made and only an unusual threshold ever reaches the worker in the browser.
@@ -68,7 +75,6 @@ export default async function Page({ params }: PageProps<"/[league]">) {
           />
           <div className="space-y-2 px-3">
             <LeagueSelect leagues={leagues} value={league} className="w-full" />
-            <SimulationLink league={league} />
           </div>
         </div>
 
@@ -78,7 +84,12 @@ export default async function Page({ params }: PageProps<"/[league]">) {
           className="pointer-events-auto shrink-0 px-4"
           style={{ width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" }}
         >
-          <ScarabPrices scarabs={scarabs} divine={divine} />
+          <ScarabPrices
+            scarabs={scarabs}
+            divine={divine}
+            mirror={mirrorInDivine}
+            mirrorChaos={mirror}
+          />
         </div>
       </div>
 

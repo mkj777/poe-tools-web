@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { cn, num } from "@/lib/utils";
 
 const ORBS = {
   chaos: { src: "/Chaos_Orb_inventory_icon.png", label: "Chaos Orb" },
@@ -50,10 +50,9 @@ export function Price({
         className,
       )}
     >
-      {value.toLocaleString("en-US", {
-        minimumFractionDigits: value < 10 ? 1 : 0,
-        maximumFractionDigits: value < 10 ? 1 : 0,
-      })}
+      {/* A decimal only where it says something: cheap prices are read to a
+          tenth, but a threshold of 4 is not "4.0". */}
+      {num(value, value < 10 && !Number.isInteger(value) ? 1 : 0)}
       <CurrencyIcon currency={currency} size={size} />
     </span>
   );

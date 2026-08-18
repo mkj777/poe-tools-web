@@ -1,19 +1,8 @@
 "use client";
 
-import {
-  useMemo,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
-import {
-  ArrowDown,
-  ArrowUp,
-  Check,
-  ChevronsUpDown,
-  Copy,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
 import { leagueSlug, type Beast } from "@/lib/ninja";
 import { CurrencyIcon, Price } from "@/components/currency";
 import {
@@ -26,6 +15,7 @@ import {
   type PatternState,
 } from "@/lib/use-bestiary-pattern";
 import {
+  BAND_MIN,
   PRESET_THRESHOLDS,
   inBand,
   presetKey,
@@ -33,6 +23,7 @@ import {
 } from "@/lib/preset-plans";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { num } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -79,17 +70,12 @@ function sortValue(beast: Beast, key: SortKey) {
   return beast[key] ?? 0;
 }
 
-const num = (value: number | undefined, digits = 0) =>
-  (value ?? 0).toLocaleString("en-US", {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  });
-
 type Mode = "sell" | "trash";
 
-/** The thresholds a beast run is actually judged at, and the ones the server
-    has already planned for — see src/lib/preset-plans.ts. */
-const PRESETS = PRESET_THRESHOLDS;
+/** The thresholds a beast run is actually judged at — the server has already
+    planned for all but 0, which plans nothing and just shows every beast.
+    See src/lib/preset-plans.ts. */
+const PRESETS = [0, ...PRESET_THRESHOLDS];
 
 /**
  * Which side of the switch the last visit ended on. Kept in a tiny store
@@ -125,8 +111,10 @@ function Notice({
   text: string;
   children: string[];
 }) {
-  const sentence = tone === "amber" ? "text-amber-600" : "text-red-600";
-  const names = tone === "amber" ? "text-amber-300" : "text-red-300";
+  // Read against the page background rather than a card, so both halves sit a
+  // couple of steps brighter than a warning on white would.
+  const sentence = tone === "amber" ? "text-amber-400" : "text-red-400";
+  const names = tone === "amber" ? "text-amber-200" : "text-red-200";
 
   // The count is the number that matters; a wall of names is not.
   const LISTED = 15;
@@ -163,69 +151,99 @@ function StepRow({
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h4 className="text-sm font-medium">
-          {total > 1 ? `Search ${index + 1} of ${total}` : "Search"}
-        </h4>
-        <span className="text-muted-foreground text-sm tabular-nums">
-          {step.covers.length} beasts · {step.pattern.length}/
-          {MAX_PATTERN_LENGTH} chars
-        </span>
-      </div>
-
-      <div className="flex gap-2">
-        <Input
-          readOnly
-          value={step.pattern}
-          onFocus={(e) => e.currentTarget.select()}
-          className="h-11 font-mono text-sm"
-        />
-        <Button variant="secondary" onClick={copy} className="shrink-0">
-          {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-          {copied ? "Copied" : "Copy"}
-        </Button>
-      </div>
+    <div className="flex gap-2">
+      <Input
+        readOnly
+        value={step.pattern}
+        onFocus={(e) => e.currentTarget.select()}
+        title={`Search ${index + 1} of ${total}, ${step.covers.length} beasts, ${step.pattern.length}/${MAX_PATTERN_LENGTH} characters`}
+        className="h-11 font-mono text-sm"
+      />
+      <Button variant="secondary" onClick={copy} className="shrink-0">
+        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+        {copied ? "Copied" : "Copy"}
+      </Button>
     </div>
+  );
+}
+
+/**
+ * A count of beasts, written the way a price is: the figure, then the item it
+ * counts. The orb is the one a captured beast ends up in, so it says "beasts"
+ * without the word.
+ */
+function BeastCount({
+  value,
+  size = 20,
+  className,
+}: {
+  value: number;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 align-middle tabular-nums whitespace-nowrap ${className ?? ""}`}
+    >
+      {num(value)}
+      <Image
+        src="/Imprinted_Bestiary_Orb_inventory_icon.png"
+        alt={value === 1 ? "beast" : "beasts"}
+        title="Beasts"
+        width={size}
+        height={size}
+        className="inline-block shrink-0"
+      />
+    </span>
   );
 }
 
 /** Loading shape of one search, so the card does not jump when a plan lands. */
 const StepSkeleton = () => (
-  <div className="space-y-2">
-    <div className="flex items-baseline justify-between gap-2">
-      <Skeleton className="h-5 w-32" />
-      <Skeleton className="h-5 w-44" />
-    </div>
-    <div className="flex gap-2">
-      <Skeleton className="h-11 flex-1" />
-      <Skeleton className="h-11 w-24 shrink-0" />
-    </div>
+  <div className="flex gap-2">
+    <Skeleton className="h-11 flex-1" />
+    <Skeleton className="h-11 w-24 shrink-0" />
   </div>
 );
 
-/** Red for the patterns that destroy beasts, green for the one that sells. */
+/**
+ * Red for the patterns that destroy beasts, green for the one that sells, blue
+ * for the bulk pile. The blocks sit straight on the page background now, so the
+ * tint carries the whole difference between a block and the page: `frame` is
+ * what separates them, `label` names the step and `text` says what it does in
+ * the same hue, one step quieter.
+ */
 const TONES = {
-  trash: { frame: "border-red-500/50 bg-red-950/15", label: "text-red-400" },
-  sell: {
-    frame: "border-emerald-500/50 bg-emerald-950/15",
-    label: "text-emerald-400",
+  trash: {
+    frame: "border-red-500/70 bg-red-950/40",
+    label: "text-red-400",
+    text: "text-red-100",
   },
-  band: { frame: "border-sky-500/50 bg-sky-950/15", label: "text-sky-400" },
+  sell: {
+    frame: "border-emerald-500/70 bg-emerald-950/40",
+    label: "text-emerald-400",
+    text: "text-emerald-100",
+  },
+  band: {
+    frame: "border-sky-500/70 bg-sky-950/40",
+    label: "text-sky-400",
+    text: "text-sky-100",
+  },
 } as const;
 
 /** One plan: its searches, and what the plan could not do cleanly. */
 function PlanBlock({
   tone,
+  step,
   title,
-  blurb,
   empty,
   plan,
   handled,
 }: {
   tone: keyof typeof TONES;
+  /** "Step 2:", when the run has more than one. */
+  step?: string;
   title: ReactNode;
-  blurb: ReactNode;
   /** What to say when the threshold leaves this half of the split empty. */
   empty: string;
   plan: PatternState;
@@ -237,13 +255,22 @@ function PlanBlock({
   const falsePositives = handled
     ? plan.falsePositives.filter((name) => !handled.has(name))
     : plan.falsePositives;
-  const { frame, label } = TONES[tone];
+  const { frame, label, text } = TONES[tone];
+
+  // Every beast the searches of this step bring up, the number the step is
+  // really about. The searches split it up; how they do that is their business.
+  const covered = steps.reduce((sum, s) => sum + s.covers.length, 0);
 
   return (
     <section className={`space-y-3 rounded-lg border-l-4 p-4 ${frame}`}>
-      <div className="space-y-0.5">
-        <h3 className={`font-medium ${label}`}>{title}</h3>
-        <p className="text-muted-foreground text-sm">{blurb}</p>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+        <h3 className="font-medium">
+          {step && <span className={label}>{step} </span>}
+          <span className={text}>{title}</span>
+        </h3>
+        {!pending && covered > 0 && (
+          <BeastCount value={covered} className={`text-sm ${label}`} />
+        )}
       </div>
 
       {pending ? (
@@ -266,7 +293,7 @@ function PlanBlock({
           {unreachable.length > 0 && (
             <Notice
               tone="red"
-              text={`No search can single out ${unreachable.length} of them — a beast you are keeping carries the same name as a line of its own, so handle these by hand:`}
+              text={`No search can single out ${unreachable.length} of them, because a beast you are keeping carries the same name as a line of its own. Handle these by hand:`}
             >
               {unreachable}
             </Notice>
@@ -275,7 +302,7 @@ function PlanBlock({
           {falsePositives.length > 0 && (
             <Notice
               tone="amber"
-              text={`Also brings up ${falsePositives.length} beast${falsePositives.length === 1 ? "" : "s"} below the threshold — harmless when you are picking what to sell:`}
+              text={`Also brings up ${falsePositives.length} beast${falsePositives.length === 1 ? "" : "s"} below the threshold, harmless when you are picking what to sell:`}
             >
               {falsePositives}
             </Notice>
@@ -289,12 +316,6 @@ function PlanBlock({
 /** A stable empty list, so the hook it is passed to never re-plans. */
 const NONE: BeastEntry[] = [];
 
-/** A few names, then a count. A sentence is not the place for twenty-six. */
-const nameList = (names: string[], shown = 6) =>
-  names.length <= shown
-    ? names.join(", ")
-    : `${names.slice(0, shown).join(", ")} and ${names.length - shown} more`;
-
 function BestiaryRegex({
   beasts,
   threshold,
@@ -307,27 +328,44 @@ function BestiaryRegex({
   plans: PresetPlans;
 }) {
   // Cheap: the planning itself happens in a worker, see useBestiaryPattern.
-  const { sell, trash, band, offBand } = useMemo(() => {
-    // Genus, family and habitat are separate lines in the Bestiary row, and
-    // "^" binds to the start of any one of them.
-    const entry = (b: Beast): BeastEntry => ({
-      name: b.name,
-      lines: (b.baseType ?? "").split("|").filter(Boolean),
-    });
+  const { sell, trash, band, offBand, banded, sellWanted, sellAvoid } =
+    useMemo(() => {
+      // Genus, family and habitat are separate lines in the Bestiary row, and
+      // "^" binds to the start of any one of them.
+      const entry = (b: Beast): BeastEntry => ({
+        name: b.name,
+        lines: (b.baseType ?? "").split("|").filter(Boolean),
+      });
 
-    // Beasts nobody has a listing for are out of the picture entirely: the
-    // game does not hand them out, so no search can turn one up and there is
-    // nothing to protect them from.
-    const priced = beasts.filter((b) => b.chaosValue !== undefined);
-    return {
-      sell: priced.filter((b) => b.chaosValue! >= threshold).map(entry),
-      trash: priced.filter((b) => b.chaosValue! < threshold).map(entry),
-      band: priced.filter((b) => inBand(b.chaosValue!, threshold)).map(entry),
-      offBand: priced
-        .filter((b) => !inBand(b.chaosValue!, threshold))
-        .map(entry),
-    };
-  }, [beasts, threshold]);
+      // Beasts nobody has a listing for are out of the picture entirely: the
+      // game does not hand them out, so no search can turn one up and there is
+      // nothing to protect them from.
+      const priced = beasts.filter((b) => b.chaosValue !== undefined);
+      const sell = priced.filter((b) => b.chaosValue! >= threshold).map(entry);
+      const trash = priced.filter((b) => b.chaosValue! < threshold).map(entry);
+      const band = priced
+        .filter((b) => inBand(b.chaosValue!, threshold))
+        .map(entry);
+
+      // A pile at exactly the threshold is bulk sold on its own, and then the
+      // sell search above it starts one chaos higher. A handful is not worth
+      // the extra search and rides along inside it. Same rule on the server,
+      // or the plans it precomputed would answer a different question.
+      const banded = band.length >= BAND_MIN;
+      const inside = new Set(band.map((b) => b.name));
+
+      return {
+        sell,
+        trash,
+        band,
+        banded,
+        offBand: priced
+          .filter((b) => !inBand(b.chaosValue!, threshold))
+          .map(entry),
+        sellWanted: banded ? sell.filter((b) => !inside.has(b.name)) : sell,
+        sellAvoid: banded ? [...trash, ...band] : trash,
+      };
+    }, [beasts, threshold]);
 
   const idle = threshold <= 0;
 
@@ -346,8 +384,8 @@ function BestiaryRegex({
   // searches and leave beasts out. Not planned at all while trashing.
   const selling = !idle && mode === "sell";
   const sellPlan = useBestiaryPattern(
-    selling ? sell : NONE,
-    selling ? trash : NONE,
+    selling ? sellWanted : NONE,
+    selling ? sellAvoid : NONE,
     false,
     selling ? plans[presetKey(threshold, "sell")] : undefined,
   );
@@ -377,73 +415,58 @@ function BestiaryRegex({
     );
   }, [clearPlan.pending, clearPlan.unreachable, dragged]);
 
-  // Everything worth exactly this much, whatever the mode is doing.
+  // Everything worth exactly this much, as its own bulk step. Only sellers
+  // care which beasts sit on the threshold itself, and only when there are
+  // enough of them to be worth a search.
+  const bulk = selling && banded;
   const bandPlan = useBestiaryPattern(
-    idle ? NONE : band,
-    idle ? NONE : offBand,
+    bulk ? band : NONE,
+    bulk ? offBand : NONE,
     true,
-    idle ? undefined : plans[presetKey(threshold, "band")],
+    bulk ? plans[presetKey(threshold, "band")] : undefined,
   );
 
+  // Step 3 sweeps the band up whole, so one of its beasts turning up in the
+  // step above is not an extra to warn about — and step 1 released the rest.
+  const handled = useMemo(() => {
+    if (!released || !banded) return released;
+    return new Set([...released, ...band.map((b) => b.name)]);
+  }, [released, banded, band]);
+
   const price = <Price value={threshold} size={15} />;
-  const trashBlurb = trashPlan.pending
-    ? "Planning…"
-    : trashPlan.steps.length > 1
-      ? `Too many for one search. Run all ${trashPlan.steps.length} — no step shows anything above the threshold.`
-      : "Nothing above the threshold can show up in this search.";
+
+  // One sell run, in the order it is done: clear what is in the way, sell the
+  // dear beasts one at a time, bulk sell the pile at the threshold. The first
+  // and the last are only there when there is something for them to do, so the
+  // numbers are counted rather than written down, and a run of one step does
+  // not call itself step 1.
+  const hasClear = dragged.length > 0;
+  const steps = 1 + (hasClear ? 1 : 0) + (bulk ? 1 : 0);
+  /** Where the sell search starts: above the bulk pile, or at the threshold. */
+  const floor = <Price value={banded ? threshold + 1 : threshold} size={15} />;
 
   return (
-    <div className="bg-card space-y-5 rounded-xl border p-5">
-      {/* The header, and with it the help, is there in both states. */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="text-lg font-medium">
-            {idle
-              ? "Bestiary regex"
-              : mode === "sell"
-                ? "Sell beasts"
-                : "Trash beasts"}
-          </h2>
-          {idle ? (
-            <p className="text-muted-foreground text-sm">
-              Set a minimum{" "}
-              <CurrencyIcon
-                currency="chaos"
-                size={16}
-                className="align-middle"
-              />{" "}
-              value to plan the searches.
-            </p>
-          ) : (
-            selling && (
-              <p className="text-muted-foreground text-sm">
-                Release the few cheap beasts the sell search cannot avoid, and
-                what it shows afterwards is worth keeping, all of it.
-              </p>
-            )
-          )}
-        </div>
-        <HelpTip beasts={beasts} />
-      </div>
-
-      {idle ? null : (
+    <div className="space-y-4">
+      {idle ? (
+        <p className="text-muted-foreground text-sm">
+          Set a minimum{" "}
+          <CurrencyIcon currency="chaos" size={16} className="align-middle" />{" "}
+          value to plan the searches.
+        </p>
+      ) : (
         <div className="space-y-4">
           {selling ? (
             <>
               {/* No extras, no first step: the sell search is already clean. */}
-              {dragged.length > 0 && (
+              {hasClear && (
                 <PlanBlock
                   tone="trash"
+                  step="Step 1:"
                   title={
                     <>
-                      Step 1 — release the {dragged.length} cheap beast
+                      release the {dragged.length} cheap beast
                       {dragged.length === 1 ? "" : "s"} in the way
                     </>
-                  }
-                  blurb={
-                    clearPlan.pending
-                      ? "Planning…"
-                      : `${nameList(dragged.map((b) => b.name))} — the only beasts under the threshold the sell search cannot shake off. Nothing above it shows up in this one.`
                   }
                   empty="These cannot be singled out, so leave them and ignore them below."
                   plan={clearPlan}
@@ -451,46 +474,41 @@ function BestiaryRegex({
               )}
               <PlanBlock
                 tone="sell"
+                step={steps > 1 ? `Step ${hasClear ? 2 : 1}:` : undefined}
                 title={
-                  dragged.length > 0 ? (
-                    <>Step 2 — sell {price} and up</>
+                  steps > 1 ? (
+                    <>sell {floor} and up</>
                   ) : (
-                    <>Sell {price} and up</>
+                    <>Sell {floor} and up</>
                   )
-                }
-                blurb={
-                  sellPlan.pending
-                    ? "Planning…"
-                    : dragged.length > 0
-                      ? `Every beast at or above the threshold, in ${sellPlan.steps.length === 1 ? "one search" : `${sellPlan.steps.length} searches`} — and nothing else once step 1 is done.`
-                      : `Every beast at or above the threshold, in ${sellPlan.steps.length === 1 ? "one search" : `${sellPlan.steps.length} searches`}, with nothing cheaper riding along.`
                 }
                 empty="Nothing to sell at this threshold."
                 plan={sellPlan}
-                handled={released}
+                handled={handled}
               />
             </>
           ) : (
             <PlanBlock
               tone="trash"
               title={<>Trash everything under {price}</>}
-              blurb={trashBlurb}
               empty="Nothing to trash at this threshold."
               plan={trashPlan}
             />
           )}
 
-          <PlanBlock
-            tone="band"
-            title={<>Worth exactly {price}</>}
-            blurb={
-              bandPlan.pending
-                ? "Planning…"
-                : `The ${band.length} beast${band.length === 1 ? "" : "s"} priced at ${threshold}c and under ${threshold + 1}c, on their own — nothing dearer, nothing cheaper.`
-            }
-            empty="No beast is worth exactly this much right now."
-            plan={bandPlan}
-          />
+          {bulk && (
+            <PlanBlock
+              tone="band"
+              step={`Step ${steps}:`}
+              title={
+                <>
+                  bulk sell the {band.length} worth exactly {price}
+                </>
+              }
+              empty="No beast is worth exactly this much right now."
+              plan={bandPlan}
+            />
+          )}
         </div>
       )}
     </div>
@@ -525,18 +543,18 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
             </p>
             <p>
               <span className="font-medium">The in-game search</span> is a real
-              regex engine — <code>|</code> <code>.</code> <code>^</code>{" "}
+              regex engine: <code>|</code> <code>.</code> <code>^</code>{" "}
               <code>$</code> <code>[^x]</code> <code>(?!…)</code> work,{" "}
               <code>!</code> and quotes do not, a space acts as <code>.</code>.
-              It matches <strong>per line</strong>, and a row has more lines than
-              the type name: genus, family, the modifiers that capture rolled,
-              and its random name. Hence surprise hits — <code>rar</code> sits
-              inside &ldquo;Tempo<em>rar</em>ily Revives&rdquo;, which any beast
-              can roll.
+              It matches <strong>per line</strong>, and a row has more lines
+              than the type name: genus, family, the modifiers that capture
+              rolled, and its random name. Hence surprise hits: <code>rar</code>{" "}
+              sits inside &ldquo;Tempo<em>rar</em>ily Revives&rdquo;, which any
+              beast can roll.
             </p>
             <p>
-              <span className="font-medium">So a fragment is refused</span> if it
-              could land in a modifier name or in any of the 35,237 generated
+              <span className="font-medium">So a fragment is refused</span> if
+              it could land in a modifier name or in any of the 35,237 generated
               names, and an unanchored one needs six characters.{" "}
               <code>^goatman$</code> pins a whole line, the only way to separate
               &ldquo;Goatman&rdquo; from &ldquo;Goatman Fire-raiser&rdquo;. Past
@@ -550,8 +568,10 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
               order they are run: the <span className="text-red-400">red</span>{" "}
               search clears the cheap ones out at the altar, then the{" "}
               <span className="text-emerald-400">green</span> one picks up what
-              is left. Negation would fix trashing in one line, but a row
-              returns as soon as any other line matches.
+              is left. When a pile of beasts sits on the threshold itself, a{" "}
+              <span className="text-sky-400">blue</span> one takes that pile
+              last, in bulk, at one price. Negation would fix trashing in one
+              line, but a row returns as soon as any other line matches.
             </p>
             <p>
               <span className="font-medium">Bestiary Sim</span> tries a pattern
@@ -560,7 +580,8 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
             </p>
             <p className="text-muted-foreground">
               {beasts.length} beasts, {fromNinja} from poe.ninja. No listing
-              anywhere means the beast is gone, not cheap, so those are left out.
+              anywhere means the beast is gone, not cheap, so those are left
+              out.
             </p>
           </div>
         </TooltipContent>
@@ -718,21 +739,11 @@ export function BeastTable({
           </div>
         </div>
 
-        {threshold > 0 && (
-          <span className="text-muted-foreground text-sm">
-            {mode === "sell" ? (
-              <>
-                Every beast worth <Price value={threshold} size={15} /> and
-                above, cheap ones allowed to ride along.
-              </>
-            ) : (
-              <>
-                Only beasts worth less than{" "}
-                <Price value={threshold} size={15} />.
-              </>
-            )}
-          </span>
-        )}
+        {/* The help belongs with the controls it explains, at the far end of
+            their row rather than over the steps. */}
+        <div className="ml-auto">
+          <HelpTip beasts={found} />
+        </div>
       </div>
 
       <BestiaryRegex
@@ -771,7 +782,7 @@ export function BeastTable({
           </button>
         )}
         <span className="text-muted-foreground tabular-nums">
-          {rows.length} of {listed.length} beasts
+          {num(rows.length)} of <BeastCount value={listed.length} size={22} />
         </span>
       </div>
 
@@ -781,7 +792,11 @@ export function BeastTable({
             <TableRow className="hover:bg-transparent">
               {COLUMNS.map((col) => {
                 const active = sort === col.key;
-                const Icon = !active ? ChevronsUpDown : desc ? ArrowDown : ArrowUp;
+                const Icon = !active
+                  ? ChevronsUpDown
+                  : desc
+                    ? ArrowDown
+                    : ArrowUp;
                 return (
                   <TableHead
                     key={col.key}
@@ -820,10 +835,12 @@ export function BeastTable({
                             ? "/BestiaryLegendaryBeast.webp"
                             : "/BestiaryRareMonster.webp"
                         }
-                        alt={beast.rarity === "red" ? "Red beast" : "Yellow beast"}
+                        alt={
+                          beast.rarity === "red" ? "Red beast" : "Yellow beast"
+                        }
                         title={
                           beast.rarity === "red"
-                            ? "Red beast — two mods, cannot spawn normally"
+                            ? "Red beast, two mods, cannot spawn normally"
                             : "Yellow beast"
                         }
                         width={26}
@@ -854,7 +871,7 @@ export function BeastTable({
                   </TableCell>
                   <TableCell className="text-right">
                     {beast.chaosValue === undefined ? (
-                      <span className="tabular-nums">—</span>
+                      <span className="tabular-nums">–</span>
                     ) : (
                       <Price value={beast.chaosValue} size={17} />
                     )}

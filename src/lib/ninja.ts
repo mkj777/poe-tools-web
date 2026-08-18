@@ -94,7 +94,7 @@ const BESTIARY_SCARABS = [
     name: "The Herd",
     fullName: "Bestiary Scarab of the Herd",
     icon: "/herd_scarab.png",
-    show: [1, 20],
+    show: [1, 40],
     run: 40,
   },
   {
@@ -102,7 +102,7 @@ const BESTIARY_SCARABS = [
     name: "Kalguuran",
     fullName: "Kalguuran Scarab",
     icon: "/kalguuran_scarab.png",
-    show: [20],
+    show: [1, 40],
     run: 40,
   },
 ];
@@ -121,13 +121,22 @@ export async function getScarabPrices(league: string): Promise<Scarab[]> {
 
   return BESTIARY_SCARABS.flatMap((scarab) => {
     const value = byId.get(scarab.id);
-    return value === undefined || !chaos ? [] : [{ ...scarab, chaosValue: value }];
+    return value === undefined || !chaos
+      ? []
+      : [{ ...scarab, chaosValue: value }];
   });
 }
 
-/** What one Divine Orb costs in chaos right now — the conversion everything
- *  else on the page is read against. */
-export async function getDivinePrice(league: string) {
+/**
+ * The two rates the page is read against, both in chaos: the Divine Orb every
+ * larger price is quoted in, and the Mirror of Kalandra at the top of the
+ * economy. One overview holds both, so it is fetched once.
+ */
+export type CurrencyPrices = { divine?: number; mirror?: number };
+
+export async function getCurrencyPrices(
+  league: string,
+): Promise<CurrencyPrices> {
   const data = await ninja<{
     lines: { id: string; primaryValue: number }[];
     core: { primary: string };
@@ -135,8 +144,10 @@ export async function getDivinePrice(league: string) {
     `/exchange/current/overview?league=${encodeURIComponent(league)}&type=Currency`,
   );
 
-  if (data.core?.primary !== "chaos") return undefined;
-  return data.lines.find((line) => line.id === "divine")?.primaryValue;
+  if (data.core?.primary !== "chaos") return {};
+  const value = (id: string) =>
+    data.lines.find((line) => line.id === id)?.primaryValue;
+  return { divine: value("divine"), mirror: value("mirror") };
 }
 
 type TradeItemData = {

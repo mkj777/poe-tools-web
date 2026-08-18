@@ -45,6 +45,13 @@ export const inBand = (value: number, threshold: number) =>
   value >= threshold && value < threshold + 1;
 
 /**
+ * How many beasts have to sit at exactly the threshold before they are worth a
+ * bulk step of their own. Under this they just ride along with the sell search,
+ * which then starts at the threshold rather than one chaos above it.
+ */
+export const BAND_MIN = 10;
+
+/**
  * What the plans actually depend on: which beasts fall on each side of each
  * preset, never the prices themselves. Prices move every quarter of an hour,
  * but a beast only rarely crosses 1, 2, 3, 4 or 5 chaos — so keying the cache
@@ -80,15 +87,25 @@ export function presetSplits(beasts: Beast[]): Split[] {
 function build(splits: Split[]): PresetPlans {
   const plans: PresetPlans = {};
   for (const { threshold, above, below, band } of splits) {
+    // A big pile at exactly the threshold is bulk sold in a step of its own, so
+    // the sell search above it starts one chaos higher. A small one is not
+    // worth the extra search and stays inside the sell search.
+    const banded = band.length >= BAND_MIN;
+    const inside = new Set(band.map((b) => b.name));
+    const wanted = banded ? above.filter((b) => !inside.has(b.name)) : above;
+    const unwanted = banded ? [...below, ...band] : below;
+
     // Selling wants coverage, trashing wants no false positive ever.
-    const sell = planBestiaryPatterns(above, below, { exact: false });
+    const sell = planBestiaryPatterns(wanted, unwanted, { exact: false });
     plans[presetKey(threshold, "sell")] = sell;
     plans[presetKey(threshold, "trash")] = planBestiaryPatterns(below, above, {
       exact: true,
     });
 
-    // What the sell search drags in. Released first, the sell search after it
-    // holds nothing but beasts worth keeping.
+    // What the sell search drags in from under the threshold. Released first,
+    // the sell search after it holds nothing but beasts worth keeping. Band
+    // beasts it also picks up are keepers, so they are never in this pattern —
+    // `above` is what it has to protect, and the band is part of it.
     const dragged = new Set(sell.falsePositives);
     plans[presetKey(threshold, "clear")] = planBestiaryPatterns(
       below.filter((b) => dragged.has(b.name)),
@@ -97,11 +114,13 @@ function build(splits: Split[]): PresetPlans {
     );
 
     // Everything else has to stay out: the band is a price bracket, not a floor.
-    plans[presetKey(threshold, "band")] = planBestiaryPatterns(
-      band,
-      [...above, ...below].filter((b) => !band.some((x) => x.name === b.name)),
-      { exact: true },
-    );
+    if (banded) {
+      plans[presetKey(threshold, "band")] = planBestiaryPatterns(
+        band,
+        [...above, ...below].filter((b) => !inside.has(b.name)),
+        { exact: true },
+      );
+    }
   }
   return plans;
 }
@@ -119,6 +138,9 @@ function build(splits: Split[]): PresetPlans {
  */
 export const getPresetPlans = unstable_cache(
   async (splits: Split[]) => build(splits),
-  ["bestiary-preset-plans"],
+  // The split alone does not say which plans were built from it, so the key
+  // carries a version too: change what build() plans, change this, or the
+  // cache keeps answering with the plans the old rules made.
+  ["bestiary-preset-plans", "v2-band"],
   { revalidate: 900 },
 );
