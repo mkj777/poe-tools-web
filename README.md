@@ -3,8 +3,6 @@
 Every Path of Exile 1 beast currently on the market, sortable by value, plus a
 generated Bestiary search pattern for the ones worth farming.
 
-![Beast Prices](docs/screenshot.png)
-
 ## What it does
 
 - Lists **all** beasts for the selected league with their chaos value, 7-day
