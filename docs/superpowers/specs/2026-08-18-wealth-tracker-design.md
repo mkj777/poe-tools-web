@@ -1,4 +1,4 @@
-# Wealth tracker — design
+# Wealth tracker: design
 
 **Date:** 2026-08-18 (revised 2026-08-20)
 **Status:** approved design, not yet implemented
@@ -12,7 +12,7 @@ The site already knows how to price Path of Exile 1 items and already talks to
 poe.ninja on a schedule. Everything it shows is the same for every visitor.
 Wealth is the first feature that belongs to one person: their stash, their
 numbers, their history. That means a navigation shell, a datastore, and a
-rate-limited path to Grinding Gear Games' own API — none of which the project
+rate-limited path to Grinding Gear Games' own API, none of which the project
 has today.
 
 ## Decisions
@@ -42,7 +42,7 @@ in a response.
 
 One thing improves by moving it to the server. GGG's stash limits are counted
 per IP, and the calls now leave from Vercel's addresses rather than the
-visitor's, so a sync can no longer lock the game client on their own machine —
+visitor's, so a sync can no longer lock the game client on their own machine,
 which is exactly what local scripting did.
 
 ## Out of scope
@@ -83,7 +83,7 @@ Three consequences drive the design:
 
 The limiter therefore keeps a rolling counter and claims a slot inside a
 transaction before every GGG call, against self-imposed caps of **30 per 60
-seconds** and **120 per 120 seconds** — two thirds of the real numbers, so a
+seconds** and **120 per 120 seconds**, two thirds of the real numbers, so a
 miscount cannot reach the penalty. No slot means the caller is told how long to
 wait; nothing sleeps inside a function. Observed `-State` headers tighten the
 caps at runtime if GGG lowers them, and a 429 writes a hard cooldown for
@@ -96,7 +96,7 @@ caps at runtime if GGG lowers them, and a 429 writes a hard cooldown for
 | Path | Rendering | Notes |
 | --- | --- | --- |
 | `/` | redirect | unchanged |
-| `/[league]` | static, `revalidate = 900` | beasts, unchanged — no URL breaks |
+| `/[league]` | static, `revalidate = 900` | beasts, unchanged, no URL breaks |
 | `/[league]/wealth` | `force-dynamic` | reads the access token, renders that history |
 | `POST /api/wealth/session` | dynamic | verify a POESESSID, issue the access token, return the tab list |
 | `POST /api/wealth/sync/start` | dynamic | open a draft snapshot, answer with the tabs to walk |
@@ -135,7 +135,7 @@ session cookie for that account:
    `sameSite=lax` cookie carrying the account name and an expiry thirty days
    out, signed with `WEALTH_TOKEN_SECRET`. Nothing about it is stored server
    side; the signature is the whole check.
-4. Reads require that cookie. Knowing an account name is not enough — without a
+4. Reads require that cookie. Knowing an account name is not enough. Without a
    valid signature the answer is 404, which closes the enumeration hole that
    would otherwise make the database a searchable list of who is rich.
 
@@ -152,7 +152,7 @@ so there is no anonymous surface for row-level security to defend.
 
 The driver is `postgres` against Supabase's transaction pooler with
 `prepare: false`. Transaction-mode pooling hands out a different backend per
-transaction, so prepared statements — postgres.js's default — fail there. It is
+transaction, so prepared statements, postgres.js's default, fail there. It is
 the single configuration mistake this stack invites.
 
 ```ts
@@ -183,7 +183,7 @@ a row id from the caller and trusts it.
 line, which lands near 25 KB. Two hundred snapshots is then about 5 MB for one
 person, and the free tier's 500 MB holds on the order of a hundred people. That
 is far more headroom than a row-per-item table, which would be 400 000 rows for
-the same person. The chart and the breakdown never read the blob at all — they
+the same person. The chart and the breakdown never read the blob at all: they
 select `takenAt`, `totalChaos` and `breakdown`, and Postgres leaves the
 out-of-line column on disk untouched.
 
@@ -217,7 +217,7 @@ walk never asks a folder for items.
 
 The first ever sync stops after the tab list and shows the picker, because new
 tabs default to unselected and a silent zero-tab sync would look broken. At most
-25 tabs may be selected — that is one minute of budget at the self-imposed cap,
+25 tabs may be selected, which is one minute of budget at the self-imposed cap,
 and the picker refuses the twenty-sixth.
 
 If GGG rejects the cookie, `badAuthAt` is stamped, the page asks for a fresh
@@ -243,17 +243,17 @@ Vial, Invitation, Beast. Chaos Orb is pinned at 1.
 
 Matched with variants, because poe.ninja prices these per variant:
 
-- **Unique weapons, armour, accessories, flasks and jewels** — name plus link
+- **Unique weapons, armour, accessories, flasks and jewels**: name plus link
   count (5L and 6L are separate lines) plus corrupted.
-- **Skill gems** — name, `gemLevel`, `gemQuality`, `corrupted`. The overview
+- **Skill gems**: name, `gemLevel`, `gemQuality`, `corrupted`. The overview
   carries 7518 lines, so the lookup is a map keyed on that tuple, not a scan.
-- **Maps** — base name, tier, blighted or blight-ravaged, unique maps by name.
-- **Cluster jewels** — base type, passive count and the enchantment text, which
+- **Maps**: base name, tier, blighted or blight-ravaged, unique maps by name.
+- **Cluster jewels**: base type, passive count and the enchantment text, which
   is what poe.ninja puts in `name`.
 
 An item's fallback key is `typeLine`, then `baseType`; quantity is `stackSize`
 or one. Anything unmatched is categorised `Unpriced`, counted, and shown as its
-own line rather than guessed at — the count is stored on the snapshot so the
+own line rather than guessed at, and the count is stored on the snapshot so the
 chart never implies a total it did not have.
 
 The divine rate is stored per snapshot, so an old point keeps the rate it was
@@ -271,11 +271,11 @@ logging out of pathofexile.com revokes it, and a Sync button.
 With one, the page is:
 
 - the total in chaos and divines, with the change across the selected range;
-- the chart — total chaos over time, 24 hours / 7 days / 30 days, drawn as a
+- the chart, total chaos over time, 24 hours / 7 days / 30 days, drawn as a
   plain SVG polyline from `takenAt` and `totalChaos`. One line, no dependency;
 - a Breakdown card straight from the stored `breakdown`;
 - a sidebar listing the tabs with checkboxes;
-- a table of items — name, tab, quantity, unit price, total — sorted by value,
+- a table of items (name, tab, quantity, unit price, total) sorted by value,
   with a search box and a row cap, the same pattern the beast table already
   uses. No virtualisation library;
 - a Forget button that deletes everything.
