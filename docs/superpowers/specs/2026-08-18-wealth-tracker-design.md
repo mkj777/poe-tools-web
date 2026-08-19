@@ -150,6 +150,11 @@ There is no hand-written SQL, no database function, and no ORM-free query. The
 connection string is a server secret and no key of any kind reaches the browser,
 so there is no anonymous surface for row-level security to defend.
 
+The driver is `postgres` against Supabase's transaction pooler with
+`prepare: false`. Transaction-mode pooling hands out a different backend per
+transaction, so prepared statements — postgres.js's default — fail there. It is
+the single configuration mistake this stack invites.
+
 ```ts
 stashAccounts   accountName  text primary key
                 firstSeen, lastSyncAt, lastError, badAuthAt
@@ -166,6 +171,12 @@ snapshots       id serial, accountName, league, takenAt
 
 gggBudget       scope text primary key, windowStart, hits, blockedUntil
 ```
+
+A partial unique index over `(accountName, league)` where `status = 'draft'`
+allows one open draft at a time, so two browsers syncing the same account cannot
+interleave into each other's rows. Every query is filtered by the account name
+carried in the access token; no route ever takes an account name, a draft id or
+a row id from the caller and trusts it.
 
 **Why the items are one JSON column.** A stash of 2000 priced items is roughly
 120 KB of raw JSON; Postgres compresses a `jsonb` column of that size out of
@@ -199,6 +210,10 @@ The browser drives instead:
 The progress bar is free, the sync survives a closed tab (the draft is resumed
 or discarded on the next start), and no single request can time out. A draft
 older than an hour is discarded.
+
+Folder tabs hold other tabs rather than items: the list marks them `folder` and
+their children carry their own indices, so the picker shows the leaves and the
+walk never asks a folder for items.
 
 The first ever sync stops after the tab list and shows the picker, because new
 tabs default to unselected and a silent zero-tab sync would look broken. At most
@@ -327,6 +342,10 @@ already self-hosts.
   test and code review keep it bounded.
 - **Cookies expire.** GGG invalidates a POESESSID on logout and on some IP
   changes. The failure is visible, asks for a new paste, and does not retry.
+- **The access token cannot be revoked.** It is a signature, not a row, so a
+  stolen laptop keeps read access for up to thirty days. Forget deletes the
+  data, which is the only lever; rotating `WEALTH_TOKEN_SECRET` invalidates
+  every token at once if it ever matters.
 - **Account renames** orphan a history, since the name is the key. Rare, and the
   fix is to sync again under the new name.
 - **Terms of service.** GGG is not fond of third-party sites collecting other
