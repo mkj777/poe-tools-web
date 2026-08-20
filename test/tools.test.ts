@@ -2,11 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { EXTERNAL_TOOLS, toolByName } from "../src/lib/tools.ts";
 
-test("every tool has a name, a blurb and an https link", () => {
+test("every tool has a name and an https link", () => {
   assert.ok(EXTERNAL_TOOLS.length >= 6);
   for (const tool of EXTERNAL_TOOLS) {
     assert.ok(tool.name.length > 0, tool.name);
-    assert.ok(tool.blurb.length > 0, tool.name);
     assert.match(tool.href("Allflame"), /^https:\/\//, tool.name);
   }
 });

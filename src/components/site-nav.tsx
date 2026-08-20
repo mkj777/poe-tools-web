@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowUpRight, Check, ChevronDown, Swords } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +23,6 @@ const trigger =
 type Entry = {
   key: string;
   label: string;
-  blurb?: string;
   href: string;
   external?: boolean;
   current?: boolean;
@@ -90,20 +89,20 @@ function HoverMenu({
                 href={entry.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex cursor-pointer items-start gap-2"
+                className="flex cursor-pointer items-center gap-2"
               >
-                <EntryText entry={entry} />
-                <ArrowUpRight className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
+                <span className="flex-1 text-sm">{entry.label}</span>
+                <ArrowUpRight className="text-muted-foreground size-3.5 shrink-0" />
               </a>
             ) : (
               <Link
                 href={entry.href}
                 aria-current={entry.current ? "page" : undefined}
-                className="flex cursor-pointer items-start gap-2"
+                className="flex cursor-pointer items-center gap-2"
               >
-                <EntryText entry={entry} />
+                <span className="flex-1 text-sm">{entry.label}</span>
                 {entry.current && (
-                  <Check className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
+                  <Check className="text-muted-foreground size-3.5 shrink-0" />
                 )}
               </Link>
             )}
@@ -111,19 +110,6 @@ function HoverMenu({
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-function EntryText({ entry }: { entry: Entry }) {
-  return (
-    <span className="min-w-0 flex-1">
-      <span className="block text-sm font-medium">{entry.label}</span>
-      {entry.blurb && (
-        <span className="text-muted-foreground block text-xs">
-          {entry.blurb}
-        </span>
-      )}
-    </span>
   );
 }
 
@@ -147,7 +133,6 @@ export function SiteNav({
   const tools: Entry[] = EXTERNAL_TOOLS.map((tool) => ({
     key: tool.name,
     label: tool.name,
-    blurb: tool.blurb,
     href: tool.href(league),
     external: true,
   }));
@@ -162,11 +147,6 @@ export function SiteNav({
   return (
     <header className="border-border/60 bg-background/80 sticky top-0 z-50 border-b backdrop-blur">
       <nav className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-6">
-        <span className="text-foreground mr-2 flex items-center gap-2 text-sm font-semibold">
-          <Swords className="size-4" />
-          PoE Tools
-        </span>
-
         <div className="flex items-center gap-1">
           {TOOLS.map((tool) => (
             <Link
@@ -183,7 +163,7 @@ export function SiteNav({
             </Link>
           ))}
 
-          <HoverMenu label="Tools" entries={tools} align="start" width="w-72" />
+          <HoverMenu label="Tools" entries={tools} align="start" width="w-52" />
         </div>
 
         <div className="ml-auto">
