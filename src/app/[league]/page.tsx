@@ -8,8 +8,8 @@ import {
 import { loadBeasts } from "@/lib/beasts";
 import { leagueParams, resolveLeague } from "@/lib/league";
 import { BeastTable } from "@/components/beast-table";
-import { LeagueSelect } from "@/components/league-select";
 import { ScarabPrices } from "@/components/scarab-prices";
+import { SimulationLink } from "@/components/simulation-link";
 import { getPresetPlans, presetSplits } from "@/lib/preset-plans";
 
 export const metadata = {
@@ -30,7 +30,7 @@ export const revalidate = 900;
 export const generateStaticParams = leagueParams;
 
 export default async function Page({ params }: PageProps<"/[league]">) {
-  const { leagues, league } = await resolveLeague((await params).league);
+  const { league } = await resolveLeague((await params).league);
   if (!league) notFound();
 
   const [beasts, scarabs, currency] = await Promise.all([
@@ -73,8 +73,8 @@ export default async function Page({ params }: PageProps<"/[league]">) {
             priority
             className="h-auto w-full"
           />
-          <div className="space-y-2 px-3">
-            <LeagueSelect leagues={leagues} value={league} className="w-full" />
+          <div className="px-3">
+            <SimulationLink league={league} />
           </div>
         </div>
 
