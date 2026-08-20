@@ -9,7 +9,6 @@ import { loadBeasts } from "@/lib/beasts";
 import { leagueParams, resolveLeague } from "@/lib/league";
 import { BeastTable } from "@/components/beast-table";
 import { ScarabPrices } from "@/components/scarab-prices";
-import { SimulationLink } from "@/components/simulation-link";
 import { getPresetPlans, presetSplits } from "@/lib/preset-plans";
 
 export const metadata = {
@@ -62,7 +61,7 @@ export default async function Page({ params }: PageProps<"/[league]">) {
         {/* The row spans the full width once it is absolute, so it would sit
             on top of the controls below. Only its two columns take clicks. */}
         <div
-          className="pointer-events-auto shrink-0 space-y-3"
+          className="pointer-events-auto shrink-0"
           style={{ width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" }}
         >
           <Image
@@ -73,9 +72,6 @@ export default async function Page({ params }: PageProps<"/[league]">) {
             priority
             className="h-auto w-full"
           />
-          <div className="px-3">
-            <SimulationLink league={league} />
-          </div>
         </div>
 
         {/* Same gutter width as the logo, so the cards stay clear of the
