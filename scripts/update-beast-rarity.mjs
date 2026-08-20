@@ -15,7 +15,7 @@
  */
 import { writeFileSync } from "node:fs";
 
-const UA = "poe-beast-prices/0.1 (contact: maxikie02@gmail.com)";
+const UA = "poe-tools-web/0.1 (contact: maxikie02@gmail.com)";
 
 /** Spirit beasts, their First Ones, the Harvest beasts, and the Mórrigan. */
 const RED_FAMILIES = [

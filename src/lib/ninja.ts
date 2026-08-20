@@ -1,7 +1,7 @@
 import type { BeastRarity } from "./beast-rarity";
 
 const BASE = "https://poe.ninja/poe1/api/economy";
-const UA = "poe-beast-prices/0.1 (personal price browser; maxikie02@gmail.com)";
+const UA = "poe-tools-web/0.1 (personal price browser; maxikie02@gmail.com)";
 
 // poe.ninja recomputes its PoE1 overviews roughly every 15 minutes, so that is
 // the interval: anything shorter re-fetches numbers that have not changed yet.

@@ -11,7 +11,7 @@ import { writeFileSync } from "node:fs";
  * fragment that appears in this text can drag in arbitrary beasts.
  */
 
-const UA = "poe-beast-prices/0.1 (contact: maxikie02@gmail.com)";
+const UA = "poe-tools-web/0.1 (contact: maxikie02@gmail.com)";
 
 const PAGES = ["List of monster prefix mods", "List of monster suffix mods"];
 

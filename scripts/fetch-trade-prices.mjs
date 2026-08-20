@@ -16,7 +16,7 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 
-const UA = "poe-beast-prices/0.1 (personal price tool; maxikie02@gmail.com)";
+const UA = "poe-tools-web/0.1 (personal price tool; maxikie02@gmail.com)";
 const TRADE = "https://www.pathofexile.com/api/trade";
 const NINJA = "https://poe.ninja/poe1/api/economy";
 

@@ -13,7 +13,7 @@ import { unstable_cache } from "next/cache";
 import FALLBACK from "./trade-prices.fallback.json";
 
 const TRADE = "https://www.pathofexile.com/api/trade";
-const UA = "poe-beast-prices/0.1 (personal price tool; maxikie02@gmail.com)";
+const UA = "poe-tools-web/0.1 (personal price tool; maxikie02@gmail.com)";
 
 /** A day, matching how often the cron cycles through every beast. */
 export const PRICE_TTL_SECONDS = 86400;
