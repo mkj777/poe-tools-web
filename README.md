@@ -1,7 +1,17 @@
-# PoE Beast Prices
+# PoE Tools
 
 Every Path of Exile 1 beast currently on the market, sortable by value, plus a
-generated Bestiary search pattern for the ones worth farming.
+generated Bestiary search pattern for the ones worth farming, and a menu that
+points at the tools which already do the rest of the job.
+
+## The Tools menu
+
+Beast prices are the only thing this site hosts. Everything else worth having
+already exists and is better than a copy of it would be, so the bar links out
+instead of pretending otherwise: FilterBlade for loot filters, Wealthy Exile for
+stash wealth, the official trade site, poe.ninja, Awakened PoE Trade for in game
+price checks, and Path of Building. Trade and poe.ninja are handed the league
+you are looking at, so the link lands where you already are.
 
 ## What it does
 

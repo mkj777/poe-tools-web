@@ -13,8 +13,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PoE Beast Prices",
-  description: "Every Path of Exile 1 beast on the market, sortable by value.",
+  title: "PoE Tools",
+  description:
+    "Beast prices and Bestiary searches, plus the way to the tools that do the rest.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

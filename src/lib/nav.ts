@@ -1,10 +1,7 @@
 /** A tool is one tab in the bar. The beasts table is the tool at the root. */
 export type Tool = { slug: string; label: string };
 
-export const TOOLS: readonly Tool[] = [
-  { slug: "", label: "Beasts" },
-  { slug: "wealth", label: "Wealth" },
-] as const;
+export const TOOLS: readonly Tool[] = [{ slug: "", label: "Beasts" }] as const;
 
 const segments = (pathname: string) => pathname.split("/").filter(Boolean);
 
@@ -15,6 +12,8 @@ export function toolHref(leagueSlug: string, tool: string) {
 /**
  * Which tab to light up. Pages that are not tools, the simulation for one,
  * belong to the tool they hang under, which today is always the beasts table.
+ * The tools in the menu beside these tabs are other people's sites, so none of
+ * them is ever the active one.
  */
 export function activeTool(pathname: string) {
   const tool = segments(pathname)[1] ?? "";
