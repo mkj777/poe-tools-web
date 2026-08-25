@@ -15,9 +15,17 @@ import { leagueSlug, type League } from "@/lib/ninja";
 import { EXTERNAL_TOOLS } from "@/lib/tools";
 import { cn } from "@/lib/utils";
 
-/** Every control in the bar wears this, so the two menus cannot drift apart. */
+/** What a tab and the menu beside it wear: part of the bar, not on top of it. */
 const trigger =
   "text-muted-foreground hover:text-foreground hover:bg-secondary/50 data-[state=open]:bg-secondary data-[state=open]:text-foreground flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors outline-none";
+
+/**
+ * The league is not a place in the site, it is the setting everything else is
+ * read against, so it wears the outlined pill the page uses for its own
+ * settings rather than the flat look of the tabs.
+ */
+const leagueTrigger =
+  "border-border/80 text-foreground hover:border-foreground/40 hover:bg-secondary/40 data-[state=open]:border-foreground/40 data-[state=open]:bg-secondary/60 flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors outline-none";
 
 /** One line of either menu. Internal entries route, external ones open a tab. */
 type Entry = {
@@ -42,11 +50,14 @@ function HoverMenu({
   entries,
   align,
   width,
+  className = trigger,
 }: {
   label: string;
   entries: Entry[];
   align: "start" | "end";
   width: string;
+  /** What the label itself wears. Defaults to the look of the tabs. */
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -63,7 +74,7 @@ function HoverMenu({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger
-        className={trigger}
+        className={className}
         onPointerEnter={show}
         onPointerLeave={hide}
       >
@@ -177,6 +188,7 @@ export function SiteNav({
             entries={leagueEntries}
             align="end"
             width="w-56"
+            className={leagueTrigger}
           />
         </div>
       </nav>
