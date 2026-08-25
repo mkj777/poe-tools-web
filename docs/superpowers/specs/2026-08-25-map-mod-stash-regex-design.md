@@ -84,11 +84,17 @@ Query: table `mods`, `domain=5`, `generation_type` 1 (prefixes) and 2
   `# patches with Ground Effect per # tiles (Hidden)` appear on no tooltip. What
   is not displayed cannot be searched, so it belongs in neither the targets nor
   the ban corpus.
-- **Markup and wrapped sentences.** `Rare Monsters have <span
-  class="keyword">Elemental Thorns</span> reflecting # Elemental Damage` comes
-  through raw, and the wiki breaks one long modifier across two rows
-  (`When a fifth Impale is inflicted on a Player,` followed by
-  `by their remaining Hits …`). Tags are stripped and broken sentences rejoined.
+- **Markup, HTML-escaped.** `Rare Monsters have <span class="keyword">Elemental
+  Thorns</span> reflecting # Elemental Damage` arrives with its angle brackets
+  escaped as `&lt;`/`&gt;`, so the entities have to be decoded before tags can
+  be stripped, and `&lt;br&gt;` has to be split on first because it is the line
+  separator.
+- **Wrapped modifiers stay split.** One long modifier arrives as several
+  `<br>`-separated pieces (`When a fifth Impale is inflicted on a Player,` then
+  `Impales are removed to Reflect their Physical Damage multiplied` then
+  `by their remaining Hits …`), and the game wraps it in the tooltip too. The
+  pieces are kept as separate lines and never rejoined, so no fragment can span
+  a place where the game may put a line break.
 
 Stored per affix: name, whether it is a prefix or a suffix, and its stat lines
 with the quantity / rarity / pack size block separated out. That block is kept
@@ -105,17 +111,23 @@ Hand maintained, not generated. A player does not think in affix names.
 `Area is inhabited by Abominations`, of which only the last is worth banning,
 and nobody calls `of Impotence` anything other than "no regen".
 
-Each group carries a label in player language, the stat lines it owns, and
-whether it belongs in the short list shown by default. Presets are a second
-constant: a name and a list of group ids.
+Each group carries a label in player language and the stat lines it owns.
+Presets are a second constant: a name and a list of group ids.
 
-The short list holds the bans almost every build wants: elemental reflect,
-physical reflect, no regeneration, no leech, temporal chains, vulnerability,
-hexproof, avoid ailments. Everything else lives in a collapsed section.
+Curating all 177 lines into named groups would be a lot of naming for lines
+nobody bans. Instead the curated groups cover the bans that are actually asked
+for, and **every line they do not claim stays individually bannable** in the
+collapsed section, labelled with its own text. That keeps the short list short
+without ever hiding a modifier, and it means a new league's new modifiers appear
+on their own rather than needing curation before they can be used.
 
-A test keeps the file honest: **every stat line in `map-mods.ts` belongs to
-exactly one group.** A new league with new map modifiers turns the test red
-instead of leaving lines silently unreachable.
+Two tests keep the file honest:
+
+- No line belongs to two groups, which would make a checkbox ban more than it
+  says.
+- Every line a group claims still exists in `map-mods.ts`. This is the loud
+  break that matters: when the wiki rewords a modifier, the group that referred
+  to the old wording fails instead of silently banning nothing.
 
 ### `src/lib/map-regex.ts`
 
@@ -144,10 +156,17 @@ No worker. The Bestiary solver needs one because it weighs fragments against
 35,237 generated names; this one has under two hundred short lines and runs
 synchronously in the render.
 
+**Splitting into several searches is not possible here**, unlike in the
+Bestiary. There, several searches are run one after another and their results
+add up. Exclusion does not add up: a second search replaces the first, so
+`"!(a|b)"` followed by `"!(c|d)"` ends on a screen that still shows every map
+carrying `a`. The output has to fit one field or it is not usable at all.
+
 The field's length limit is not yet known (the Bestiary cuts at 249). The
-generator carries a configurable maximum and splits into several searches when
-it is exceeded, naming what each split covers, the way `BestiaryStep` does. The
-probe that settles the real limit is listed in `docs/stash-search.md`.
+generator therefore reports the length it produced and lets the interface show
+it, rather than splitting. The probe that settles the real limit is listed in
+`docs/stash-search.md`; if a limit turns out to exist, the answer is to warn and
+ask for fewer bans, not to split.
 
 ### `src/app/[league]/maps/page.tsx` and `src/components/map-regex.tsx`
 
@@ -170,7 +189,8 @@ ticks its groups and leaves them individually adjustable afterwards.
   affix that was not banned.** Asserted for every group on its own and for every
   preset. This is the same promise `test/bestiary-regex.test.ts` makes, with its
   own corpus and its own code.
-- Every stat line belongs to exactly one group.
+- No stat line belongs to two groups, and every line a group claims still
+  exists in the scraped data.
 - The output parses as the term form the dialect requires: one quoted term, `!`
   inside the quotes, no digits in any fragment.
 
