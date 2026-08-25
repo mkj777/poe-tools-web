@@ -1,5 +1,6 @@
 /**
- * Keeps trade prices warm for the beasts poe.ninja does not price.
+ * Keeps trade prices warm for what poe.ninja does not price: the beasts nobody
+ * currently lists, and the astrolabes, which it has no page for at all.
  *
  * Vercel calls this on a schedule (see vercel.json). Each run walks a small
  * slice of the beast list; entries still inside their 24 hour TTL come straight
@@ -9,6 +10,7 @@
  */
 import { NextResponse } from "next/server";
 import { getAllBeastNames, getBeasts, getLeagues } from "@/lib/ninja";
+import { ASTROLABES } from "@/lib/astrolabes";
 import { allowLiveLookups, getTradePrice } from "@/lib/trade-prices";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +24,16 @@ export const maxDuration = 60;
  * with more frequent crons, raise the schedule rather than the slice.
  */
 const SLICE = Number(process.env.PRICE_REFRESH_SLICE ?? 10);
+
+/**
+ * How much of a slice the astrolabes take before the beasts get the rest.
+ *
+ * There are ten of them against a hundred and forty-odd beasts, so an even
+ * rotation would leave a price a fortnight old. They also matter more: an
+ * astrolabe is most of what a map setup costs, while an unlisted beast is worth
+ * nothing by definition. Three a run walks all ten in under four days.
+ */
+const ASTROLABE_SLICE = Number(process.env.PRICE_REFRESH_ASTROLABES ?? 3);
 
 /**
  * Spacing between lookups. The tightest rules are 5 requests per 10s and 30
@@ -57,16 +69,27 @@ export async function GET(request: Request) {
   ]);
   const known = new Set(priced.map((b) => b.name));
   const missing = allNames.filter((name) => !known.has(name)).sort();
-  if (missing.length === 0) {
+
+  // Which slice is derived from the clock, so consecutive runs walk different
+  // names and nothing has to be carried between them.
+  const slot = Math.floor(Date.now() / SLOT_MS);
+
+  const take = (names: readonly string[], size: number, step: number) => {
+    if (names.length === 0 || size <= 0) return [];
+    const start = (slot * step) % names.length;
+    return Array.from({ length: Math.min(size, names.length) }, (_, i) =>
+      names[(start + i) % names.length],
+    );
+  };
+
+  const slice = [
+    ...take(ASTROLABES, ASTROLABE_SLICE, ASTROLABE_SLICE),
+    ...take(missing, SLICE - ASTROLABE_SLICE, SLICE - ASTROLABE_SLICE),
+  ];
+
+  if (slice.length === 0) {
     return NextResponse.json({ league, refreshed: 0, missing: 0 });
   }
-
-  const slot = Math.floor(Date.now() / SLOT_MS);
-  const start = (slot * SLICE) % missing.length;
-  const slice = Array.from(
-    { length: Math.min(SLICE, missing.length) },
-    (_, i) => missing[(start + i) % missing.length],
-  );
 
   allowLiveLookups();
   const results: Record<string, number | null> = {};
@@ -82,7 +105,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     league,
     missing: missing.length,
-    slice: { start, size: slice.length },
+    slice: { size: slice.length, astrolabes: ASTROLABE_SLICE },
     results,
   });
 }

@@ -126,13 +126,67 @@ const BESTIARY_SCARABS = [
   },
 ];
 
+/**
+ * poe.ninja hands out image paths without a host, and the host is not its own:
+ * `poe.ninja/gen/image/…` is a 404, while the same path on GGG's CDN serves the
+ * icon. Which is why nothing had to be added to next.config for these.
+ */
+const IMAGES = "https://web.poecdn.com";
+
+const scarabPath = (league: string) =>
+  `/exchange/current/overview?league=${encodeURIComponent(league)}&type=Scarab`;
+
+/**
+ * One scarab out of all of them, as something to put in a map device rather
+ * than as part of a fixed beast setup.
+ */
+export type PricedScarab = {
+  id: string;
+  name: string;
+  icon: string;
+  /** Chaos each, from the currency exchange. */
+  chaosValue: number;
+};
+
+/**
+ * Every scarab the exchange prices, named and pictured.
+ *
+ * `getScarabPrices` below answers a different question: what a beast run costs,
+ * which is three known scarabs in known amounts. This one has no opinion about
+ * which of the hundred-odd you are running, because that is the thing being
+ * asked.
+ */
+export async function getAllScarabs(league: string): Promise<PricedScarab[]> {
+  const data = await ninja<{
+    lines: { id: string; primaryValue: number }[];
+    items: { id: string; name: string; image: string }[];
+    core: { primary: string };
+  }>(scarabPath(league));
+
+  if (data.core?.primary !== "chaos") return [];
+  const named = new Map((data.items ?? []).map((item) => [item.id, item]));
+
+  return (data.lines ?? [])
+    .flatMap((line) => {
+      const item = named.get(line.id);
+      if (!item || !line.primaryValue) return [];
+      return [
+        {
+          id: line.id,
+          name: item.name,
+          icon: `${IMAGES}${item.image}`,
+          chaosValue: line.primaryValue,
+        },
+      ];
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export async function getScarabPrices(league: string): Promise<Scarab[]> {
   const data = await ninja<{
     lines: { id: string; primaryValue: number }[];
     core: { primary: string };
-  }>(
-    `/exchange/current/overview?league=${encodeURIComponent(league)}&type=Scarab`,
-  );
+  }>(scarabPath(league));
 
   // The exchange quotes in a primary currency; for PoE 1 that is chaos.
   const chaos = data.core?.primary === "chaos";
