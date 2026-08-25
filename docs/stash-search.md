@@ -179,6 +179,18 @@ Run one at a time in a stash tab holding maps, note everything that lights up.
 | a 300 character term | Where does the field cut off? | The Bestiary cuts at 249. If the stash has a limit, the generator has to split and name the splits |
 | `"^Monsters"` | Do anchors exist, and do they bind to a line or to the item? | Only matters if a fragment ever needs anchoring. The whole-item scope makes anchors far less useful than in the Bestiary |
 | `!(Poison)` unquoted | Does an unquoted group work? | If yes, the two quote characters can be dropped from the output. Worth two characters, not worth a wrong guess |
+| `poison` against `Poison` | Does the search respect case? | If the lowercase probe finds the same maps, case does not matter, which is what the generator already assumes |
+
+Until those are answered the generator assumes the widest reading. Every string
+in `ITEM_CHROME` in `src/lib/map-regex.ts` is treated as searchable and no
+fragment may land in it, and collisions are judged without regard to case.
+Assuming too much costs a few rejected fragments. Assuming too little would cost
+a search that highlights nothing at all, or one that dims maps that were fine.
+
+The case assumption is not idle: the first run of the solver picked `al T` for
+the reflect group, which is only safe if case matters, because it sits inside
+"addition**al t**imes" on `Monsters' skills Chain # additional times`. The test
+caught it.
 
 ---
 
