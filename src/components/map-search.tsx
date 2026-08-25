@@ -9,24 +9,30 @@ import {
   COMMON_GROUP_IDS,
   MOD_GROUPS,
   PRESETS,
+  displayLine,
   looseLines,
   matchesQuery,
 } from "@/lib/map-mod-groups";
 import { REWARD_STATS, planMapSearch } from "@/lib/map-regex";
 
 /**
- * A modifier no curated group speaks for is its own ban, so it takes the same
- * shape and wears its own text as the label. That way one list can hold both
- * and nothing is ever unreachable.
+ * A modifier no curated group speaks for is its own ban of one line, so it
+ * takes the same shape as a group and one list can hold both.
  */
 const LOOSE = looseLines().map((line) => ({
   id: line,
-  label: line.replace(/#/g, "x"),
   lines: [line] as readonly string[],
 }));
 
 const ALL = [...MOD_GROUPS, ...LOOSE];
 const BY_ID = new Map(ALL.map((entry) => [entry.id, entry]));
+
+/**
+ * Where there is no room for every line: the first one, and a mark saying more
+ * follow. Still the game's wording, only cut short.
+ */
+const shortTitle = (entry: { lines: readonly string[] }) =>
+  displayLine(entry.lines[0]) + (entry.lines.length > 1 ? " …" : "");
 
 const COMMON = MOD_GROUPS.filter((g) => COMMON_GROUP_IDS.includes(g.id));
 
@@ -42,9 +48,21 @@ export function MapSearch() {
    * just as much as a badly rolled rare one, and lighting it would make "dark"
    * mean two different things depending on the map.
    */
-  const [minimums, setMinimums] = useState<Record<string, number>>({
-    quantity: 1,
+  const [minimums, setMinimums] = useState<Record<string, string>>({
+    quantity: "1",
   });
+
+  /**
+   * Kept as typed rather than as a number, so clearing a field leaves it empty
+   * instead of snapping back to a zero you then have to delete again.
+   */
+  const asked = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(minimums).map(([id, text]) => [id, Number(text) || 0]),
+      ),
+    [minimums],
+  );
   const [query, setQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -53,9 +71,9 @@ export function MapSearch() {
     const chosen = new Set(banned);
     return planMapSearch(
       ALL.filter((g) => chosen.has(g.id)).flatMap((g) => [...g.lines]),
-      { minimums },
+      { minimums: asked },
     );
-  }, [banned, minimums]);
+  }, [banned, asked]);
 
   const toggle = (id: string) =>
     setBanned((prev) =>
@@ -114,10 +132,6 @@ export function MapSearch() {
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {plan.search.length} characters, {plan.fragments.length} fragments.
-          Everything still lit is safe to run.
-        </p>
         {plan.unreachable.length > 0 && (
           <p className="text-destructive text-sm">
             No fragment can single these out without hiding maps you can run:{" "}
@@ -141,17 +155,14 @@ export function MapSearch() {
               {stat.label}
               <span className="flex items-center gap-1">
                 <Input
-                  type="number"
-                  min={0}
-                  max={999}
-                  value={minimums[stat.id] ?? 0}
+                  inputMode="numeric"
+                  value={minimums[stat.id] ?? ""}
                   onChange={(e) =>
                     setMinimums((prev) => ({
                       ...prev,
-                      [stat.id]: Math.max(
-                        0,
-                        Math.min(999, Math.floor(Number(e.target.value) || 0)),
-                      ),
+                      // Three digits of nothing but digits: everything the
+                      // generator can express, and no state it cannot read.
+                      [stat.id]: e.target.value.replace(/\D/g, "").slice(0, 3),
                     }))
                   }
                   className="h-8 w-20 text-right tabular-nums"
@@ -187,7 +198,7 @@ export function MapSearch() {
                 title="Remove"
                 className="bg-secondary text-secondary-foreground hover:bg-secondary/70 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-left text-sm"
               >
-                {entry.label}
+                {shortTitle(entry)}
                 <X className="size-3.5 shrink-0 opacity-60" />
               </button>
             ))}
@@ -212,7 +223,9 @@ export function MapSearch() {
                       : [...new Set([...prev, ...preset.groups])],
                   )
                 }
-                className={`hover:bg-muted/50 rounded-md border p-3 text-left ${
+                // A button centres its content, which leaves the shorter card
+                // floating. Stacking from the top lines the two titles up.
+                className={`hover:bg-muted/50 flex flex-col items-stretch rounded-md border p-3 text-left ${
                   active ? "border-primary bg-muted/30" : ""
                 }`}
               >
@@ -226,7 +239,10 @@ export function MapSearch() {
                       key={id}
                       className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-xs"
                     >
-                      {BY_ID.get(id)?.label ?? id}
+                      {(() => {
+                        const entry = BY_ID.get(id);
+                        return entry ? shortTitle(entry) : id;
+                      })()}
                     </span>
                   ))}
                 </div>
@@ -242,7 +258,7 @@ export function MapSearch() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search all ${ALL.length} by name or by the game's wording`}
+            placeholder={`Search all ${ALL.length} in the game's wording`}
             className="pl-9"
           />
         </div>
@@ -267,7 +283,13 @@ export function MapSearch() {
                   onCheckedChange={() => toggle(group.id)}
                   className="mt-0.5"
                 />
-                <span>{group.label}</span>
+                <span className="space-y-0.5">
+                  {group.lines.map((line) => (
+                    <span key={line} className="block">
+                      {displayLine(line)}
+                    </span>
+                  ))}
+                </span>
               </label>
             ))}
           </div>

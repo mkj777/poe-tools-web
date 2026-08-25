@@ -14,22 +14,17 @@ test("an empty query matches everything", () => {
   assert.equal(matchesQuery(reflect, "   "), true);
 });
 
-test("a query matches the label a player would use", () => {
-  assert.equal(matchesQuery(reflect, "reflect"), true);
-  assert.equal(matchesQuery(reflect, "REFL"), true);
-});
-
-test("a query matches the game's own wording, not just the label", () => {
-  // "Thorns" appears in the modifier text but never in the label "Reflect".
-  assert.ok(reflect.lines.some((line) => line.includes("Thorns")));
-  assert.equal(reflect.label.toLowerCase().includes("thorns"), false);
-  assert.equal(matchesQuery(reflect, "thorns"), true);
+test("a query is matched against the game's wording, and case is ignored", () => {
+  // Both of these are in the modifier text. There is no second vocabulary: a
+  // group has no name of its own, so the wording is the only thing to search.
+  assert.equal(matchesQuery(reflect, "reflecting"), true);
+  assert.equal(matchesQuery(reflect, "THORNS"), true);
+  assert.equal(matchesQuery(reflect, "Rare Monsters"), true);
 });
 
 test("the # standing in for a rolled number never blocks a match", () => {
   const withHash = {
     id: "x",
-    label: "x",
     lines: ["#% increased Monster Damage"] as readonly string[],
   };
 
@@ -37,8 +32,11 @@ test("the # standing in for a rolled number never blocks a match", () => {
   assert.equal(matchesQuery(withHash, "% increased"), true);
 });
 
-test("a query spanning label and lines does not match", () => {
-  assert.equal(matchesQuery(noRegen, "regeneration reflect"), false);
+test("a query spanning two lines does not match", () => {
+  // Each line is searched on its own, the way the game matches one.
+  assert.ok(noRegen.lines.some((l) => l.includes("Regenerate")));
+  assert.ok(noRegen.lines.some((l) => l.includes("Recharge")));
+  assert.equal(matchesQuery(noRegen, "Regenerate Recharge"), false);
 });
 
 test("an unrelated query matches nothing", () => {
@@ -47,7 +45,7 @@ test("an unrelated query matches nothing", () => {
 
 test("every loose line is reachable by searching its own text", () => {
   for (const line of looseLines()) {
-    const entry = { id: line, label: line.replace(/#/g, "x"), lines: [line] };
+    const entry = { id: line, lines: [line] };
     const word = line
       .replace(/#/g, " ")
       .split(/\s+/)

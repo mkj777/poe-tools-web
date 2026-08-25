@@ -2,12 +2,16 @@
 import { MAP_MOD_LINES } from "./map-mods.ts";
 
 /**
- * A ban a player would actually ask for, in the words they would use for it.
+ * A ban a player would actually ask for.
  *
  * A map affix is the wrong unit to offer. `Abhorrent` bundles quantity, rarity,
  * pack size and "Area is inhabited by Abominations", of which only the last is
- * worth banning, and nobody calls `of Impotence` anything but "no regen". So a
- * group owns the display lines, not the affix.
+ * worth banning. So a group owns the display lines, not the affix.
+ *
+ * And it owns nothing else. A group has no name of its own: what names it is
+ * the wording the game prints on the map, which is also what you are reading
+ * when you decide whether to run one. A friendlier paraphrase would be a second
+ * vocabulary to learn, and would not match anything you could search for.
  *
  * These groups deliberately do not cover all 177 lines. Naming every one of
  * them would be a lot of naming for lines nobody bans, and it would mean a new
@@ -16,7 +20,6 @@ import { MAP_MOD_LINES } from "./map-mods.ts";
  */
 export type ModGroup = {
   id: string;
-  label: string;
   lines: readonly string[];
 };
 
@@ -38,7 +41,6 @@ export const REWARD_LINES: readonly string[] = [
 export const MOD_GROUPS: readonly ModGroup[] = [
   {
     id: "reflect",
-    label: "Reflect",
     lines: [
       "Rare Monsters have Elemental Thorns reflecting # Elemental Damage",
       "Rare Monsters have Physical Thorns reflecting # Physical Damage",
@@ -46,7 +48,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "impale-reflect",
-    label: "Impale reflect",
     // Three lines because the game wraps this one modifier across three.
     lines: [
       "When a fifth Impale is inflicted on a Player,",
@@ -56,7 +57,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "no-regen",
-    label: "No regeneration or recharge",
     lines: [
       "Players cannot Recharge Energy Shield",
       "Players cannot Regenerate Life, Mana or Energy Shield",
@@ -65,7 +65,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "no-leech",
-    label: "No leech",
     lines: [
       "Monsters cannot be Leeched from",
       "Players have #% reduced Maximum total Life, Mana and Energy Shield Recovery per second from Leech",
@@ -73,37 +72,30 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "less-recovery",
-    label: "Less recovery rate",
     lines: ["Players have #% less Recovery Rate of Life and Energy Shield"],
   },
   {
     id: "temporal-chains",
-    label: "Temporal Chains",
     lines: ["Players are Cursed with Temporal Chains"],
   },
   {
     id: "vulnerability",
-    label: "Vulnerability",
     lines: ["Players are Cursed with Vulnerability"],
   },
   {
     id: "elemental-weakness",
-    label: "Elemental Weakness",
     lines: ["Players are Cursed with Elemental Weakness"],
   },
   {
     id: "enfeeble",
-    label: "Enfeeble",
     lines: ["Players are Cursed with Enfeeble"],
   },
   {
     id: "punishment",
-    label: "Punishment",
     lines: ["Players are Cursed with Punishment"],
   },
   {
     id: "curse-resistant",
-    label: "Monsters resist curses",
     lines: [
       "#% less effect of Curses on Monsters",
       "#% reduced Effect of Curses on Monsters",
@@ -112,7 +104,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "avoid-ailments",
-    label: "Monsters avoid ailments",
     lines: [
       "Monsters have #% chance to Avoid Elemental Ailments",
       "Monsters have a #% chance to avoid Poison, Impale, and Bleeding",
@@ -120,17 +111,14 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "max-resistances",
-    label: "Lower maximum resistances",
     lines: ["Players have #% to all maximum Resistances"],
   },
   {
     id: "penetration",
-    label: "Monster damage penetrates resistances",
     lines: ["Monster Damage Penetrates #% Elemental Resistances"],
   },
   {
     id: "monster-resistances",
-    label: "Monster resistances",
     lines: [
       "#% Monster Chaos Resistance",
       "#% Monster Cold Resistance",
@@ -142,12 +130,10 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "crit-resistant",
-    label: "Monsters resist critical strikes",
     lines: ["Monsters take #% reduced Extra Damage from Critical Strikes"],
   },
   {
     id: "monster-crit",
-    label: "Monster critical strikes",
     lines: [
       "#% to Monster Critical Strike Multiplier",
       "Monsters have #% increased Critical Strike Chance",
@@ -155,7 +141,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "extra-damage",
-    label: "Monsters deal extra elemental or chaos damage",
     lines: [
       "Monsters deal #% extra Physical Damage as Cold",
       "Monsters deal #% extra Physical Damage as Fire",
@@ -166,7 +151,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "monster-ailments",
-    label: "Monsters ignite, freeze and shock",
     lines: [
       "All Monster Damage can Ignite, Freeze and Shock",
       "All Monster Damage from Hits always Ignites",
@@ -176,7 +160,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "no-block-suppress",
-    label: "No block or spell suppression",
     lines: [
       "Players cannot Block",
       "Players cannot Suppress Spell Damage",
@@ -186,7 +169,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "no-charges",
-    label: "Players cannot gain charges",
     lines: [
       "Players cannot gain Endurance Charges",
       "Players cannot gain Frenzy Charges",
@@ -195,27 +177,22 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "less-defences",
-    label: "Less armour and defences",
     lines: ["Players have #% less Armour", "Players have #% less Defences"],
   },
   {
     id: "less-accuracy",
-    label: "Less accuracy",
     lines: ["Players have #% less Accuracy Rating"],
   },
   {
     id: "less-aura-effect",
-    label: "Weaker auras",
     lines: ["Players have #% reduced effect of Non-Curse Auras from Skills"],
   },
   {
     id: "steal-charges",
-    label: "Monsters steal charges",
     lines: ["Monsters steal Power, Frenzy and Endurance charges on Hit"],
   },
   {
     id: "flasks",
-    label: "Flasks",
     lines: [
       "Players are targeted by a Meteor when they use a Flask",
       "Players gain #% reduced Flask Charges",
@@ -224,7 +201,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "minions",
-    label: "Minions",
     lines: [
       "Players' Minions have #% less Attack Speed",
       "Players' Minions have #% less Cast Speed",
@@ -233,7 +209,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "totems-traps-mines",
-    label: "Totems, traps and mines",
     lines: [
       "#% of Damage Players' Totems take from Hits is taken from their Summoner's Life instead",
       "Player Skills which Throw Mines throw # fewer Mine",
@@ -243,7 +218,6 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "monster-speed",
-    label: "Monster speed",
     lines: [
       "#% increased Monster Attack Speed",
       "#% increased Monster Cast Speed",
@@ -252,17 +226,14 @@ export const MOD_GROUPS: readonly ModGroup[] = [
   },
   {
     id: "monster-damage",
-    label: "Monster damage and life",
     lines: ["#% increased Monster Damage", "#% more Monster Life"],
   },
   {
     id: "extra-rare-mods",
-    label: "Rare monsters have extra modifiers",
     lines: ["Rare Monsters each have # additional Modifier"],
   },
   {
     id: "ground-effects",
-    label: "Ground effects",
     lines: [
       "Area has patches of Awakeners' Desolation",
       "Area has patches of Burning Ground",
@@ -353,24 +324,27 @@ const CLAIMED = new Set([
 export const looseLines = () => MAP_MOD_LINES.filter((l) => !CLAIMED.has(l));
 
 /**
- * A player looking for a modifier types what they remember, and what they
- * remember is sometimes the group's name and sometimes the game's wording.
- * "Reflect" is the label, "Thorns" is the text, and both have to find it.
+ * A player looking for a modifier types what they remember of the wording, and
+ * the wording is all there is: searching "reflect" finds the Thorns lines
+ * because the game writes "reflecting" in them.
  *
  * The `#` standing in for a rolled number is treated as whitespace rather than
  * as a character, so "increased Monster Damage" reaches a line that reads
  * "#% increased Monster Damage".
  */
 export const matchesQuery = (
-  entry: { label: string; lines: readonly string[] },
+  entry: { lines: readonly string[] },
   query: string,
 ): boolean => {
   const needle = query.trim().toLowerCase();
   if (needle === "") return true;
 
-  const haystacks = [entry.label, ...entry.lines].map((text) =>
+  const haystacks = entry.lines.map((text) =>
     text.replace(/#/g, " ").replace(/\s+/g, " ").trim().toLowerCase(),
   );
 
   return haystacks.some((text) => text.includes(needle));
 };
+
+/** The game's own wording, with the number it rolls shown as a placeholder. */
+export const displayLine = (line: string) => line.replace(/#/g, "x");

@@ -20,12 +20,8 @@ export default async function Page({ params }: PageProps<"/[league]/maps">) {
   return (
     <PageFrame>
       <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
-        <header className="mb-6 space-y-1">
+        <header className="mb-6">
           <h1 className="text-3xl font-semibold tracking-tight">Map Regex</h1>
-          <p className="text-muted-foreground">
-            Tick what your build cannot run. What comes out highlights every map
-            carrying none of it, so anything left dark is what needs work.
-          </p>
         </header>
 
         <MapSearch />
