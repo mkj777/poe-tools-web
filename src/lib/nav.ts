@@ -1,9 +1,30 @@
-/** A tool is one tab in the bar. The beasts table is the tool at the root. */
-export type Tool = { slug: string; label: string };
+/**
+ * A tool is one tab in the bar. The beasts table is the tool at the root.
+ *
+ * The icon is the item the tool is about, taken from the game rather than from
+ * an icon set, because that is what a player recognises the tool by before they
+ * have read the label.
+ */
+export type Tool = {
+  slug: string;
+  label: string;
+  icon: { src: string; alt: string };
+};
 
 export const TOOLS: readonly Tool[] = [
-  { slug: "", label: "Beasts" },
-  { slug: "maps", label: "Maps" },
+  {
+    slug: "",
+    label: "Beasts",
+    icon: { src: "/Imprinted_Bestiary_Orb_inventory_icon.png", alt: "" },
+  },
+  {
+    slug: "maps",
+    label: "Maps",
+    icon: {
+      src: "/Nightmare_Map_(Curse_of_the_Allflame)_inventory_icon.png",
+      alt: "",
+    },
+  },
 ] as const;
 
 const segments = (pathname: string) => pathname.split("/").filter(Boolean);

@@ -184,32 +184,24 @@ function StepRow({
 }
 
 /**
- * A count of beasts, written the way a price is: the figure, then the item it
- * counts. The orb is the one a captured beast ends up in, so it says "beasts"
- * without the word.
+ * A count of beasts. It used to carry the Bestiary orb beside the figure; that
+ * icon now names the tool in the bar, where it says what the whole page is
+ * about instead of repeating itself at every number. What is counted is clear
+ * from where the count sits, and the title says it for anyone it is not.
  */
 function BeastCount({
   value,
-  size = 20,
   className,
 }: {
   value: number;
-  size?: number;
   className?: string;
 }) {
   return (
     <span
+      title={value === 1 ? "beast" : "beasts"}
       className={`inline-flex items-center gap-1 align-baseline tabular-nums whitespace-nowrap ${className ?? ""}`}
     >
       {num(value)}
-      <Image
-        src="/Imprinted_Bestiary_Orb_inventory_icon.png"
-        alt={value === 1 ? "beast" : "beasts"}
-        title="Beasts"
-        width={size}
-        height={size}
-        className="inline-block shrink-0"
-      />
     </span>
   );
 }
@@ -814,7 +806,7 @@ export function BeastTable({
                     {col.key === "name" && (
                       <span className="text-muted-foreground ml-3 font-normal tabular-nums">
                         {num(rows.length)} of{" "}
-                        <BeastCount value={found.length} size={20} />
+                        <BeastCount value={found.length} />
                       </span>
                     )}
                   </TableHead>

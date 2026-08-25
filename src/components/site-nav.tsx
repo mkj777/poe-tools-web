@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
@@ -170,6 +171,20 @@ export function SiteNav({
                   "bg-secondary text-foreground hover:bg-secondary",
               )}
             >
+              {/* The label already names the tool, so the icon is decoration
+                  and stays out of the accessible name. It dims with the tab
+                  it sits in, which is what makes the current one read as
+                  lit rather than merely shaded. */}
+              <Image
+                src={tool.icon.src}
+                alt={tool.icon.alt}
+                width={20}
+                height={20}
+                className={cn(
+                  "shrink-0 transition-opacity",
+                  tool.slug === current ? "opacity-100" : "opacity-75",
+                )}
+              />
               {tool.label}
             </Link>
           ))}

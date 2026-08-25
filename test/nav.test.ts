@@ -3,10 +3,21 @@ import test from "node:test";
 import { TOOLS, activeTool, swapLeague, toolHref } from "../src/lib/nav.ts";
 
 test("the beasts table is the tool at the root", () => {
-  assert.deepEqual(TOOLS, [
-    { slug: "", label: "Beasts" },
-    { slug: "maps", label: "Maps" },
-  ]);
+  assert.deepEqual(
+    TOOLS.map((t) => [t.slug, t.label]),
+    [
+      ["", "Beasts"],
+      ["maps", "Maps"],
+    ],
+  );
+});
+
+test("every tool wears an icon", () => {
+  for (const tool of TOOLS) {
+    assert.match(tool.icon.src, /^\/[^/].*\.(png|webp)$/, tool.label);
+    // Decoration beside a label that already names the tool.
+    assert.equal(tool.icon.alt, "");
+  }
 });
 
 test("maps is a tool", () => {
