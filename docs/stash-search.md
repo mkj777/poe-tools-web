@@ -186,6 +186,6 @@ Run one at a time in a stash tab holding maps, note everything that lights up.
 
 | Source | What it gives | Notes |
 | --- | --- | --- |
-| poewiki Cargo `mods`, `domain=5` | every area modifier with its full stat text, split by `generation_type` into prefixes (1) and suffixes (2) | 173 affix names and 198 distinct stat lines once numbers are normalised. Too broad on its own: `Vaal Vessel contains …`, `Maven releases all Bosses at once` and `Map Boss is accompanied by a Synthesis Boss` are area modifiers of other origins, so the query is narrowed by `id` |
+| poewiki Cargo `mods`, `domain=5` | every area modifier with its full stat text | `domain=5` is the whole area domain and carries Expedition logbook, Eagon mission, Shaper influence and Labyrinth modifiers too. Narrowed by `generation_type` 1 and 2, by `id LIKE "Map%"`, and by excluding `MapCorruptedSideArea%`, which starts with "Map" as well and is what carries the `Vaal Vessel contains …` rewards. That leaves 717 rows and **177 distinct lines**, which is what `pnpm mods:maps` writes |
 | poe.re | the tool the author uses in practice, and the reference for output shape | Not scraped. Its behaviour informed the probes above; the model here is this file's own |
 | poestash | nothing | Its generated patterns did not hold up in testing. Named only so nobody adds it back as a source |
