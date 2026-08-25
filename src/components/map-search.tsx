@@ -36,7 +36,12 @@ export function MapSearch() {
     "no-regen",
     "no-leech",
   ]);
-  const [rolledOnly, setRolledOnly] = useState(false);
+  /**
+   * On by default. An unrolled white map needs work just as much as a badly
+   * rolled rare one, so leaving it lit would make "dark" mean two different
+   * things depending on the map.
+   */
+  const [rolledOnly, setRolledOnly] = useState(true);
   const [query, setQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [copied, setCopied] = useState(false);

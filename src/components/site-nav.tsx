@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TOOLS, activeTool, swapLeague, toolHref } from "@/lib/nav";
 import { leagueSlug, type League } from "@/lib/ninja";
-import { EXTERNAL_TOOLS } from "@/lib/tools";
+import { EXTERNAL_TOOLS, PINNED_TOOLS } from "@/lib/tools";
 import { cn } from "@/lib/utils";
 
 /** What a tab and the menu beside it wear: part of the bar, not on top of it. */
@@ -35,6 +35,13 @@ type Entry = {
   href: string;
   external?: boolean;
   current?: boolean;
+  /**
+   * Already in the bar on a wide window, so the menu only carries it once the
+   * bar has no room to. Which is why the menu holds every tool and hides the
+   * pinned ones by breakpoint, rather than the bar and the menu splitting the
+   * list between them and leaving three tools unreachable on a phone.
+   */
+  narrowOnly?: boolean;
 };
 
 /** How long the menu survives the pointer crossing the gap below the label. */
@@ -95,7 +102,11 @@ function HoverMenu({
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         {entries.map((entry) => (
-          <DropdownMenuItem key={entry.key} asChild>
+          <DropdownMenuItem
+            key={entry.key}
+            asChild
+            className={cn(entry.narrowOnly && "md:hidden")}
+          >
             {entry.external ? (
               <a
                 href={entry.href}
@@ -126,10 +137,13 @@ function HoverMenu({
 }
 
 /**
- * One bar over every page. More Tools on the left holds the sites that already
- * do a job better than this one could, and hands the two that care which league
- * you are looking at. The league menu on the right keeps whichever tool is open, so
- * switching league never also switches page.
+ * One bar over every page. The tools of this site come first, then the sites
+ * that already do a job better than this one could: the three reached for
+ * directly sit in the bar, and More Tools holds the ones you go to with a
+ * question, handing the two that care which league you are looking at.
+ *
+ * The league menu on the right keeps whichever tool is open, so switching
+ * league never also switches page.
  */
 export function SiteNav({
   leagues,
@@ -142,11 +156,14 @@ export function SiteNav({
   const current = activeTool(pathname);
   const slug = leagueSlug(league);
 
+  // Every tool, in the order the list declares them, so the menu reads the same
+  // whether or not the window is wide enough to have lifted three into the bar.
   const tools: Entry[] = EXTERNAL_TOOLS.map((tool) => ({
     key: tool.name,
     label: tool.name,
     href: tool.href(league),
     external: true,
+    narrowOnly: tool.pinned,
   }));
 
   const leagueEntries: Entry[] = leagues.map((l) => ({
@@ -187,6 +204,27 @@ export function SiteNav({
               />
               {tool.label}
             </Link>
+          ))}
+
+          {/* Everything to the right of this leaves the site. The rule says so
+              before the arrows do, and it is what keeps a tab of this site and
+              a link to someone else's from reading as the same kind of thing. */}
+          <span
+            aria-hidden
+            className="bg-border/70 mx-1 hidden h-4 w-px shrink-0 md:block"
+          />
+
+          {PINNED_TOOLS.map((tool) => (
+            <a
+              key={tool.name}
+              href={tool.href(league)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(trigger, "hidden md:flex")}
+            >
+              {tool.name}
+              <ArrowUpRight className="size-3.5 shrink-0 opacity-70" />
+            </a>
           ))}
 
           <HoverMenu

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { EXTERNAL_TOOLS, toolByName } from "../src/lib/tools.ts";
+import {
+  EXTERNAL_TOOLS,
+  MENU_TOOLS,
+  PINNED_TOOLS,
+  toolByName,
+} from "../src/lib/tools.ts";
 
 test("every tool has a name and an https link", () => {
   assert.ok(EXTERNAL_TOOLS.length >= 6);
@@ -64,4 +69,23 @@ test("the links point where they are supposed to", () => {
 
 test("asking for a tool that is not in the list is a mistake, not undefined", () => {
   assert.throws(() => toolByName("Nonexistent"), /Nonexistent/);
+});
+
+test("the bar carries the three that get opened on their own", () => {
+  assert.deepEqual(
+    PINNED_TOOLS.map((t) => t.name),
+    ["FilterBlade", "Awakened PoE Trade", "Path of Building"],
+  );
+});
+
+test("the menu carries the rest, and between them nothing is lost", () => {
+  assert.deepEqual(
+    MENU_TOOLS.map((t) => t.name),
+    ["Wealthy Exile", "Trade", "poe.ninja"],
+  );
+  assert.equal(
+    PINNED_TOOLS.length + MENU_TOOLS.length,
+    EXTERNAL_TOOLS.length,
+    "every tool is in exactly one of the two",
+  );
 });
