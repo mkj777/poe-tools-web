@@ -1,35 +1,32 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import {
+  PRICE_INTERVAL,
   getCurrencyPrices,
   getScarabPrices,
+  pricesFetchedAt,
   type CurrencyPrices,
 } from "@/lib/ninja";
 import { loadBeasts } from "@/lib/beasts";
-import { leagueParams, resolveLeague } from "@/lib/league";
+import { resolveLeague } from "@/lib/league";
 import { BeastTable } from "@/components/beast-table";
 import { ScarabPrices } from "@/components/scarab-prices";
 import { getPresetPlans, presetSplits } from "@/lib/preset-plans";
-import { renderedAt } from "@/lib/refresh";
 
 export const metadata = {
   title: "PoE Beast Prices",
   description: "Every Path of Exile 1 beast on the market, sortable by value.",
 };
 
-/**
- * Everyone sees the same page, and poe.ninja recomputes every quarter of an
- * hour, so there is nothing to render per request. The HTML is built once and
- * served from the CDN until it is that old, then rebuilt in the background —
- * which also means the few seconds of pattern planning happen there rather than
- * in front of a visitor.
- */
-export const revalidate = 900;
-
-/** The live leagues are prerendered; a new one renders on first visit. */
-export const generateStaticParams = leagueParams;
-
 export default async function Page({ params }: PageProps<"/[league]">) {
+  // Built once and cached, this page showed whatever the numbers were when it
+  // was built, which on a quiet site is hours. Everything expensive about it is
+  // cached a layer down instead: poe.ninja is asked four times an hour at most
+  // and the pattern planning is memoised, so rendering per visit costs little
+  // and always shows the freshest prices there are.
+  await connection();
+
   const { league } = await resolveLeague((await params).league);
   if (!league) notFound();
 
@@ -47,10 +44,7 @@ export default async function Page({ params }: PageProps<"/[league]">) {
   // made and only an unusual threshold ever reaches the worker in the browser.
   const plans = await getPresetPlans(presetSplits(beasts));
 
-  // This page is built, not rendered per visit, so the clock stops here: the
-  // moment below is when the prices were fetched, and the CDN serves that same
-  // HTML until it is `revalidate` seconds old.
-  const generated = await renderedAt();
+  const fetchedAt = await pricesFetchedAt(league);
 
   return (
     <div className="relative">
@@ -100,8 +94,8 @@ export default async function Page({ params }: PageProps<"/[league]">) {
           beasts={beasts}
           league={league}
           plans={plans}
-          generated={generated}
-          interval={revalidate}
+          fetchedAt={fetchedAt}
+          interval={PRICE_INTERVAL}
         />
       </main>
     </div>

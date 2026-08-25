@@ -5,7 +5,8 @@ const UA = "poe-tools-web/0.1 (personal price browser; maxikie02@gmail.com)";
 
 // poe.ninja recomputes its PoE1 overviews roughly every 15 minutes, so that is
 // the interval: anything shorter re-fetches numbers that have not changed yet.
-const REVALIDATE = 900;
+export const PRICE_INTERVAL = 900;
+const REVALIDATE = PRICE_INTERVAL;
 
 export type League = { id: string; name: string };
 
@@ -30,11 +31,15 @@ export type Beast = {
   rarity?: BeastRarity;
 };
 
-async function ninja<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+function ninjaResponse(path: string) {
+  return fetch(`${BASE}${path}`, {
     headers: { "User-Agent": UA },
     next: { revalidate: REVALIDATE },
   });
+}
+
+async function ninja<T>(path: string): Promise<T> {
+  const res = await ninjaResponse(path);
   if (!res.ok) throw new Error(`poe.ninja ${path} -> ${res.status}`);
   return res.json();
 }
@@ -57,11 +62,26 @@ export function leagueSlug(league: string) {
   return hardcore ? `${base}hc` : base;
 }
 
+const beastPath = (league: string) =>
+  `/stash/current/item/overview?league=${encodeURIComponent(league)}&type=Beast`;
+
 export async function getBeasts(league: string) {
-  const data = await ninja<{ lines: Beast[] }>(
-    `/stash/current/item/overview?league=${encodeURIComponent(league)}&type=Beast`,
-  );
+  const data = await ninja<{ lines: Beast[] }>(beastPath(league));
   return data.lines;
+}
+
+/**
+ * When poe.ninja last handed over the prices a page is showing.
+ *
+ * Asking again costs nothing: it is the same request the beasts came from, so
+ * it is answered out of the data cache, and the stored response still carries
+ * the Date poe.ninja sent with it. That is the age of the numbers themselves,
+ * which is what a countdown has to be built on. A render is no measure of it:
+ * the same numbers are rendered over and over while they sit in the cache.
+ */
+export async function pricesFetchedAt(league: string) {
+  const res = await ninjaResponse(beastPath(league));
+  return Date.parse(res.headers.get("date") ?? "") || Date.now();
 }
 
 export type Scarab = {

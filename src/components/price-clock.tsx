@@ -8,22 +8,21 @@ import { minutesUntil } from "@/lib/refresh";
 const TICK = 15_000;
 
 /**
- * How long the prices on this page have left. The page is built once and then
- * served from the CDN until it is `interval` seconds old, so the moment it was
- * built is the only thing the server can say, and the countdown itself belongs
- * to the visitor's clock: it starts at hydration, which is also why the first
- * paint carries the interval alone and no number.
+ * How long the prices on this page have left. The countdown belongs to the
+ * visitor's clock and starts at hydration, which is why the first paint carries
+ * the interval alone and no number: a server that renders the count would be
+ * caught out by every second between its render and the paint.
  */
 export function PriceClock({
-  generated,
+  fetchedAt,
   interval,
 }: {
-  /** When the prices on this page were fetched, in epoch milliseconds. */
-  generated: number;
-  /** Seconds between rebuilds. */
+  /** When poe.ninja handed over these prices, in epoch milliseconds. */
+  fetchedAt: number;
+  /** Seconds before they are fetched again. */
   interval: number;
 }) {
-  const due = generated + interval * 1000;
+  const due = fetchedAt + interval * 1000;
   const [left, setLeft] = useState<number | null>(null);
 
   useEffect(() => {

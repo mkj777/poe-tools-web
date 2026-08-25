@@ -600,7 +600,7 @@ export function BeastTable({
   beasts,
   league,
   plans,
-  generated,
+  fetchedAt,
   interval,
 }: {
   beasts: Beast[];
@@ -609,8 +609,8 @@ export function BeastTable({
   /** Planned on the server for the preset thresholds, so they need no wait. */
   plans: PresetPlans;
   /** When these prices were fetched, in epoch milliseconds. */
-  generated: number;
-  /** Seconds until the page is rebuilt with newer ones. */
+  fetchedAt: number;
+  /** Seconds until newer ones are fetched. */
   interval: number;
 }) {
   const [query, setQuery] = useState("");
@@ -772,7 +772,7 @@ export function BeastTable({
         {/* Two notes about the row rather than controls of it: how fresh the
             prices are, and what all of this is for. Both at the far end. */}
         <div className="ml-auto flex items-center gap-3">
-          <PriceClock generated={generated} interval={interval} />
+          <PriceClock fetchedAt={fetchedAt} interval={interval} />
           <HelpTip beasts={found} />
         </div>
       </div>
