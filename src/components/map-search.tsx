@@ -1,14 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   COMMON_GROUP_IDS,
   MOD_GROUPS,
   PRESETS,
   looseLines,
+  matchesQuery,
 } from "@/lib/map-mod-groups";
 import { planMapSearch } from "@/lib/map-regex";
 
@@ -24,6 +26,9 @@ const LOOSE = looseLines().map((line) => ({
 }));
 
 const ALL = [...MOD_GROUPS, ...LOOSE];
+const BY_ID = new Map(ALL.map((entry) => [entry.id, entry]));
+
+const COMMON = MOD_GROUPS.filter((g) => COMMON_GROUP_IDS.includes(g.id));
 
 export function MapSearch() {
   const [banned, setBanned] = useState<string[]>([
@@ -31,6 +36,7 @@ export function MapSearch() {
     "no-regen",
     "no-leech",
   ]);
+  const [query, setQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -52,50 +58,43 @@ export function MapSearch() {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const shown = showAll
-    ? ALL
-    : MOD_GROUPS.filter((g) => COMMON_GROUP_IDS.includes(g.id));
+  const searching = query.trim() !== "";
+
+  /**
+   * Browsing and searching want different corpora. Twenty-nine named groups are
+   * a list you can read; a hundred and twenty-five is a wall. But a modifier
+   * nobody named still has to be findable, so the moment there is a query the
+   * search runs over everything.
+   */
+  const pool = searching || showAll ? ALL : COMMON;
+
+  /**
+   * While browsing, what you already banned lives in its own block and would
+   * only be listed twice. While searching it has to stay, or a search for
+   * wording that only a banned group carries answers "nothing matches" about a
+   * modifier that is right there.
+   */
+  const shown = useMemo(
+    () =>
+      pool.filter(
+        (entry) =>
+          (searching || !banned.includes(entry.id)) &&
+          matchesQuery(entry, query),
+      ),
+    [pool, banned, query, searching],
+  );
+
+  /**
+   * Read off `banned` rather than filtered from the pool, so a loose line
+   * banned through the search does not vanish when the query is cleared.
+   */
+  const chosen = banned
+    .map((id) => BY_ID.get(id))
+    .filter((entry): entry is (typeof ALL)[number] => entry !== undefined);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
-        {PRESETS.map((preset) => (
-          <Button
-            key={preset.id}
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setBanned((prev) => [...new Set([...prev, ...preset.groups])])
-            }
-          >
-            {preset.label}
-          </Button>
-        ))}
-        <Button variant="ghost" size="sm" onClick={() => setBanned([])}>
-          Clear
-        </Button>
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-2">
-        {shown.map((group) => (
-          <label
-            key={group.id}
-            className="hover:bg-muted/50 flex items-start gap-3 rounded-md border p-3 text-sm"
-          >
-            <Checkbox
-              checked={banned.includes(group.id)}
-              onCheckedChange={() => toggle(group.id)}
-              className="mt-0.5"
-            />
-            <span>{group.label}</span>
-          </label>
-        ))}
-      </div>
-
-      <Button variant="ghost" size="sm" onClick={() => setShowAll((v) => !v)}>
-        {showAll ? "Show the common ones only" : `Show all ${ALL.length}`}
-      </Button>
-
+      {/* The output is the reason the page exists, so it goes first. */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <code className="bg-muted min-h-10 flex-1 rounded-md px-3 py-2 font-mono text-sm break-all">
@@ -114,6 +113,129 @@ export function MapSearch() {
             No fragment can single these out without hiding maps you can run:{" "}
             {plan.unreachable.join(", ")}
           </p>
+        )}
+      </div>
+
+      {/* What you picked stays visible however deep the search goes. */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium">Banned ({chosen.length})</h2>
+          {chosen.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => setBanned([])}>
+              Clear
+            </Button>
+          )}
+        </div>
+
+        {chosen.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            Nothing banned yet, so every map shows.
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {chosen.map((entry) => (
+              <button
+                key={entry.id}
+                onClick={() => toggle(entry.id)}
+                title="Remove"
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/70 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-left text-sm"
+              >
+                {entry.label}
+                <X className="size-3.5 shrink-0 opacity-60" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* A preset is a build's answer, so it says what it answers with. */}
+      <div className="space-y-2">
+        <h2 className="text-sm font-medium">Presets</h2>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {PRESETS.map((preset) => {
+            const active = preset.groups.every((id) => banned.includes(id));
+
+            return (
+              <button
+                key={preset.id}
+                onClick={() =>
+                  setBanned((prev) =>
+                    active
+                      ? prev.filter((id) => !preset.groups.includes(id))
+                      : [...new Set([...prev, ...preset.groups])],
+                  )
+                }
+                className={`hover:bg-muted/50 rounded-md border p-3 text-left ${
+                  active ? "border-primary bg-muted/30" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium">{preset.label}</span>
+                  {active && <Check className="text-primary size-4 shrink-0" />}
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {preset.groups.map((id) => (
+                    <span
+                      key={id}
+                      className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-xs"
+                    >
+                      {BY_ID.get(id)?.label ?? id}
+                    </span>
+                  ))}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="relative">
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search all ${ALL.length} by name or by the game's wording`}
+            className="pl-9"
+          />
+        </div>
+
+        {shown.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            {searching
+              ? `Nothing matches "${query.trim()}".`
+              : "Everything here is banned already."}
+          </p>
+        ) : (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {shown.map((group) => (
+              <label
+                key={group.id}
+                className={`hover:bg-muted/50 flex items-start gap-3 rounded-md border p-3 text-sm ${
+                  banned.includes(group.id) ? "border-primary bg-muted/30" : ""
+                }`}
+              >
+                <Checkbox
+                  checked={banned.includes(group.id)}
+                  onCheckedChange={() => toggle(group.id)}
+                  className="mt-0.5"
+                />
+                <span>{group.label}</span>
+              </label>
+            ))}
+          </div>
+        )}
+
+        {!searching && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll
+              ? `Show the ${COMMON.length} common ones only`
+              : `Show all ${ALL.length}`}
+          </Button>
         )}
       </div>
     </div>

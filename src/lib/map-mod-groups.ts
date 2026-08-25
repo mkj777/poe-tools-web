@@ -326,3 +326,26 @@ const CLAIMED = new Set([
  * the day they land.
  */
 export const looseLines = () => MAP_MOD_LINES.filter((l) => !CLAIMED.has(l));
+
+/**
+ * A player looking for a modifier types what they remember, and what they
+ * remember is sometimes the group's name and sometimes the game's wording.
+ * "Reflect" is the label, "Thorns" is the text, and both have to find it.
+ *
+ * The `#` standing in for a rolled number is treated as whitespace rather than
+ * as a character, so "increased Monster Damage" reaches a line that reads
+ * "#% increased Monster Damage".
+ */
+export const matchesQuery = (
+  entry: { label: string; lines: readonly string[] },
+  query: string,
+): boolean => {
+  const needle = query.trim().toLowerCase();
+  if (needle === "") return true;
+
+  const haystacks = [entry.label, ...entry.lines].map((text) =>
+    text.replace(/#/g, " ").replace(/\s+/g, " ").trim().toLowerCase(),
+  );
+
+  return haystacks.some((text) => text.includes(needle));
+};
