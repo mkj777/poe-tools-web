@@ -653,7 +653,11 @@ export function BeastTable({
   const notFoundCount = beasts.length - found.length;
 
   return (
-    <div className="space-y-5">
+    // Password managers stamp their own attribute on the nearest thing that
+    // looks like a form to them, which here is this div, and they do it before
+    // React hydrates. The extra attribute is theirs to keep, so this element is
+    // exempt from the attribute check that would otherwise report it.
+    <div className="space-y-5" suppressHydrationWarning>
       <div className="flex flex-wrap items-center gap-3">
         <div className="bg-secondary/60 flex rounded-full p-1">
           {(["sell", "trash"] as Mode[]).map((option) => (

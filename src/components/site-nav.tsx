@@ -114,9 +114,9 @@ function HoverMenu({
 }
 
 /**
- * One bar over every page. Tools on the left holds the sites that already do a
- * job better than this one could, and hands the two that care which league you
- * are looking at. The league menu on the right keeps whichever tool is open, so
+ * One bar over every page. More Tools on the left holds the sites that already
+ * do a job better than this one could, and hands the two that care which league
+ * you are looking at. The league menu on the right keeps whichever tool is open, so
  * switching league never also switches page.
  */
 export function SiteNav({
@@ -163,7 +163,12 @@ export function SiteNav({
             </Link>
           ))}
 
-          <HoverMenu label="Tools" entries={tools} align="start" width="w-52" />
+          <HoverMenu
+            label="More Tools"
+            entries={tools}
+            align="start"
+            width="w-52"
+          />
         </div>
 
         <div className="ml-auto">
