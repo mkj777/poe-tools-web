@@ -205,8 +205,19 @@ break can be written. Worth separating if anyone ever needs to know.
 | `Quantity` | only rolled maps | the `Item Quantity: +71%` block is searchable text |
 | `magic` | nothing useful | there is no rarity keyword |
 
-The first is what makes it possible to leave white maps out: they carry no
-quantity, so the line is absent and a positive `Quantity` term drops them.
+The first is worth more than leaving white maps out, though it does that too.
+The block prints the **total**, already added up across every affix:
+
+```
+Item Quantity: +71%
+Item Rarity: +41%
+Monster Pack Size: +27%
+```
+
+So a minimum is one term reading one number, rather than a guess assembled from
+the modifier text of each affix, which is what every other generator has to do.
+A white map prints no quantity at all, since the game shows nothing for a stat
+of zero, so asking for the line is the same as asking for a rolled map.
 
 The second closes the other half for good. Magic and rare roll from the same
 affix pool, so no text belongs to rare alone, counting modifiers is impossible
@@ -229,6 +240,7 @@ Run one at a time in a stash tab holding maps, note everything that lights up.
 | `"^Monsters"` | Do anchors exist, and do they bind to a line or to the item? | Only matters if a fragment ever needs anchoring. The whole-item scope makes anchors far less useful than in the Bestiary |
 | `!(Poison)` unquoted | Does an unquoted group work? | If yes, the two quote characters can be dropped from the output. Worth two characters, not worth a wrong guess |
 | `poison` against `Poison` | Does the search respect case? | If the lowercase probe finds the same maps, case does not matter, which is what the generator already assumes |
+| `"Quantity: .[5-9].%"`, control `"Quantity: ..."` | Do character classes work? | The threshold terms are built from `[3-9]` and friends, so this is the one open question the generator actually leans on. If classes turn out to be literals, the ranges spell out as alternations instead: `(3\|4\|5\|6\|7\|8\|9)` for `[3-9]`, longer but equivalent |
 
 Until those are answered the generator assumes the widest reading. Every string
 in `ITEM_CHROME` in `src/lib/map-regex.ts` is treated as searchable and no

@@ -5,20 +5,25 @@
  * in docs/stash-search.md:
  *
  * - The input is a **list of terms** split on whitespace and joined by AND.
- * - A term is a real regex matched against the **whole item**, not line by
- *   line, which is the opposite of the Bestiary search and the reason exclusion
- *   is possible at all.
+ * - A term is a real regex tried **line by line**, satisfied when any one line
+ *   matches. So the AND ranges over the item while a term still ranges over a
+ *   line, and nothing a term says may cross a line break.
  * - `"…"` groups a term containing spaces, and a `!` **inside** the quotes
  *   negates that term. `!"…"` does nothing.
  *
- * So `"!(a|b|c)"` reads "this map shows none of a, b, c", and the whole output
- * is one term however many modifiers were banned. It cannot be split across
- * several searches: a second search replaces the first rather than narrowing
- * it, so what does not fit one field does not work at all.
+ * Negation therefore sits at term level and means "no line of this item
+ * matches", which is a statement about the item. That is the whole reason
+ * exclusion works here and cannot work in the Bestiary, whose field has no term
+ * level to hang it on. `"!(a|b|c)"` reads "this map shows none of a, b, c", and
+ * the exclusion is one term however many modifiers were banned.
  *
- * Nothing here is shared with src/lib/bestiary-regex.ts on purpose. That engine
- * matches per line, takes a single regex, has no quoting and no negation. The
- * two problems look alike and are not.
+ * It cannot be split across several searches: a second search replaces the
+ * first rather than narrowing it, so what does not fit one field does not work
+ * at all.
+ *
+ * Nothing here is shared with src/lib/bestiary-regex.ts on purpose. Same engine
+ * underneath, but that field takes a single unquoted term with no negation, so
+ * the two generators have almost nothing to say to each other.
  */
 
 // Explicit extension: Node's test runner resolves this file directly.
@@ -98,17 +103,93 @@ export type Fragment = {
 };
 
 /**
- * Requires the item to show a quantity, which only a rolled map does. A white
- * map's quantity is zero and the tooltip prints nothing for it, so this term
- * leaves it dark. Magic maps stay lit: they roll from the same affix pool as
- * rares, no text belongs to rare alone, and Test 7 rules out counting how many
- * modifiers an item carries. See docs/stash-search.md, Test 8.
+ * The three numbers a map is rolled for, as the property block prints them:
+ * `Item Quantity: +71%`, `Item Rarity: +41%`, `Monster Pack Size: +27%`.
  *
- * The one map this is wrong about is a chiselled but unrolled one, since quality
- * grants quantity of its own. It still needs alching, so it lands in the right
- * pile for the wrong reason.
+ * These are worth asking about precisely because the game has already added
+ * them up. Every other generator has to reason over the modifier text of each
+ * affix and guess at the total; here the total is written on the item, and Test
+ * 8 established that the block is searchable.
+ *
+ * `needle` is the shortest text that reaches one of the three and none of the
+ * others. It ends at the colon, so the digits that follow can be asked about.
  */
-export const ROLLED_TERM = "Quantity";
+export type RewardStat = { id: string; label: string; needle: string };
+
+export const REWARD_STATS: readonly RewardStat[] = [
+  { id: "quantity", label: "Item Quantity", needle: "Quantity: " },
+  { id: "rarity", label: "Item Rarity", needle: "Rarity: " },
+  { id: "packSize", label: "Monster Pack Size", needle: "Pack Size: " },
+];
+
+/**
+ * How many digits a printed value may have. A map's own quantity and rarity
+ * come from its affixes and land near a hundred, so three digits is already far
+ * past anything the game prints, and every extra one costs characters in a
+ * field whose limit is still unknown.
+ */
+const MAX_DIGITS = 3;
+
+/**
+ * A digit position that may be anything. `.` rather than `[0-9]`, which is four
+ * characters cheaper each time and cannot go wrong here: the term ends at the
+ * `%`, so a wildcard has nowhere to wander. `Quantity: .([6-9].)%` reads 60 to
+ * 99 and refuses `+6%`, because there the `%` arrives one character early.
+ */
+const FREE = ".";
+
+/**
+ * A regex body matching every whole number from `min` upwards.
+ *
+ * Two parts. A number with more digits than `min` is larger by construction,
+ * since the game prints no leading zeros. A number with the same count is
+ * handled digit by digit: at each position, everything to the left equal,
+ * this digit greater, and the rest free. The last position takes "greater or
+ * equal" instead, which is what makes `min` itself match.
+ *
+ * For 30 that reads `[4-9].` (40 to 99) or `3.` (30 to 39), plus `[1-9]..` for
+ * everything with a digit more.
+ */
+export function atLeastPattern(min: number): string {
+  const digits = String(Math.max(1, Math.floor(min)));
+  const parts: string[] = [];
+
+  for (let i = 0; i < digits.length; i++) {
+    const value = Number(digits[i]);
+    const low = i === digits.length - 1 ? value : value + 1;
+    if (low > 9) continue;
+    // A range covering every digit is a wildcard, and one covering a single
+    // digit is that digit. Both are shorter than spelling the range out.
+    const head = low === 0 ? FREE : low === 9 ? "9" : `[${low}-9]`;
+    parts.push(
+      digits.slice(0, i) + head + FREE.repeat(digits.length - i - 1),
+    );
+  }
+
+  for (let len = digits.length + 1; len <= MAX_DIGITS; len++) {
+    parts.push("[1-9]" + FREE.repeat(len - 1));
+  }
+
+  return parts.join("|");
+}
+
+/**
+ * The term asking one stat to reach `min`.
+ *
+ * A minimum of 1 asks only that the line is there at all, which is shorter than
+ * spelling out every number from 1 up and means exactly the same thing: the
+ * game prints nothing for a stat of zero. That is also what leaves an unrolled
+ * white map dark.
+ *
+ * The `.` stands in for the `+` the block prints before the number. The term is
+ * quoted because it carries a space, and an unquoted space would split it into
+ * two terms that could then match on two different lines.
+ */
+export function statTerm(stat: RewardStat, min: number): string | null {
+  if (min <= 0) return null;
+  if (min === 1) return `"${stat.needle.trim()}"`;
+  return `"${stat.needle}.(${atLeastPattern(min)})%"`;
+}
 
 export type MapSearch = {
   /** Paste into the stash search. Empty when it would ask for nothing. */
@@ -122,21 +203,23 @@ export type MapSearch = {
 };
 
 export type MapSearchOptions = {
-  /** Leave unrolled white maps dark as well, by requiring a quantity. */
-  rolledOnly?: boolean;
+  /** Per stat id from `REWARD_STATS`, the smallest value still worth running. */
+  minimums?: Readonly<Record<string, number>>;
 };
 
 export function planMapSearch(
   bannedLines: readonly string[],
-  { rolledOnly = false }: MapSearchOptions = {},
+  { minimums = {} }: MapSearchOptions = {},
 ): MapSearch {
+  // Asked for in the order the stats are declared, so the same selection always
+  // produces the same string and a copied one stays recognisable.
+  const wanted = REWARD_STATS.map((stat) =>
+    statTerm(stat, minimums[stat.id] ?? 0),
+  ).filter((term): term is string => term !== null);
+
   const banned = [...new Set(bannedLines)];
   if (banned.length === 0) {
-    return {
-      search: rolledOnly ? ROLLED_TERM : "",
-      fragments: [],
-      unreachable: [],
-    };
+    return { search: wanted.join(" "), fragments: [], unreachable: [] };
   }
 
   const bannedSet = new Set(banned);
@@ -207,10 +290,11 @@ export function planMapSearch(
     picked.push(best);
   }
 
-  // Terms are AND-joined, so the positive one simply stands beside the negated
-  // one: show maps that carry a quantity and none of the banned modifiers.
+  // Terms are AND-joined, so the positive ones simply stand beside the negated
+  // one: show maps that reach every minimum and carry none of the banned
+  // modifiers.
   const terms = [
-    ...(rolledOnly ? [ROLLED_TERM] : []),
+    ...wanted,
     ...(picked.length ? [`"!(${picked.map((f) => f.text).join("|")})"`] : []),
   ];
 

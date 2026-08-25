@@ -12,7 +12,7 @@ import {
   looseLines,
   matchesQuery,
 } from "@/lib/map-mod-groups";
-import { planMapSearch } from "@/lib/map-regex";
+import { REWARD_STATS, planMapSearch } from "@/lib/map-regex";
 
 /**
  * A modifier no curated group speaks for is its own ban, so it takes the same
@@ -37,11 +37,14 @@ export function MapSearch() {
     "no-leech",
   ]);
   /**
-   * On by default. An unrolled white map needs work just as much as a badly
-   * rolled rare one, so leaving it lit would make "dark" mean two different
-   * things depending on the map.
+   * Quantity starts at 1, which asks only that the line is there at all. An
+   * unrolled white map prints no quantity, so it starts out dark: it needs work
+   * just as much as a badly rolled rare one, and lighting it would make "dark"
+   * mean two different things depending on the map.
    */
-  const [rolledOnly, setRolledOnly] = useState(true);
+  const [minimums, setMinimums] = useState<Record<string, number>>({
+    quantity: 1,
+  });
   const [query, setQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -50,9 +53,9 @@ export function MapSearch() {
     const chosen = new Set(banned);
     return planMapSearch(
       ALL.filter((g) => chosen.has(g.id)).flatMap((g) => [...g.lines]),
-      { rolledOnly },
+      { minimums },
     );
-  }, [banned, rolledOnly]);
+  }, [banned, minimums]);
 
   const toggle = (id: string) =>
     setBanned((prev) =>
@@ -111,27 +114,53 @@ export function MapSearch() {
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           </Button>
         </div>
-        <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
-          <span>
-            {plan.search.length} characters, {plan.fragments.length} fragments.
-            Everything still lit is safe to run.
-          </span>
-          {/* Magic maps cannot be told from rare ones, so this only reaches the
-              unrolled white ones. See docs/stash-search.md, Test 8. */}
-          <label className="flex shrink-0 items-center gap-2">
-            <Checkbox
-              checked={rolledOnly}
-              onCheckedChange={(v) => setRolledOnly(v === true)}
-            />
-            Leave white maps dark
-          </label>
-        </div>
+        <p className="text-muted-foreground text-sm">
+          {plan.search.length} characters, {plan.fragments.length} fragments.
+          Everything still lit is safe to run.
+        </p>
         {plan.unreachable.length > 0 && (
           <p className="text-destructive text-sm">
             No fragment can single these out without hiding maps you can run:{" "}
             {plan.unreachable.join(", ")}
           </p>
         )}
+      </div>
+
+      {/* The game adds these three up for you and prints the total on the map,
+          so they are asked about directly rather than reasoned out of the
+          affixes. Zero asks nothing; one asks only that the line is there,
+          which is what keeps an unrolled map dark. */}
+      <div className="space-y-2">
+        <h2 className="text-sm font-medium">Minimums</h2>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {REWARD_STATS.map((stat) => (
+            <label
+              key={stat.id}
+              className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm"
+            >
+              {stat.label}
+              <span className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  min={0}
+                  max={999}
+                  value={minimums[stat.id] ?? 0}
+                  onChange={(e) =>
+                    setMinimums((prev) => ({
+                      ...prev,
+                      [stat.id]: Math.max(
+                        0,
+                        Math.min(999, Math.floor(Number(e.target.value) || 0)),
+                      ),
+                    }))
+                  }
+                  className="h-8 w-20 text-right tabular-nums"
+                />
+                <span className="text-muted-foreground">%</span>
+              </span>
+            </label>
+          ))}
+        </div>
       </div>
 
       {/* What you picked stays visible however deep the search goes. */}

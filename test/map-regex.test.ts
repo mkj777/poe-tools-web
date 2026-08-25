@@ -4,8 +4,10 @@ import { MAP_MOD_LINES } from "../src/lib/map-mods.ts";
 import { MOD_GROUPS, REWARD_LINES } from "../src/lib/map-mod-groups.ts";
 import {
   ITEM_CHROME,
-  ROLLED_TERM,
+  REWARD_STATS,
+  atLeastPattern,
   planMapSearch,
+  statTerm,
 } from "../src/lib/map-regex.ts";
 
 /** The literal stretches of a line, the parts a fragment may be cut from. */
@@ -112,26 +114,90 @@ test("Temporal Chains does not collide with Temporarily Revive", () => {
   }
 });
 
-test("rolledOnly puts the positive term beside the negated one", () => {
+const quantity = REWARD_STATS.find((s) => s.id === "quantity")!;
+
+/** Every number the pattern accepts, read back the way a regex engine would. */
+const accepts = (min: number, value: number) =>
+  new RegExp(`^(${atLeastPattern(min)})$`).test(String(value));
+
+test("the threshold pattern accepts exactly the numbers at or above it", () => {
+  // Three digits is what the generator promises, and far past anything a map
+  // prints: its quantity and rarity come from its own affixes.
+  for (const min of [1, 2, 5, 9, 10, 27, 30, 79, 99, 100, 124, 250, 999]) {
+    for (let value = 0; value <= 999; value++) {
+      assert.equal(
+        accepts(min, value),
+        value >= min,
+        `min ${min} judged ${value} wrongly`,
+      );
+    }
+  }
+});
+
+test("a threshold reads the property block the game prints", () => {
+  const term = statTerm(quantity, 30)!;
+  const body = term.slice(1, -1);
+
+  // "Item Quantity: +71%", with the dot standing in for the plus.
+  assert.ok(new RegExp(body).test("Item Quantity: +71%"));
+  assert.ok(new RegExp(body).test("Item Quantity: +30%"));
+  assert.ok(new RegExp(body).test("Item Quantity: +124%"));
+  assert.ok(!new RegExp(body).test("Item Quantity: +29%"));
+  assert.ok(!new RegExp(body).test("Item Quantity: +8%"));
+  assert.ok(!new RegExp(body).test("Item Rarity: +71%"));
+
+  // The wildcard digits cannot reach past the percent sign, which is the whole
+  // reason they are allowed to be wildcards.
+  assert.ok(!new RegExp(body).test("Item Quantity: +3%"));
+});
+
+test("a minimum of one asks only that the line is there", () => {
+  // The game prints nothing for a stat of zero, so presence is the same
+  // question, and far shorter than spelling out every number from one up.
+  assert.equal(statTerm(quantity, 1), '"Quantity:"');
+  assert.equal(statTerm(quantity, 0), null);
+  assert.equal(statTerm(quantity, -5), null);
+});
+
+test("minimums stand beside the negated term, in declaration order", () => {
   const banned = ["Players are Cursed with Temporal Chains"];
-
   const plain = planMapSearch(banned);
-  const rolled = planMapSearch(banned, { rolledOnly: true });
+  const withMinimums = planMapSearch(banned, {
+    minimums: { packSize: 25, quantity: 60 },
+  });
 
-  assert.equal(rolled.search, `${ROLLED_TERM} ${plain.search}`);
-  // Terms are AND-joined, so the fragments themselves must not change.
-  assert.deepEqual(rolled.fragments, plain.fragments);
+  assert.equal(
+    withMinimums.search,
+    `${statTerm(quantity, 60)} ${statTerm(REWARD_STATS[2], 25)} ${plain.search}`,
+  );
+  // AND-joined terms, so asking for more cannot change what the exclusion says.
+  assert.deepEqual(withMinimums.fragments, plain.fragments);
 });
 
-test("rolledOnly on its own still asks for something", () => {
-  assert.equal(planMapSearch([], { rolledOnly: true }).search, ROLLED_TERM);
-  assert.equal(planMapSearch([]).search, "");
+test("minimums on their own still ask for something", () => {
+  assert.equal(
+    planMapSearch([], { minimums: { quantity: 1 } }).search,
+    '"Quantity:"',
+  );
+  assert.equal(planMapSearch([], { minimums: {} }).search, "");
 });
 
-test("the rolled term carries no space, so it needs no quoting", () => {
-  // A term with a space would split into two, and two positive terms would ask
-  // for both rather than for the one line.
-  assert.ok(!/\s/.test(ROLLED_TERM));
+test("every stat needle reaches its own line and no other", () => {
+  const lines = [
+    "Item Quantity: +71%",
+    "Item Rarity: +41%",
+    "Monster Pack Size: +27%",
+  ];
+
+  REWARD_STATS.forEach((stat, i) => {
+    lines.forEach((line, j) => {
+      assert.equal(
+        line.includes(stat.needle),
+        i === j,
+        `${stat.needle} against ${line}`,
+      );
+    });
+  });
 });
 
 test("one fragment covers both reflect lines", () => {
