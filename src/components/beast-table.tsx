@@ -2,7 +2,20 @@
 
 import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
-import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  ChevronDown,
+  ChevronsUpDown,
+  Copy,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { leagueSlug, type Beast } from "@/lib/ninja";
 import { CurrencyIcon, Price } from "@/components/currency";
 import { PriceClock } from "@/components/price-clock";
@@ -72,6 +85,8 @@ function sortValue(beast: Beast, key: SortKey) {
 }
 
 type Mode = "sell" | "trash";
+
+const MODE_LABELS: Record<Mode, string> = { sell: "Sell", trash: "Trash" };
 
 /** The thresholds a beast run is actually judged at — the server has already
     planned for all but 0, which plans nothing and just shows every beast.
@@ -605,7 +620,6 @@ export function BeastTable({
   const [typed, setTyped] = useState("");
   const [sort, setSort] = useState<SortKey>("chaosValue");
   const [desc, setDesc] = useState(true);
-  const [showNotFound, setShowNotFound] = useState(false);
   const mode = useSyncExternalStore(
     modeStore.subscribe,
     modeStore.read,
@@ -619,12 +633,13 @@ export function BeastTable({
   // Anything that drops is being sold by someone. A beast the trade site
   // returns nothing for is not a cheap beast, it is one the game no longer
   // hands out — so it stays out of the table and out of both patterns.
+  // A beast nobody has ever listed cannot be priced, planned for, or sold, so
+  // it never reaches the table at all.
   const found = useMemo(() => beasts.filter((b) => !isNotFound(b)), [beasts]);
-  const listed = showNotFound ? beasts : found;
 
   const worthKeeping = useMemo(
-    () => listed.filter((b) => (b.chaosValue ?? 0) >= threshold),
-    [listed, threshold],
+    () => found.filter((b) => (b.chaosValue ?? 0) >= threshold),
+    [found, threshold],
   );
 
   const rows = useMemo(() => {
@@ -657,8 +672,6 @@ export function BeastTable({
     }
   }
 
-  const notFoundCount = beasts.length - found.length;
-
   return (
     // Password managers stamp their own attribute on the nearest thing that
     // looks like a form to them, which here is this div, and they do it before
@@ -666,23 +679,32 @@ export function BeastTable({
     // exempt from the attribute check that would otherwise report it.
     <div className="space-y-5" suppressHydrationWarning>
       <div className="flex flex-wrap items-center gap-3">
-        <div className="bg-secondary/60 flex rounded-full p-1">
-          {(["sell", "trash"] as Mode[]).map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => modeStore.write(option)}
-              aria-pressed={mode === option}
-              className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-                mode === option
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {option === "trash" ? "Trash beasts" : "Sell beasts"}
-            </button>
-          ))}
-        </div>
+        {/* Which way the pattern reads: the beasts worth selling, or the ones
+            worth leaving behind. One of the two, so it names itself and hides
+            the other rather than spending a row on both. */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label="Which beasts the pattern is for"
+            className="bg-secondary/60 hover:bg-secondary text-foreground data-[state=open]:bg-secondary flex h-9 items-center gap-1.5 rounded-full pr-3 pl-4 text-sm transition-colors outline-none"
+          >
+            {MODE_LABELS[mode]}
+            <ChevronDown className="size-3.5 opacity-70" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-32">
+            {(["sell", "trash"] as Mode[]).map((option) => (
+              <DropdownMenuItem
+                key={option}
+                onSelect={() => modeStore.write(option)}
+                className="flex cursor-pointer items-center gap-2"
+              >
+                <span className="flex-1">{MODE_LABELS[option]}</span>
+                {mode === option && (
+                  <Check className="text-muted-foreground size-3.5" />
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="flex items-center gap-2">
           <label
@@ -705,7 +727,7 @@ export function BeastTable({
                   setTyped("");
                 }}
                 aria-pressed={threshold === preset}
-                className={`w-9 rounded-full py-1.5 text-sm tabular-nums transition-colors ${
+                className={`w-8 rounded-full py-1.5 text-sm tabular-nums transition-colors ${
                   threshold === preset
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -731,7 +753,7 @@ export function BeastTable({
               placeholder="Other"
               aria-label="Any other minimum"
               // No spinner: the arrows are useless at these ranges and steal room.
-              className={`placeholder:text-muted-foreground/70 w-[4.5rem] rounded-full border py-1.5 text-center text-sm tabular-nums transition-colors outline-none [appearance:textfield] focus:border-transparent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+              className={`placeholder:text-muted-foreground/70 w-16 rounded-full border py-1.5 text-center text-sm tabular-nums transition-colors outline-none [appearance:textfield] focus:border-transparent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
                 custom
                   ? "bg-background text-foreground border-transparent shadow-sm"
                   : "text-foreground border-border/80 hover:border-foreground/40 focus:bg-background border-dashed bg-transparent focus:shadow-sm"
@@ -740,9 +762,17 @@ export function BeastTable({
           </div>
         </div>
 
-        {/* The help belongs with the controls it explains, at the far end of
-            their row rather than over the steps. */}
-        <div className="ml-auto">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search beast, genus or habitat…"
+          className="h-9 w-32 max-w-xs min-w-32 flex-1"
+        />
+
+        {/* Two notes about the row rather than controls of it: how fresh the
+            prices are, and what all of this is for. Both at the far end. */}
+        <div className="ml-auto flex items-center gap-3">
+          <PriceClock generated={generated} interval={interval} />
           <HelpTip beasts={found} />
         </div>
       </div>
@@ -753,45 +783,6 @@ export function BeastTable({
         mode={mode}
         plans={plans}
       />
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search beast, genus or habitat…"
-          className="h-11 max-w-xs"
-        />
-        {notFoundCount > 0 && (
-          <button
-            type="button"
-            onClick={() => setShowNotFound((v) => !v)}
-            aria-pressed={showNotFound}
-            className={`flex h-9 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors ${
-              showNotFound
-                ? "border-foreground/30 bg-secondary text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:border-foreground/30"
-            }`}
-          >
-            <span
-              className={`flex size-4 items-center justify-center rounded-[4px] border ${
-                showNotFound ? "bg-foreground text-background" : ""
-              }`}
-            >
-              {showNotFound && <Check className="size-3" strokeWidth={3} />}
-            </span>
-            {notFoundCount} not found
-          </button>
-        )}
-        <span className="text-muted-foreground tabular-nums">
-          {num(rows.length)} of <BeastCount value={listed.length} size={22} />
-        </span>
-
-        {/* How old the numbers beside it are allowed to get, at the end of the
-            row that counts them. */}
-        <div className="ml-auto">
-          <PriceClock generated={generated} interval={interval} />
-        </div>
-      </div>
 
       <div className="overflow-hidden rounded-xl border">
         <Table>
@@ -820,6 +811,15 @@ export function BeastTable({
                       <Icon className="size-4 opacity-70" />
                       {col.label}
                     </button>
+
+                    {/* How much of the table the filters are letting through,
+                        beside the name of what is being counted. */}
+                    {col.key === "name" && (
+                      <span className="text-muted-foreground ml-3 font-normal tabular-nums">
+                        {num(rows.length)} of{" "}
+                        <BeastCount value={found.length} size={20} />
+                      </span>
+                    )}
                   </TableHead>
                 );
               })}

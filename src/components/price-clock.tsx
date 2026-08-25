@@ -36,12 +36,14 @@ export function PriceClock({
   return (
     <span
       className="text-muted-foreground flex items-center gap-1.5 text-sm"
-      title={`Prices are fetched from poe.ninja every ${Math.round(interval / 60)} minutes`}
+      title={`Prices come from poe.ninja and are refetched every ${Math.round(interval / 60)} minutes`}
     >
       <RefreshCw className="size-3.5 shrink-0" />
-      <span className="tabular-nums">
-        Prices refresh every {Math.round(interval / 60)} min
-        {left !== null && (left > 0 ? `, next in ${left} min` : ", due now")}
+      {/* Short enough to ride along at the end of the controls; the sentence
+          it stands for is in the title. */}
+      <span className="tabular-nums whitespace-nowrap">
+        every {Math.round(interval / 60)} min
+        {left !== null && (left > 0 ? ` · next in ${left}` : " · due now")}
       </span>
     </span>
   );
