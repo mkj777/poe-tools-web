@@ -5,8 +5,7 @@ const UA = "poe-tools-web/0.1 (personal price browser; maxikie02@gmail.com)";
 
 // poe.ninja recomputes its PoE1 overviews roughly every 15 minutes, so that is
 // the interval: anything shorter re-fetches numbers that have not changed yet.
-export const PRICE_INTERVAL = 900;
-const REVALIDATE = PRICE_INTERVAL;
+const REVALIDATE = 900;
 
 export type League = { id: string; name: string };
 

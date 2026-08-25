@@ -601,7 +601,6 @@ export function BeastTable({
   league,
   plans,
   fetchedAt,
-  interval,
 }: {
   beasts: Beast[];
   /** poe.ninja detail pages live under the league, so links need it. */
@@ -610,8 +609,6 @@ export function BeastTable({
   plans: PresetPlans;
   /** When these prices were fetched, in epoch milliseconds. */
   fetchedAt: number;
-  /** Seconds until newer ones are fetched. */
-  interval: number;
 }) {
   const [query, setQuery] = useState("");
   const [minChaos, setMinChaos] = useState("");
@@ -772,7 +769,7 @@ export function BeastTable({
         {/* Two notes about the row rather than controls of it: how fresh the
             prices are, and what all of this is for. Both at the far end. */}
         <div className="ml-auto flex items-center gap-3">
-          <PriceClock fetchedAt={fetchedAt} interval={interval} />
+          <PriceClock fetchedAt={fetchedAt} />
           <HelpTip beasts={found} />
         </div>
       </div>

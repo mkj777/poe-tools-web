@@ -2,7 +2,6 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import {
-  PRICE_INTERVAL,
   getCurrencyPrices,
   getScarabPrices,
   pricesFetchedAt,
@@ -95,7 +94,6 @@ export default async function Page({ params }: PageProps<"/[league]">) {
           league={league}
           plans={plans}
           fetchedAt={fetchedAt}
-          interval={PRICE_INTERVAL}
         />
       </main>
     </div>
