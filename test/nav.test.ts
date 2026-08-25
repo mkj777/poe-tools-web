@@ -3,7 +3,16 @@ import test from "node:test";
 import { TOOLS, activeTool, swapLeague, toolHref } from "../src/lib/nav.ts";
 
 test("the beasts table is the tool at the root", () => {
-  assert.deepEqual(TOOLS, [{ slug: "", label: "Beasts" }]);
+  assert.deepEqual(TOOLS, [
+    { slug: "", label: "Beasts" },
+    { slug: "maps", label: "Maps" },
+  ]);
+});
+
+test("maps is a tool", () => {
+  assert.ok(TOOLS.some((t) => t.slug === "maps"));
+  assert.equal(activeTool("/allflame/maps"), "maps");
+  assert.equal(swapLeague("/allflame/maps", "allflamehc"), "/allflamehc/maps");
 });
 
 test("toolHref builds the path for a tool", () => {

@@ -1,7 +1,10 @@
 /** A tool is one tab in the bar. The beasts table is the tool at the root. */
 export type Tool = { slug: string; label: string };
 
-export const TOOLS: readonly Tool[] = [{ slug: "", label: "Beasts" }] as const;
+export const TOOLS: readonly Tool[] = [
+  { slug: "", label: "Beasts" },
+  { slug: "maps", label: "Maps" },
+] as const;
 
 const segments = (pathname: string) => pathname.split("/").filter(Boolean);
 
