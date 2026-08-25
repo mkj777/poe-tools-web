@@ -36,6 +36,7 @@ export function MapSearch() {
     "no-regen",
     "no-leech",
   ]);
+  const [rolledOnly, setRolledOnly] = useState(false);
   const [query, setQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -44,8 +45,9 @@ export function MapSearch() {
     const chosen = new Set(banned);
     return planMapSearch(
       ALL.filter((g) => chosen.has(g.id)).flatMap((g) => [...g.lines]),
+      { rolledOnly },
     );
-  }, [banned]);
+  }, [banned, rolledOnly]);
 
   const toggle = (id: string) =>
     setBanned((prev) =>
@@ -104,10 +106,21 @@ export function MapSearch() {
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {plan.search.length} characters, {plan.fragments.length} fragments.
-          Everything still lit is safe to run.
-        </p>
+        <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
+          <span>
+            {plan.search.length} characters, {plan.fragments.length} fragments.
+            Everything still lit is safe to run.
+          </span>
+          {/* Magic maps cannot be told from rare ones, so this only reaches the
+              unrolled white ones. See docs/stash-search.md, Test 8. */}
+          <label className="flex shrink-0 items-center gap-2">
+            <Checkbox
+              checked={rolledOnly}
+              onCheckedChange={(v) => setRolledOnly(v === true)}
+            />
+            Leave white maps dark
+          </label>
+        </div>
         {plan.unreachable.length > 0 && (
           <p className="text-destructive text-sm">
             No fragment can single these out without hiding maps you can run:{" "}

@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { MAP_MOD_LINES } from "../src/lib/map-mods.ts";
 import { MOD_GROUPS, REWARD_LINES } from "../src/lib/map-mod-groups.ts";
-import { ITEM_CHROME, planMapSearch } from "../src/lib/map-regex.ts";
+import {
+  ITEM_CHROME,
+  ROLLED_TERM,
+  planMapSearch,
+} from "../src/lib/map-regex.ts";
 
 /** The literal stretches of a line, the parts a fragment may be cut from. */
 const segments = (line: string) =>
@@ -106,6 +110,28 @@ test("Temporal Chains does not collide with Temporarily Revive", () => {
       `${fragment.text} also dims Temporarily Revive`,
     );
   }
+});
+
+test("rolledOnly puts the positive term beside the negated one", () => {
+  const banned = ["Players are Cursed with Temporal Chains"];
+
+  const plain = planMapSearch(banned);
+  const rolled = planMapSearch(banned, { rolledOnly: true });
+
+  assert.equal(rolled.search, `${ROLLED_TERM} ${plain.search}`);
+  // Terms are AND-joined, so the fragments themselves must not change.
+  assert.deepEqual(rolled.fragments, plain.fragments);
+});
+
+test("rolledOnly on its own still asks for something", () => {
+  assert.equal(planMapSearch([], { rolledOnly: true }).search, ROLLED_TERM);
+  assert.equal(planMapSearch([]).search, "");
+});
+
+test("the rolled term carries no space, so it needs no quoting", () => {
+  // A term with a space would split into two, and two positive terms would ask
+  // for both rather than for the one line.
+  assert.ok(!/\s/.test(ROLLED_TERM));
 });
 
 test("one fragment covers both reflect lines", () => {

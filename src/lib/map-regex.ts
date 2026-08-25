@@ -97,8 +97,21 @@ export type Fragment = {
   covers: string[];
 };
 
+/**
+ * Requires the item to show a quantity, which only a rolled map does. A white
+ * map's quantity is zero and the tooltip prints nothing for it, so this term
+ * leaves it dark. Magic maps stay lit: they roll from the same affix pool as
+ * rares, no text belongs to rare alone, and Test 7 rules out counting how many
+ * modifiers an item carries. See docs/stash-search.md, Test 8.
+ *
+ * The one map this is wrong about is a chiselled but unrolled one, since quality
+ * grants quantity of its own. It still needs alching, so it lands in the right
+ * pile for the wrong reason.
+ */
+export const ROLLED_TERM = "Quantity";
+
 export type MapSearch = {
-  /** Paste into the stash search. Empty when nothing is banned. */
+  /** Paste into the stash search. Empty when it would ask for nothing. */
   search: string;
   fragments: Fragment[];
   /**
@@ -108,9 +121,23 @@ export type MapSearch = {
   unreachable: string[];
 };
 
-export function planMapSearch(bannedLines: readonly string[]): MapSearch {
+export type MapSearchOptions = {
+  /** Leave unrolled white maps dark as well, by requiring a quantity. */
+  rolledOnly?: boolean;
+};
+
+export function planMapSearch(
+  bannedLines: readonly string[],
+  { rolledOnly = false }: MapSearchOptions = {},
+): MapSearch {
   const banned = [...new Set(bannedLines)];
-  if (banned.length === 0) return { search: "", fragments: [], unreachable: [] };
+  if (banned.length === 0) {
+    return {
+      search: rolledOnly ? ROLLED_TERM : "",
+      fragments: [],
+      unreachable: [],
+    };
+  }
 
   const bannedSet = new Set(banned);
 
@@ -180,8 +207,15 @@ export function planMapSearch(bannedLines: readonly string[]): MapSearch {
     picked.push(best);
   }
 
+  // Terms are AND-joined, so the positive one simply stands beside the negated
+  // one: show maps that carry a quantity and none of the banned modifiers.
+  const terms = [
+    ...(rolledOnly ? [ROLLED_TERM] : []),
+    ...(picked.length ? [`"!(${picked.map((f) => f.text).join("|")})"`] : []),
+  ];
+
   return {
-    search: picked.length ? `"!(${picked.map((f) => f.text).join("|")})"` : "",
+    search: terms.join(" "),
     fragments: picked,
     unreachable: [...uncovered],
   };
