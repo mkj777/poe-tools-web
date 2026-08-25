@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowDown, ArrowUp, Check, ChevronsUpDown, Copy } from "lucide-react";
 import { leagueSlug, type Beast } from "@/lib/ninja";
 import { CurrencyIcon, Price } from "@/components/currency";
+import { PriceClock } from "@/components/price-clock";
 import {
   MAX_PATTERN_LENGTH,
   type BeastEntry,
@@ -584,12 +585,18 @@ export function BeastTable({
   beasts,
   league,
   plans,
+  generated,
+  interval,
 }: {
   beasts: Beast[];
   /** poe.ninja detail pages live under the league, so links need it. */
   league: string;
   /** Planned on the server for the preset thresholds, so they need no wait. */
   plans: PresetPlans;
+  /** When these prices were fetched, in epoch milliseconds. */
+  generated: number;
+  /** Seconds until the page is rebuilt with newer ones. */
+  interval: number;
 }) {
   const [query, setQuery] = useState("");
   const [minChaos, setMinChaos] = useState("");
@@ -778,6 +785,12 @@ export function BeastTable({
         <span className="text-muted-foreground tabular-nums">
           {num(rows.length)} of <BeastCount value={listed.length} size={22} />
         </span>
+
+        {/* How old the numbers beside it are allowed to get, at the end of the
+            row that counts them. */}
+        <div className="ml-auto">
+          <PriceClock generated={generated} interval={interval} />
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border">

@@ -10,6 +10,7 @@ import { leagueParams, resolveLeague } from "@/lib/league";
 import { BeastTable } from "@/components/beast-table";
 import { ScarabPrices } from "@/components/scarab-prices";
 import { getPresetPlans, presetSplits } from "@/lib/preset-plans";
+import { renderedAt } from "@/lib/refresh";
 
 export const metadata = {
   title: "PoE Beast Prices",
@@ -45,6 +46,11 @@ export default async function Page({ params }: PageProps<"/[league]">) {
   // Planning is the one slow thing here, so the preset thresholds arrive ready
   // made and only an unusual threshold ever reaches the worker in the browser.
   const plans = await getPresetPlans(presetSplits(beasts));
+
+  // This page is built, not rendered per visit, so the clock stops here: the
+  // moment below is when the prices were fetched, and the CDN serves that same
+  // HTML until it is `revalidate` seconds old.
+  const generated = await renderedAt();
 
   return (
     <div className="relative">
@@ -90,7 +96,13 @@ export default async function Page({ params }: PageProps<"/[league]">) {
       </div>
 
       <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
-        <BeastTable beasts={beasts} league={league} plans={plans} />
+        <BeastTable
+          beasts={beasts}
+          league={league}
+          plans={plans}
+          generated={generated}
+          interval={revalidate}
+        />
       </main>
     </div>
   );
