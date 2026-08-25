@@ -199,6 +199,21 @@ export const MOD_GROUPS: readonly ModGroup[] = [
     lines: ["Players have #% less Armour", "Players have #% less Defences"],
   },
   {
+    id: "less-accuracy",
+    label: "Less accuracy",
+    lines: ["Players have #% less Accuracy Rating"],
+  },
+  {
+    id: "less-aura-effect",
+    label: "Weaker auras",
+    lines: ["Players have #% reduced effect of Non-Curse Auras from Skills"],
+  },
+  {
+    id: "steal-charges",
+    label: "Monsters steal charges",
+    lines: ["Monsters steal Power, Frenzy and Endurance charges on Hit"],
+  },
+  {
     id: "flasks",
     label: "Flasks",
     lines: [
@@ -289,20 +304,6 @@ export const PRESETS: readonly {
   groups: readonly string[];
 }[] = [
   {
-    id: "reflect-vulnerable",
-    label: "Dies to reflect",
-    groups: ["reflect", "impale-reflect"],
-  },
-  { id: "leech", label: "Leech build", groups: ["no-leech", "less-recovery"] },
-  { id: "regen", label: "Regen build", groups: ["no-regen", "less-recovery"] },
-  { id: "crit", label: "Crit build", groups: ["crit-resistant"] },
-  {
-    id: "block",
-    label: "Block or suppression build",
-    groups: ["no-block-suppress"],
-  },
-  { id: "curses", label: "Curse build", groups: ["curse-resistant"] },
-  {
     id: "squishy",
     label: "Squishy",
     groups: [
@@ -311,6 +312,30 @@ export const PRESETS: readonly {
       "monster-crit",
       "extra-damage",
       "less-defences",
+    ],
+  },
+  {
+    id: "flicker-strike",
+    label: "Flicker Strike",
+    /**
+     * Flicker lives on frenzy charges, leech and accuracy, and it stands still
+     * inside the pack while it does, so it dies to crit and to curses that a
+     * ranged build would shrug off. What it cannot do is the other half: a map
+     * that resists crit or blunts its damage stops the loop before the leech
+     * ever lands.
+     */
+    groups: [
+      "no-leech",
+      "less-recovery",
+      "no-regen",
+      "less-accuracy",
+      "less-aura-effect",
+      "steal-charges",
+      "monster-crit",
+      "crit-resistant",
+      "max-resistances",
+      "elemental-weakness",
+      "vulnerability",
     ],
   },
 ];
