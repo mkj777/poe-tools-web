@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 import {
   getCurrencyPrices,
   getScarabPrices,
@@ -7,11 +6,30 @@ import {
   type CurrencyPrices,
 } from "@/lib/ninja";
 import { loadBeasts } from "@/lib/beasts";
-import { resolveLeague } from "@/lib/league";
+import { leagueParams, resolveLeague } from "@/lib/league";
 import { BeastTable } from "@/components/beast-table";
 import { ScarabPrices } from "@/components/scarab-prices";
 import { PageFrame } from "@/components/page-frame";
 import { getPresetPlans, presetSplits } from "@/lib/preset-plans";
+
+/**
+ * The prices underneath are fetched on a 15 minute window, so a render can
+ * never be fresher than that however often it runs. What changes with this line
+ * is who pays for it: the page is built once per window and served from cache,
+ * instead of every visitor waiting through the fetches and the pattern planning.
+ *
+ * The visitor is not lied to. `PriceClock` reads the age of the numbers off
+ * their own clock and prints it, so a page served from cache says how old it is.
+ */
+export const revalidate = 900;
+
+/**
+ * Without this the route has no paths to build, so it stays server-rendered on
+ * demand and the revalidate window has nothing to hold. With it, the four
+ * leagues are rendered at build time and refreshed in the background, which is
+ * what `leagueParams` was written for.
+ */
+export const generateStaticParams = leagueParams;
 
 export const metadata = {
   title: "PoE Beast Prices",
@@ -19,13 +37,6 @@ export const metadata = {
 };
 
 export default async function Page({ params }: PageProps<"/[league]">) {
-  // Built once and cached, this page showed whatever the numbers were when it
-  // was built, which on a quiet site is hours. Everything expensive about it is
-  // cached a layer down instead: poe.ninja is asked four times an hour at most
-  // and the pattern planning is memoised, so rendering per visit costs little
-  // and always shows the freshest prices there are.
-  await connection();
-
   const { league } = await resolveLeague((await params).league);
   if (!league) notFound();
 

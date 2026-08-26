@@ -163,14 +163,40 @@ export async function getTradePrice(
   }
 }
 
+/**
+ * Every price a league has, as one cache entry rather than one per name.
+ *
+ * Asked per name, this is 142 lookups on every render, and on a fresh instance
+ * that is 142 round trips to the data cache before a single row can be drawn.
+ * The page never wants one beast, it wants the league, so the league is what is
+ * cached; the per-name entries still exist behind it, and are read once a window
+ * instead of once a visit.
+ */
+const cachedSnapshot = unstable_cache(
+  async (league: string, names: string[]) => {
+    const entries = await Promise.all(
+      names.map(async (name) => [name, await getTradePrice(league, name)] as const),
+    );
+    return Object.fromEntries(
+      entries.filter(([, price]) => price !== null),
+    ) as Record<string, TradePrice>;
+  },
+  ["trade-snapshot"],
+  { revalidate: PRICE_TTL_SECONDS },
+);
+
 export async function getTradePrices(league: string, names: string[]) {
-  const entries = await Promise.all(
-    names.map(async (name) => [name, await getTradePrice(league, name)] as const),
-  );
-  return new Map(entries.filter(([, price]) => price !== null) as [
-    string,
-    TradePrice,
-  ][]);
+  if (names.length === 0) return new Map<string, TradePrice>();
+  try {
+    return new Map(Object.entries(await cachedSnapshot(league, names)));
+  } catch {
+    // The committed file is the answer to the same question, so a cache that
+    // cannot be read costs freshness rather than the page.
+    const known = snapshot[league] ?? {};
+    return new Map(
+      names.flatMap((name) => (known[name] ? [[name, known[name]] as const] : [])),
+    );
+  }
 }
 
 export const snapshotLeagues = () => Object.keys(snapshot);
