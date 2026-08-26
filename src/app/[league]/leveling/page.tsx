@@ -47,8 +47,8 @@ export default async function Page({
                 PoE Leveling Guide
               </h1>
               <p className="text-muted-foreground">
-                The next leveling step, in the game window. It turns the page
-                itself when you reach the zone.
+                Automatically follows your steps, to show the next one. For a
+                quicker Campaign.
               </p>
             </div>
           </div>
