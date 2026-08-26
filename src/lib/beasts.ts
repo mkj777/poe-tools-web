@@ -6,9 +6,9 @@ import { rarityOf } from "./beast-rarity";
  * Every beast for a league, priced wherever a price exists.
  *
  * poe.ninja only lists what somebody is currently selling. The rest come from
- * the trade site through the cron-warmed cache, and no listing at all means the
- * game no longer hands the beast out — those keep an undefined value so the UI
- * can say so instead of pricing them at zero.
+ * the committed trade snapshot, and no listing at all means the game no longer
+ * hands the beast out: those keep an undefined value so the UI can say so
+ * instead of pricing them at zero.
  */
 export async function loadBeasts(league: string): Promise<Beast[]> {
   const [priced, allNames] = await Promise.all([
@@ -18,7 +18,7 @@ export async function loadBeasts(league: string): Promise<Beast[]> {
 
   const known = new Set(priced.map((b) => b.name));
   const missing = allNames.filter((name) => !known.has(name)).sort();
-  const tradePrices = await getTradePrices(league, missing);
+  const tradePrices = getTradePrices(league, missing);
 
   return [
     ...priced.map((b) => ({

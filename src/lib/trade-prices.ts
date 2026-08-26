@@ -1,13 +1,30 @@
 /**
  * Prices for the beasts poe.ninja does not cover.
  *
- * poe.ninja only lists beasts with current listings — 218 of the 361 GGG's
- * trade data knows. The rest are priced by asking the official trade site
- * directly, exactly as Awakened PoE Trade does for items with no economy data.
+ * poe.ninja only lists beasts with current listings, 218 of the 361 GGG's trade
+ * data knows. The rest are priced by asking the official trade site directly,
+ * exactly as Awakened PoE Trade does for items with no economy data.
  *
  * That API is rate limited (5 requests / 10s, 30 / 300s), so nothing here
- * happens during a page render. A cron job refreshes a slice at a time into the
- * Next.js data cache, and rendering reads the cache or the committed snapshot.
+ * happens during a page render. There are two paths, and keeping them apart is
+ * the whole design:
+ *
+ * - **Rendering** reads the committed snapshot and nothing else. No cache, no
+ *   lookups, no network. It is a file that is already in memory.
+ * - **The cron** does the live lookups, behind a per-name cache so a day's runs
+ *   never ask the same name twice.
+ *
+ * They used to share the per-name cache, with the render calling it and the
+ * lookup throwing to say "not from here". That threw away the caching too:
+ * `unstable_cache` stores a value, not an exception, so nothing was ever kept
+ * and every cold instance rebuilt all 142 lookups from scratch. It cost 3.3
+ * seconds on a first page render to arrive at the snapshot the render could
+ * have read directly, which is what it now does.
+ *
+ * What that gives up: a price the cron finds is not on the site until the
+ * snapshot is regenerated with `pnpm prices:snapshot` and committed. These are
+ * the beasts nobody lists, exactly one of which has ever come back with a
+ * price, so the freshness was worth a good deal less than the three seconds.
  */
 import { unstable_cache } from "next/cache";
 import FALLBACK from "./trade-prices.fallback.json";
@@ -164,39 +181,17 @@ export async function getTradePrice(
 }
 
 /**
- * Every price a league has, as one cache entry rather than one per name.
+ * What a render reads: the committed snapshot, straight out of the bundle.
  *
- * Asked per name, this is 142 lookups on every render, and on a fresh instance
- * that is 142 round trips to the data cache before a single row can be drawn.
- * The page never wants one beast, it wants the league, so the league is what is
- * cached; the per-name entries still exist behind it, and are read once a window
- * instead of once a visit.
+ * Deliberately not async work. Every one of these names fell through to this
+ * same file before, it just took a cache round trip and a thrown exception each
+ * to get there.
  */
-const cachedSnapshot = unstable_cache(
-  async (league: string, names: string[]) => {
-    const entries = await Promise.all(
-      names.map(async (name) => [name, await getTradePrice(league, name)] as const),
-    );
-    return Object.fromEntries(
-      entries.filter(([, price]) => price !== null),
-    ) as Record<string, TradePrice>;
-  },
-  ["trade-snapshot"],
-  { revalidate: PRICE_TTL_SECONDS },
-);
-
-export async function getTradePrices(league: string, names: string[]) {
-  if (names.length === 0) return new Map<string, TradePrice>();
-  try {
-    return new Map(Object.entries(await cachedSnapshot(league, names)));
-  } catch {
-    // The committed file is the answer to the same question, so a cache that
-    // cannot be read costs freshness rather than the page.
-    const known = snapshot[league] ?? {};
-    return new Map(
-      names.flatMap((name) => (known[name] ? [[name, known[name]] as const] : [])),
-    );
-  }
+export function getTradePrices(league: string, names: string[]) {
+  const known = snapshot[league] ?? {};
+  return new Map(
+    names.flatMap((name) => (known[name] ? [[name, known[name]] as const] : [])),
+  );
 }
 
 export const snapshotLeagues = () => Object.keys(snapshot);

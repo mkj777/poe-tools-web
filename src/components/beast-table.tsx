@@ -32,9 +32,7 @@ import {
   BAND_MIN,
   PRESET_THRESHOLDS,
   inBand,
-  presetKey,
-  type PresetPlans,
-} from "@/lib/preset-plans";
+} from "@/lib/presets";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { num } from "@/lib/utils";
@@ -88,9 +86,8 @@ type Mode = "sell" | "trash";
 
 const MODE_LABELS: Record<Mode, string> = { sell: "Sell", trash: "Trash" };
 
-/** The thresholds a beast run is actually judged at — the server has already
-    planned for all but 0, which plans nothing and just shows every beast.
-    See src/lib/preset-plans.ts. */
+/** The thresholds a beast run is actually judged at. 0 plans nothing and just
+    shows every beast. See src/lib/presets.ts. */
 const PRESETS = [0, ...PRESET_THRESHOLDS];
 
 /**
@@ -328,12 +325,10 @@ function BestiaryRegex({
   beasts,
   threshold,
   mode,
-  plans,
 }: {
   beasts: Beast[];
   threshold: number;
   mode: Mode;
-  plans: PresetPlans;
 }) {
   // Cheap: the planning itself happens in a worker, see useBestiaryPattern.
   const { sell, trash, band, offBand, banded, sellWanted, sellAvoid } =
@@ -357,8 +352,7 @@ function BestiaryRegex({
 
       // A pile at exactly the threshold is bulk sold on its own, and then the
       // sell search above it starts one chaos higher. A handful is not worth
-      // the extra search and rides along inside it. Same rule on the server,
-      // or the plans it precomputed would answer a different question.
+      // the extra search and rides along inside it.
       const banded = band.length >= BAND_MIN;
       const inside = new Set(band.map((b) => b.name));
 
@@ -384,7 +378,6 @@ function BestiaryRegex({
     idle ? NONE : trash,
     idle ? NONE : sell,
     true,
-    idle ? undefined : plans[presetKey(threshold, "trash")],
   );
 
   // Selling only has to put every valuable beast in front of you; a cheap one
@@ -395,7 +388,6 @@ function BestiaryRegex({
     selling ? sellWanted : NONE,
     selling ? sellAvoid : NONE,
     false,
-    selling ? plans[presetKey(threshold, "sell")] : undefined,
   );
 
   // Step one of a sell run is not "trash everything cheap", it is "trash the
@@ -410,7 +402,6 @@ function BestiaryRegex({
     selling ? dragged : NONE,
     selling ? sell : NONE,
     true,
-    selling ? plans[presetKey(threshold, "clear")] : undefined,
   );
 
   // What step one actually gets rid of. A beast it cannot single out is still
@@ -431,7 +422,6 @@ function BestiaryRegex({
     bulk ? band : NONE,
     bulk ? offBand : NONE,
     true,
-    bulk ? plans[presetKey(threshold, "band")] : undefined,
   );
 
   // Step 3 sweeps the band up whole, so one of its beasts turning up in the
@@ -591,14 +581,12 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
 export function BeastTable({
   beasts,
   league,
-  plans,
   fetchedAt,
 }: {
   beasts: Beast[];
   /** poe.ninja detail pages live under the league, so links need it. */
   league: string;
   /** Planned on the server for the preset thresholds, so they need no wait. */
-  plans: PresetPlans;
   /** When these prices were fetched, in epoch milliseconds. */
   fetchedAt: number;
 }) {
@@ -770,7 +758,6 @@ export function BeastTable({
         beasts={found}
         threshold={threshold}
         mode={mode}
-        plans={plans}
       />
 
       <div className="overflow-hidden rounded-xl border">
