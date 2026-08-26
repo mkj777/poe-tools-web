@@ -42,6 +42,12 @@ const COMMON = MOD_GROUPS.filter((g) => COMMON_GROUP_IDS.includes(g.id));
  */
 const CHIP_GRID = "grid grid-cols-2 gap-1.5 lg:grid-cols-3";
 
+/**
+ * Inside a preset the same rule holds, but the card is half the page wide, so
+ * a third column would cut every line to three words and tell you nothing.
+ */
+const PRESET_CHIP_GRID = "grid grid-cols-2 gap-1.5";
+
 export function MapSearch() {
   const [banned, setBanned] = useState<string[]>([
     "reflect",
@@ -234,7 +240,7 @@ export function MapSearch() {
                     row from 0fr to 1fr is the one way to animate to a height
                     nobody knows in advance. */}
                 <div className="grid grid-rows-[0fr] transition-[grid-template-rows,margin] duration-200 group-hover/preset:mt-1.5 group-hover/preset:grid-rows-[1fr]">
-                  <div className={`overflow-hidden ${CHIP_GRID}`}>
+                  <div className={`overflow-hidden ${PRESET_CHIP_GRID}`}>
                     {preset.groups.map((id) => {
                       const entry = BY_ID.get(id);
                       const title = entry ? shortTitle(entry) : id;
