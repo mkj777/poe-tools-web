@@ -83,7 +83,7 @@ export default async function Page({
 
         <Image
           src="/poe_leveling_guide_ingame.webp"
-          alt="The overlay in the game window, showing the next step: The Climb."
+          alt="The overlay in the game window, showing the steps left in act 1: hand in The Marooned Mariner and The Siren's Cadence, then the waypoint to The Cavern of Wrath."
           width={1920}
           height={1080}
           priority
