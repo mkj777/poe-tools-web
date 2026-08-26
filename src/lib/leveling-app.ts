@@ -20,6 +20,6 @@ export const LEVELING_APP = {
 
 export const LEVELING_SETUP: readonly string[] = [
   "Run the installer.",
-  "Start Path of Exile, then the app.",
-  "Click Start. The overlay lays itself into the game window.",
+  "Start Path of Exile and the app.",
+  "Click Start.",
 ] as const;
