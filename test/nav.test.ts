@@ -8,6 +8,7 @@ test("the beasts table is the tool at the root", () => {
     [
       ["", "Beasts"],
       ["maps", "Maps"],
+      ["leveling", "Leveling"],
     ],
   );
 });
@@ -24,6 +25,15 @@ test("maps is a tool", () => {
   assert.ok(TOOLS.some((t) => t.slug === "maps"));
   assert.equal(activeTool("/allflame/maps"), "maps");
   assert.equal(swapLeague("/allflame/maps", "allflamehc"), "/allflamehc/maps");
+});
+
+test("leveling is a tool", () => {
+  assert.ok(TOOLS.some((t) => t.slug === "leveling"));
+  assert.equal(activeTool("/allflame/leveling"), "leveling");
+  assert.equal(
+    swapLeague("/allflame/leveling", "standard"),
+    "/standard/leveling",
+  );
 });
 
 test("toolHref builds the path for a tool", () => {

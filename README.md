@@ -13,6 +13,19 @@ stash wealth, the official trade site, poe.ninja, Awakened PoE Trade for in game
 price checks, and Path of Building. Trade and poe.ninja are handed the league
 you are looking at, so the link lands where you already are.
 
+## The Leveling tab
+
+The one exception to that rule is
+[PoE Leveling Guide](https://github.com/mkj777/poe-leveling-app), because it is
+ours: an overlay that keeps the next step of an
+[Exile Leveling](https://heartofphos.github.io/exile-leveling/) route on screen
+and advances it off the zone changes the client writes to `Client.txt`. The tab
+is a download page for the Windows installer, plus the setup and the hotkeys.
+
+Which release it hands out lives in `src/lib/leveling-app.ts`: one constant,
+which both the installer and the portable zip are built from, so a new version
+is a one line change.
+
 ## What it does
 
 - Lists **all** beasts for the selected league with their chaos value, 7-day

@@ -25,6 +25,13 @@ export const TOOLS: readonly Tool[] = [
       alt: "",
     },
   },
+  {
+    // The one tool here that is not a page: a desktop app, so what it wears is
+    // its own icon rather than an item out of the game.
+    slug: "leveling",
+    label: "Leveling",
+    icon: { src: "/poe_leveling_guide_icon.png", alt: "" },
+  },
 ] as const;
 
 const segments = (pathname: string) => pathname.split("/").filter(Boolean);
