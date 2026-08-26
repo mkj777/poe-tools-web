@@ -4,6 +4,13 @@ import Image from "next/image";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Price } from "@/components/currency";
 import type { ExchangeItem } from "@/lib/ninja";
 import { num } from "@/lib/utils";
@@ -26,6 +33,9 @@ const SAVED = "map-regex:setup";
 type Setup = { counts: Record<string, string>; astrolabe: string | null };
 
 const EMPTY: Setup = { counts: {}, astrolabe: null };
+
+/** What "no astrolabe" is called inside the select, which cannot take "". */
+const NONE = "none";
 
 function load(): Setup {
   try {
@@ -109,8 +119,10 @@ export function MapSetup({
   const astrolabe = astrolabes.find((a) => a.id === setup.astrolabe);
 
   const total =
-    chosen.reduce((sum, { scarab, count }) => sum + scarab.chaosValue * count, 0) +
-    (astrolabe?.chaosValue ?? 0);
+    chosen.reduce(
+      (sum, { scarab, count }) => sum + scarab.chaosValue * count,
+      0,
+    ) + (astrolabe?.chaosValue ?? 0);
 
   const needle = query.trim().toLowerCase();
   const matches = needle
@@ -139,9 +151,7 @@ export function MapSetup({
     <div className="bg-card divide-y rounded-xl border">
       <div className="px-3 py-2">
         <div className="text-sm font-medium">Setup</div>
-        <div className="text-muted-foreground text-sm">
-          What one map costs
-        </div>
+        <div className="text-muted-foreground text-sm">What one map costs</div>
       </div>
 
       {chosen.map(({ scarab, typed, count }) => (
@@ -218,21 +228,36 @@ export function MapSetup({
       </div>
 
       <div className="px-3 py-2">
-        <label className="text-muted-foreground text-sm">Astrolabe</label>
-        <select
-          value={setup.astrolabe ?? ""}
-          onChange={(e) =>
-            setupStore.write({ ...setup, astrolabe: e.target.value || null })
+        {/* Radix rather than a bare <select>, so the list is drawn by the page
+            and wears the theme instead of the operating system's own widget. */}
+        <label className="text-muted-foreground text-sm" id="astrolabe-label">
+          Astrolabe
+        </label>
+        <Select
+          value={setup.astrolabe ?? NONE}
+          onValueChange={(value) =>
+            setupStore.write({
+              ...setup,
+              astrolabe: value === NONE ? null : value,
+            })
           }
-          className="border-input bg-background mt-1 h-8 w-full rounded-md border px-2 text-sm"
         >
-          <option value="">None</option>
-          {astrolabes.map((entry) => (
-            <option key={entry.id} value={entry.id}>
-              {entry.name.replace(" Astrolabe", "")} · {num(entry.chaosValue)}c
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            className="mt-1 w-full"
+            aria-labelledby="astrolabe-label"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE}>None</SelectItem>
+            {astrolabes.map((entry) => (
+              <SelectItem key={entry.id} value={entry.id}>
+                {entry.name.replace(" Astrolabe", "")} · {num(entry.chaosValue)}
+                c
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="px-3 py-2">

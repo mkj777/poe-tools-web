@@ -83,38 +83,54 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/*
+ * Ash & Marble. Every surface is one of four steps out of the same cold grey,
+ * and the accent is the lightest of them rather than a colour: a page about a
+ * game whose own art is loud has no business competing with it.
+ *
+ * The site renders dark only — `html` carries `dark` in the layout — so this
+ * block is the theme, and the `:root` above it is the shadcn default nobody
+ * sees. The hex each token came from is beside it.
+ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Scrollbars, spin buttons and any other widget the browser draws itself,
+     which otherwise arrive white on a page that is not. */
+  color-scheme: dark;
+
+  --background: oklch(0.176 0.005 248.1); /* #0f1113 */
+  --foreground: oklch(0.938 0.004 236.5); /* #e8ebed */
+  --card: oklch(0.207 0.008 248.2); /* #15181b, the bar */
+  --card-foreground: oklch(0.938 0.004 236.5);
+  --popover: oklch(0.207 0.008 248.2);
+  --popover-foreground: oklch(0.938 0.004 236.5);
+  --primary: oklch(0.865 0.006 239.8); /* #cfd3d6, marble */
+  --primary-foreground: oklch(0.203 0.008 248.2); /* #14171a */
+  /* The mockup's lit surface is the accent at 12%. Flattened against the
+     background, because half the site puts another /50 on top of it. */
+  --secondary: oklch(0.276 0.005 248); /* #26282a */
+  --secondary-foreground: oklch(0.972 0.003 228.8); /* #f4f6f7 */
+  --muted: oklch(0.276 0.005 248);
+  --muted-foreground: oklch(0.665 0.005 236.5); /* #919496, body at 60% */
+  --accent: oklch(0.276 0.005 248);
+  --accent-foreground: oklch(0.972 0.003 228.8);
+  /* Red still means the altar, so it keeps its own hue. */
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: oklch(0.865 0.006 239.8 / 12%);
+  --input: oklch(0.865 0.006 239.8 / 15%);
+  --ring: oklch(0.679 0.018 236.8); /* #8e9aa2 */
+  --chart-1: oklch(0.865 0.006 239.8);
+  --chart-2: oklch(0.679 0.018 236.8);
+  --chart-3: oklch(0.554 0.008 236.7);
+  --chart-4: oklch(0.455 0.005 236.6);
+  --chart-5: oklch(0.276 0.005 248);
+  --sidebar: oklch(0.207 0.008 248.2);
+  --sidebar-foreground: oklch(0.938 0.004 236.5);
+  --sidebar-primary: oklch(0.865 0.006 239.8);
+  --sidebar-primary-foreground: oklch(0.203 0.008 248.2);
+  --sidebar-accent: oklch(0.276 0.005 248);
+  --sidebar-accent-foreground: oklch(0.972 0.003 228.8);
+  --sidebar-border: oklch(0.865 0.006 239.8 / 12%);
+  --sidebar-ring: oklch(0.679 0.018 236.8);
 }
 
 @layer base {

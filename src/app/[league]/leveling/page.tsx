@@ -2,6 +2,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
 import { leagueParams, resolveLeague } from "@/lib/league";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PageFrame } from "@/components/page-frame";
 import { LEVELING_APP, LEVELING_SETUP } from "@/lib/leveling-app";
 
@@ -53,29 +55,28 @@ export default async function Page({
             </div>
           </div>
 
-          <div className="flex flex-col items-start gap-3 sm:items-end">
-            <a
-              href={LEVELING_APP.setup}
-              className="bg-primary text-primary-foreground hover:bg-primary/85 inline-flex h-12 items-center gap-2.5 rounded-lg px-6 text-base font-medium transition-colors"
-            >
-              <Download className="size-5 shrink-0" />
-              Download for Windows
-            </a>
-            <span className="text-muted-foreground flex gap-4 text-sm">
-              <a
-                href={LEVELING_APP.portable}
-                className="hover:text-foreground underline underline-offset-4 transition-colors"
-              >
-                Portable zip
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            {/* The one thing on the page worth a button. Bigger than any size
+                the variants carry, because it is the whole point of the tab. */}
+            <Button asChild size="lg" className="h-12 gap-2.5 px-6 text-base">
+              <a href={LEVELING_APP.setup}>
+                <Download className="size-5" />
+                Download for Windows
               </a>
-              <a
-                href={LEVELING_APP.repo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground underline underline-offset-4 transition-colors"
-              >
-                GitHub
-              </a>
+            </Button>
+            <span className="flex gap-1">
+              <Button asChild variant="link" size="sm" className="underline">
+                <a href={LEVELING_APP.portable}>Portable zip</a>
+              </Button>
+              <Button asChild variant="link" size="sm" className="underline">
+                <a
+                  href={LEVELING_APP.repo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub
+                </a>
+              </Button>
             </span>
           </div>
         </header>
@@ -92,9 +93,9 @@ export default async function Page({
         <ol className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-3">
           {LEVELING_SETUP.map((step, i) => (
             <li key={step} className="flex items-start gap-3">
-              <span className="bg-secondary text-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+              <Badge variant="secondary" className="size-6 rounded-full px-0">
                 {i + 1}
-              </span>
+              </Badge>
               <span className="text-muted-foreground text-sm">{step}</span>
             </li>
           ))}
@@ -106,7 +107,7 @@ export default async function Page({
             href="https://github.com/Kazte/path-of-levelling"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-foreground underline underline-offset-4 transition-colors"
+            className="text-primary underline underline-offset-4"
           >
             Kazte/path-of-levelling
           </a>

@@ -295,3 +295,10 @@ warned about.
 ## Stack
 
 Next.js 16 (App Router), React 19, Tailwind v4, shadcn/ui, TypeScript.
+
+The palette is "Ash & Marble" out of the Claude Design mockup: four steps of one
+cold grey, with the lightest of them as the accent, so nothing on the page
+competes with the game's own art. It lives in the `.dark` block of
+`src/app/globals.css` as shadcn tokens and nowhere else, which is why every
+component picked it up without being touched. Red, green and amber stay: on the
+beasts table they mean the altar, the sale and a warning, not decoration.
