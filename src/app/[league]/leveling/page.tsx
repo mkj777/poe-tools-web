@@ -47,8 +47,8 @@ export default async function Page({
                 PoE Leveling Guide
               </h1>
               <p className="text-muted-foreground">
-                Automatically follows your steps, to show the next one. For a
-                quicker Campaign.
+                Follows your progress and shows the next step by itself.
+                <span className="block">For a quicker Campaign.</span>
               </p>
             </div>
           </div>
@@ -101,8 +101,7 @@ export default async function Page({
         </ol>
 
         <p className="text-muted-foreground border-border/60 mt-10 border-t pt-6 text-sm">
-          Hotkeys, position and opacity are in the app&rsquo;s settings. MIT,
-          built on{" "}
+          MIT, built on{" "}
           <a
             href="https://github.com/Kazte/path-of-levelling"
             target="_blank"
