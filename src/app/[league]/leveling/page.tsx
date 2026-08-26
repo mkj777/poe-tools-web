@@ -45,8 +45,7 @@ export default async function Page({ params }: PageProps<"/[league]/leveling">) 
               PoE Leveling Guide
             </h1>
             <p className="text-muted-foreground max-w-2xl">
-              An overlay for Path of Exile 1 that keeps the next leveling step
-              on screen while you play. Import a route from{" "}
+              An overlay for Path of Exile 1. The walkthrough from{" "}
               <a
                 href="https://heartofphos.github.io/exile-leveling/"
                 target="_blank"
@@ -55,15 +54,15 @@ export default async function Page({ params }: PageProps<"/[league]/leveling">) 
               >
                 Exile Leveling
               </a>{" "}
-              once, and the app turns the page itself: it watches the zone
-              changes your client writes to{" "}
-              <code className="text-foreground">Client.txt</code> and advances
-              the step when you arrive.
+              sits in the game window, and the step turns itself: the app
+              watches the zone changes your client writes to{" "}
+              <code className="text-foreground">Client.txt</code> and moves on
+              when you arrive.
             </p>
           </div>
         </header>
 
-        <section className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-3">
+        <div className="mt-8">
           <a
             href={LEVELING_APP.setup}
             className="bg-primary text-primary-foreground hover:bg-primary/85 inline-flex h-12 items-center gap-2.5 rounded-lg px-6 text-base font-medium transition-colors"
@@ -71,13 +70,7 @@ export default async function Page({ params }: PageProps<"/[league]/leveling">) 
             <Download className="size-5 shrink-0" />
             Download for Windows
           </a>
-          <p className="text-muted-foreground text-sm">
-            {LEVELING_APP.version} installer, {LEVELING_APP.size}. Installs per
-            user into <code className="text-foreground">%LocalAppData%</code>,
-            so Windows never asks for admin rights. Updates after that are the
-            app&rsquo;s own job.
-          </p>
-        </section>
+        </div>
 
         <p className="text-muted-foreground mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <a
@@ -121,7 +114,7 @@ export default async function Page({ params }: PageProps<"/[league]/leveling">) 
                     </span>{" "}
                     {step.detail}
                     {step.code && (
-                      <code className="border-border/60 bg-secondary/40 text-foreground mt-1.5 block overflow-x-auto rounded border px-2 py-1 font-mono text-xs whitespace-nowrap">
+                      <code className="border-border/60 bg-secondary/40 text-foreground mt-1.5 block rounded border px-2 py-1 font-mono text-xs break-all">
                         {step.code}
                       </code>
                     )}
@@ -148,9 +141,9 @@ export default async function Page({ params }: PageProps<"/[league]/leveling">) 
               ))}
             </dl>
             <p className="text-muted-foreground mt-4 text-sm">
-              The steps are click-through, so the bar sits over the game without
-              taking anything the game wanted. Most of the time it advances on
-              its own, and the arrows are there for the zones it cannot see.
+              Position, size and opacity are in the settings. Updates need
+              nothing from you: a new version is fetched in the background and
+              installed the next time you start.
             </p>
           </section>
         </div>
@@ -158,7 +151,7 @@ export default async function Page({ params }: PageProps<"/[league]/leveling">) 
         <section className="mt-10">
           <Image
             src="/poe_leveling_guide_ingame.webp"
-            alt="The step bar over Path of Exile, showing 'Get waypoint, The Mud Flats' above the hotbar."
+            alt="The overlay in the game window, showing 'Act 1, 11 left in act' above the next step, The Climb."
             width={1920}
             height={1080}
             className="border-border/60 h-auto w-full rounded-lg border"
@@ -166,8 +159,7 @@ export default async function Page({ params }: PageProps<"/[league]/leveling">) 
         </section>
 
         <p className="text-muted-foreground mt-8 max-w-2xl text-sm">
-          Tauri, React and TypeScript, MIT licensed. The app started as a fork
-          of{" "}
+          Tauri, React and TypeScript, MIT licensed. It started from{" "}
           <a
             href="https://github.com/Kazte/path-of-levelling"
             target="_blank"

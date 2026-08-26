@@ -17,10 +17,11 @@ you are looking at, so the link lands where you already are.
 
 The one exception to that rule is
 [PoE Leveling Guide](https://github.com/mkj777/poe-leveling-app), because it is
-ours: an overlay that keeps the next step of an
-[Exile Leveling](https://heartofphos.github.io/exile-leveling/) route on screen
-and advances it off the zone changes the client writes to `Client.txt`. The tab
-is a download page for the Windows installer, plus the setup and the hotkeys.
+ours: an overlay that puts the
+[Exile Leveling](https://heartofphos.github.io/exile-leveling/) walkthrough in
+the game window and turns the step off the zone changes the client writes to
+`Client.txt`. The tab is a download page for the Windows installer, plus the
+setup and the hotkeys.
 
 Which release it hands out lives in `src/lib/leveling-app.ts`: one constant,
 which both the installer and the portable zip are built from, so a new version

@@ -17,7 +17,7 @@ test("every download points at the release the page names", () => {
 });
 
 test("the setup is the whole way from installer to first step", () => {
-  assert.equal(LEVELING_SETUP.length, 5);
+  assert.equal(LEVELING_SETUP.length, 4);
   for (const step of LEVELING_SETUP) {
     assert.ok(step.title.length > 0);
     assert.ok(step.detail.length > 0);
@@ -25,7 +25,7 @@ test("the setup is the whole way from installer to first step", () => {
 });
 
 test("every hotkey is the chord the app listens for", () => {
-  assert.equal(LEVELING_HOTKEYS.length, 3);
+  assert.equal(LEVELING_HOTKEYS.length, 4);
   for (const hotkey of LEVELING_HOTKEYS) {
     assert.match(hotkey.keys, /^Ctrl \+ Shift \+ Alt \+ /, hotkey.does);
   }

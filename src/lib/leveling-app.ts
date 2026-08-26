@@ -12,8 +12,6 @@ const asset = (name: string) =>
 
 export const LEVELING_APP = {
   version: RELEASE,
-  /** The installer, rounded the way a download page rounds it. */
-  size: "11.8 MB",
   setup: asset("PoELevelingGuide-win-Setup.exe"),
   portable: asset("PoELevelingGuide-win-Portable.zip"),
   repo: "https://github.com/mkj777/poe-leveling-app",
@@ -21,40 +19,43 @@ export const LEVELING_APP = {
 } as const;
 
 /**
- * The default install of Path of Exile, which is where the log is for most.
+ * The default install of Path of Exile. Only needed when the app cannot read
+ * the path out of a running client, which is the one thing that can go wrong.
  * Raw, because every separator in a Windows path is an escape otherwise.
  */
 const CLIENT_TXT = String.raw`C:\Program Files (x86)\Grinding Gear Games\Path of Exile\logs\Client.txt`;
 
-/** One numbered step, and the path or menu item it ends on, if it has one. */
+/** One numbered step, and the path it ends on, if it has one. */
 export type SetupStep = { title: string; detail: string; code?: string };
 
 export const LEVELING_SETUP: readonly SetupStep[] = [
   {
     title: "Run the installer.",
-    detail: "No admin rights, and the app updates itself from then on.",
+    detail: "It installs for your user only, so there is no admin prompt.",
   },
   {
-    title: "Point it at Client.txt.",
-    detail: "The zone changes it reads are written to that log. Usually:",
+    title: "Start the game, then the app.",
+    detail:
+      "It reads the path to Client.txt out of the running client. If the game is not up it stays on \u201cClient.txt not found\u201d and you can pick the file yourself, usually:",
     code: CLIENT_TXT,
   },
   {
-    title: "Place the steps window.",
-    detail: "Wherever it does not cover anything you look at mid fight.",
+    title: "Wait for the walkthrough.",
+    detail:
+      "It comes from Exile Leveling, so the first start needs the internet. After that it is local and keeps itself current. There is no build to import.",
   },
   {
-    title: "Build a route on Exile Leveling.",
-    detail: "Pick the acts, gems and gear you want, then copy the build.",
-  },
-  {
-    title: "Menu, then Load from Clipboard.",
-    detail: "That is the whole import. Hit Start and play.",
+    title: "Click Start.",
+    detail: "The overlay lays itself into the game window and follows it.",
   },
 ] as const;
 
 export const LEVELING_HOTKEYS = [
-  { keys: "Ctrl + Shift + Alt + F12", does: "Show or hide the overlay" },
+  {
+    keys: "Ctrl + Shift + Alt + F12",
+    does: "Close the overlay, back to the main window",
+  },
   { keys: "Ctrl + Shift + Alt + →", does: "Next step" },
   { keys: "Ctrl + Shift + Alt + ←", does: "Previous step" },
+  { keys: "Ctrl + Shift + Alt + O", does: "Move the overlay, on and off" },
 ] as const;
