@@ -133,35 +133,35 @@ const BESTIARY_SCARABS = [
  */
 const IMAGES = "https://web.poecdn.com";
 
-const scarabPath = (league: string) =>
-  `/exchange/current/overview?league=${encodeURIComponent(league)}&type=Scarab`;
+const exchangePath = (league: string, type: string) =>
+  `/exchange/current/overview?league=${encodeURIComponent(league)}&type=${type}`;
 
-/**
- * One scarab out of all of them, as something to put in a map device rather
- * than as part of a fixed beast setup.
- */
-export type PricedScarab = {
+/** One thing the currency exchange prices, named and pictured. */
+export type ExchangeItem = {
   id: string;
   name: string;
   icon: string;
-  /** Chaos each, from the currency exchange. */
+  /** Chaos each. */
   chaosValue: number;
 };
 
 /**
- * Every scarab the exchange prices, named and pictured.
+ * Everything of one kind the exchange prices, by name.
  *
- * `getScarabPrices` below answers a different question: what a beast run costs,
- * which is three known scarabs in known amounts. This one has no opinion about
- * which of the hundred-odd you are running, because that is the thing being
- * asked.
+ * Scarabs and astrolabes are the same request with a different `type`, which is
+ * worth knowing: astrolabes were first built on trade lookups because a sweep
+ * for them missed this endpoint, and that cost a rate limited cron slice for
+ * data that was here all along.
  */
-export async function getAllScarabs(league: string): Promise<PricedScarab[]> {
+async function exchangeItems(
+  league: string,
+  type: string,
+): Promise<ExchangeItem[]> {
   const data = await ninja<{
     lines: { id: string; primaryValue: number }[];
     items: { id: string; name: string; image: string }[];
     core: { primary: string };
-  }>(scarabPath(league));
+  }>(exchangePath(league, type));
 
   if (data.core?.primary !== "chaos") return [];
   const named = new Map((data.items ?? []).map((item) => [item.id, item]));
@@ -182,11 +182,23 @@ export async function getAllScarabs(league: string): Promise<PricedScarab[]> {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/**
+ * All hundred-odd scarabs. `getScarabPrices` below answers a different
+ * question: what a beast run costs, which is three known scarabs in known
+ * amounts.
+ */
+export const getAllScarabs = (league: string) =>
+  exchangeItems(league, "Scarab");
+
+/** All ten astrolabes. */
+export const getAstrolabes = (league: string) =>
+  exchangeItems(league, "Astrolabe");
+
 export async function getScarabPrices(league: string): Promise<Scarab[]> {
   const data = await ninja<{
     lines: { id: string; primaryValue: number }[];
     core: { primary: string };
-  }>(scarabPath(league));
+  }>(exchangePath(league, "Scarab"));
 
   // The exchange quotes in a primary currency; for PoE 1 that is chaos.
   const chaos = data.core?.primary === "chaos";

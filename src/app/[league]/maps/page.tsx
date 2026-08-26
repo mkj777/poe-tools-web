@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { leagueParams, resolveLeague } from "@/lib/league";
 import {
   getAllScarabs,
+  getAstrolabes,
   getCurrencyPrices,
   type CurrencyPrices,
 } from "@/lib/ninja";
-import { getAstrolabePrices } from "@/lib/astrolabes";
 import { MapSearch } from "@/components/map-search";
 import { MapSetup } from "@/components/map-setup";
 import { PageFrame } from "@/components/page-frame";
@@ -31,7 +31,7 @@ export default async function Page({ params }: PageProps<"/[league]/maps">) {
   // what the page is for, and it needs nothing from the network.
   const [scarabs, astrolabes, currency] = await Promise.all([
     getAllScarabs(league).catch(() => []),
-    getAstrolabePrices(league).catch(() => []),
+    getAstrolabes(league).catch(() => []),
     getCurrencyPrices(league).catch((): CurrencyPrices => ({})),
   ]);
 

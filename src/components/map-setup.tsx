@@ -5,23 +5,25 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Price } from "@/components/currency";
-import type { PricedAstrolabe } from "@/lib/astrolabes";
-import type { PricedScarab } from "@/lib/ninja";
+import type { ExchangeItem } from "@/lib/ninja";
 import { num } from "@/lib/utils";
 
 /**
  * What one map costs to set up, from what you actually put in the device.
  *
- * The prices come from two different places for a reason. Scarabs trade on the
- * currency exchange, so poe.ninja quotes all hundred-odd of them. Astrolabes
- * appear in none of its overviews, so theirs are the cheapest live listing on
- * the trade site, kept warm by the cron. See src/lib/astrolabes.ts.
+ * Both prices are poe.ninja's currency exchange, which quotes scarabs and
+ * astrolabes alike. Nothing here reaches the network.
  */
 
 /** A setup survives a reload. Retyping five scarabs every visit is not a tool. */
 const SAVED = "map-regex:setup";
 
-type Setup = { counts: Record<string, number>; astrolabe: string | null };
+/**
+ * Counts are kept as typed rather than as numbers. Clearing a field is how you
+ * start retyping it, so an empty one has to stay an empty one instead of
+ * becoming a zero, or a row that ought to vanish. Only the X removes a scarab.
+ */
+type Setup = { counts: Record<string, string>; astrolabe: string | null };
 
 const EMPTY: Setup = { counts: {}, astrolabe: null };
 
@@ -29,8 +31,15 @@ function load(): Setup {
   try {
     const raw = localStorage.getItem(SAVED);
     if (!raw) return EMPTY;
-    const parsed = JSON.parse(raw) as Partial<Setup>;
-    return { counts: parsed.counts ?? {}, astrolabe: parsed.astrolabe ?? null };
+    const parsed = JSON.parse(raw) as {
+      counts?: Record<string, string | number>;
+      astrolabe?: string | null;
+    };
+    // A setup saved before counts became text still reads back.
+    const counts = Object.fromEntries(
+      Object.entries(parsed.counts ?? {}).map(([id, n]) => [id, String(n)]),
+    );
+    return { counts, astrolabe: parsed.astrolabe ?? null };
   } catch {
     return EMPTY;
   }
@@ -73,8 +82,8 @@ export function MapSetup({
   astrolabes,
   divine,
 }: {
-  scarabs: PricedScarab[];
-  astrolabes: PricedAstrolabe[];
+  scarabs: ExchangeItem[];
+  astrolabes: ExchangeItem[];
   /** Chaos per Divine Orb, for the second line of the total. */
   divine?: number;
 }) {
@@ -91,13 +100,13 @@ export function MapSetup({
   );
 
   const chosen = Object.entries(setup.counts)
-    .flatMap(([id, count]) => {
+    .flatMap(([id, typed]) => {
       const scarab = byId.get(id);
-      return scarab && count > 0 ? [{ scarab, count }] : [];
+      return scarab ? [{ scarab, typed, count: Number(typed) || 0 }] : [];
     })
     .sort((a, b) => a.scarab.name.localeCompare(b.scarab.name));
 
-  const astrolabe = astrolabes.find((a) => a.name === setup.astrolabe);
+  const astrolabe = astrolabes.find((a) => a.id === setup.astrolabe);
 
   const total =
     chosen.reduce((sum, { scarab, count }) => sum + scarab.chaosValue * count, 0) +
@@ -109,15 +118,20 @@ export function MapSetup({
         .filter(
           (scarab) =>
             scarab.name.toLowerCase().includes(needle) &&
-            !setup.counts[scarab.id],
+            !(scarab.id in setup.counts),
         )
         .slice(0, 8)
     : [];
 
-  const setCount = (id: string, count: number) => {
+  const setCount = (id: string, typed: string) =>
+    setupStore.write({
+      ...setup,
+      counts: { ...setup.counts, [id]: typed.replace(/\D/g, "").slice(0, 4) },
+    });
+
+  const remove = (id: string) => {
     const counts = { ...setup.counts };
-    if (count > 0) counts[id] = count;
-    else delete counts[id];
+    delete counts[id];
     setupStore.write({ ...setup, counts });
   };
 
@@ -130,7 +144,7 @@ export function MapSetup({
         </div>
       </div>
 
-      {chosen.map(({ scarab, count }) => (
+      {chosen.map(({ scarab, typed, count }) => (
         <div key={scarab.id} className="flex items-center gap-2 px-3 py-2">
           <Image
             src={scarab.icon}
@@ -150,14 +164,12 @@ export function MapSetup({
           <Input
             inputMode="numeric"
             aria-label={`How many ${scarab.name}`}
-            value={String(count)}
-            onChange={(e) =>
-              setCount(scarab.id, Number(e.target.value.replace(/\D/g, "")) || 0)
-            }
+            value={typed}
+            onChange={(e) => setCount(scarab.id, e.target.value)}
             className="h-8 w-14 shrink-0 text-right tabular-nums"
           />
           <button
-            onClick={() => setCount(scarab.id, 0)}
+            onClick={() => remove(scarab.id)}
             title="Remove"
             className="text-muted-foreground hover:text-foreground shrink-0"
           >
@@ -183,7 +195,7 @@ export function MapSetup({
               <button
                 key={scarab.id}
                 onClick={() => {
-                  setCount(scarab.id, 1);
+                  setCount(scarab.id, "1");
                   setQuery("");
                 }}
                 className="hover:bg-muted flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left"
@@ -216,18 +228,11 @@ export function MapSetup({
         >
           <option value="">None</option>
           {astrolabes.map((entry) => (
-            <option key={entry.name} value={entry.name}>
-              {entry.name.replace(" Astrolabe", "")}
-              {entry.chaosValue > 0 ? ` · ${num(entry.chaosValue)}c` : " · ?"}
+            <option key={entry.id} value={entry.id}>
+              {entry.name.replace(" Astrolabe", "")} · {num(entry.chaosValue)}c
             </option>
           ))}
         </select>
-        {astrolabe?.chaosValue === 0 && (
-          <p className="text-muted-foreground mt-1 text-sm">
-            No price yet. The trade site is asked for a few of these a day, so
-            one still comes back unknown for a while.
-          </p>
-        )}
       </div>
 
       <div className="px-3 py-2">
