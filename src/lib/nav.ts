@@ -8,7 +8,11 @@
 export type Tool = {
   slug: string;
   label: string;
-  icon: { src: string; alt: string };
+  /**
+   * `rounded` is for an icon that is a square image rather than an item cut
+   * out of the game, which would otherwise sit in the bar as a hard tile.
+   */
+  icon: { src: string; alt: string; rounded?: boolean };
 };
 
 export const TOOLS: readonly Tool[] = [
@@ -30,7 +34,7 @@ export const TOOLS: readonly Tool[] = [
     // its own icon rather than an item out of the game.
     slug: "leveling",
     label: "Leveling",
-    icon: { src: "/poe_leveling_guide_icon.png", alt: "" },
+    icon: { src: "/poe_leveling_guide_icon.png", alt: "", rounded: true },
   },
 ] as const;
 

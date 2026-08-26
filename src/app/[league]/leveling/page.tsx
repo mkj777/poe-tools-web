@@ -29,12 +29,12 @@ export default async function Page({
 
   return (
     <PageFrame>
-      {/* The column is the width of the other pages, so the logo in the gutter
-          still ends where the heading starts. What is in it is narrower,
-          because three steps and a button do not want a whole page. */}
+      {/* The whole column, the way the other pages use it: what it is and how
+          to get it across the top, the app itself underneath at the size the
+          overlay is actually readable at, and the three steps under that. */}
       <main className="mx-auto w-full max-w-6xl px-6 pt-10 pb-16">
-        <div className="max-w-3xl">
-          <header className="flex items-start gap-4">
+        <header className="flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
+          <div className="flex items-start gap-4">
             <Image
               src="/poe_leveling_guide_icon.png"
               alt=""
@@ -42,7 +42,7 @@ export default async function Page({
               height={128}
               className="mt-1 size-14 shrink-0 rounded-lg"
             />
-            <div className="space-y-2">
+            <div className="max-w-xl space-y-2">
               <h1 className="text-3xl font-semibold tracking-tight">
                 PoE Leveling Guide
               </h1>
@@ -51,9 +51,9 @@ export default async function Page({
                 itself when you reach the zone.
               </p>
             </div>
-          </header>
+          </div>
 
-          <div className="mt-8 flex flex-wrap items-baseline gap-x-5 gap-y-3">
+          <div className="flex flex-col items-start gap-3 sm:items-end">
             <a
               href={LEVELING_APP.setup}
               className="bg-primary text-primary-foreground hover:bg-primary/85 inline-flex h-12 items-center gap-2.5 rounded-lg px-6 text-base font-medium transition-colors"
@@ -78,40 +78,41 @@ export default async function Page({
               </a>
             </span>
           </div>
+        </header>
 
-          <ol className="text-muted-foreground mt-8 space-y-2.5 text-sm">
-            {LEVELING_SETUP.map((step, i) => (
-              <li key={step} className="flex items-baseline gap-3">
-                <span className="bg-secondary text-foreground flex size-6 shrink-0 items-center justify-center self-start rounded-full text-xs font-medium">
-                  {i + 1}
-                </span>
-                {step}
-              </li>
-            ))}
-          </ol>
+        <Image
+          src="/poe_leveling_guide_ingame.webp"
+          alt="The overlay in the game window, showing the next step: The Climb."
+          width={1920}
+          height={1080}
+          priority
+          className="border-border/60 mt-10 h-auto w-full rounded-xl border"
+        />
 
-          <Image
-            src="/poe_leveling_guide_ingame.webp"
-            alt="The overlay in the game window, showing the next step: The Climb."
-            width={1920}
-            height={1080}
-            className="border-border/60 mt-10 h-auto w-full rounded-lg border"
-          />
+        <ol className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-3">
+          {LEVELING_SETUP.map((step, i) => (
+            <li key={step} className="flex items-start gap-3">
+              <span className="bg-secondary text-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+                {i + 1}
+              </span>
+              <span className="text-muted-foreground text-sm">{step}</span>
+            </li>
+          ))}
+        </ol>
 
-          <p className="text-muted-foreground mt-6 text-sm">
-            Hotkeys, position and opacity are in the app&rsquo;s settings. MIT,
-            built on{" "}
-            <a
-              href="https://github.com/Kazte/path-of-levelling"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground underline underline-offset-4 transition-colors"
-            >
-              Kazte/path-of-levelling
-            </a>
-            .
-          </p>
-        </div>
+        <p className="text-muted-foreground border-border/60 mt-10 border-t pt-6 text-sm">
+          Hotkeys, position and opacity are in the app&rsquo;s settings. MIT,
+          built on{" "}
+          <a
+            href="https://github.com/Kazte/path-of-levelling"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground underline underline-offset-4 transition-colors"
+          >
+            Kazte/path-of-levelling
+          </a>
+          .
+        </p>
       </main>
     </PageFrame>
   );

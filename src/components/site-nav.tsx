@@ -199,6 +199,7 @@ export function SiteNav({
                 height={20}
                 className={cn(
                   "shrink-0 transition-opacity",
+                  tool.icon.rounded && "rounded",
                   tool.slug === current ? "opacity-100" : "opacity-75",
                 )}
               />
