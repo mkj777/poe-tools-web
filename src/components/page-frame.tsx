@@ -35,7 +35,9 @@ export function PageFrame({
       {/* Once absolute the row spans the full width, so it would sit on top of
           the controls below. Only its columns take clicks. */}
       <div className="pointer-events-none flex items-start justify-between gap-6 pt-6 min-[1480px]:absolute min-[1480px]:inset-x-0 min-[1480px]:top-0">
-        <div className="pointer-events-auto shrink-0" style={GUTTER}>
+        {/* Padding rather than a width, so the logo still ends where the
+            heading starts and only stops short of the gutter's own edges. */}
+        <div className="pointer-events-auto shrink-0 px-8" style={GUTTER}>
           <Image
             src="/poe_logo.png"
             alt="Path of Exile"

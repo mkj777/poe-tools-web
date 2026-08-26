@@ -46,9 +46,12 @@ export default async function Page({ params }: PageProps<"/[league]/maps">) {
       }
     >
       <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
-        <header className="mb-6">
-          <h1 className="text-3xl font-semibold tracking-tight">Map Regex</h1>
-        </header>
+        {/* The page is one field and the controls that fill it, so the
+            heading says what the field is for rather than naming the page
+            again over the tab that already names it. */}
+        <h1 className="mb-6 text-lg font-normal tracking-tight text-balance">
+          Highlight all the Maps you want to run with this Regex
+        </h1>
 
         <MapSearch />
       </main>

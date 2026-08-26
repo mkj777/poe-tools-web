@@ -36,6 +36,12 @@ const shortTitle = (entry: { lines: readonly string[] }) =>
 
 const COMMON = MOD_GROUPS.filter((g) => COMMON_GROUP_IDS.includes(g.id));
 
+/**
+ * Every chip in the same column width, in both lists. A modifier is not more
+ * important for being longer, and a ragged wrap reads as if it were.
+ */
+const CHIP_GRID = "grid grid-cols-2 gap-1.5 lg:grid-cols-3";
+
 export function MapSearch() {
   const [banned, setBanned] = useState<string[]>([
     "reflect",
@@ -125,13 +131,34 @@ export function MapSearch() {
       {/* The output is the reason the page exists, so it goes first. */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <code className="bg-muted min-h-10 flex-1 rounded-md px-3 py-2 font-mono text-sm break-all">
+          <code className="bg-muted flex min-h-10 flex-1 items-center rounded-md px-3 py-2 font-mono text-sm break-all">
             {plan.search || "Pick something to ban."}
           </code>
           <Button onClick={copy} disabled={!plan.search} size="icon">
-            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+            {copied ? (
+              <Check className="size-4" />
+            ) : (
+              <Copy className="size-4" />
+            )}
           </Button>
         </div>
+        {/* Magic maps cannot be told from rare ones, so this only reaches the
+            unrolled white ones: they print no quantity line at all, and asking
+            for one at 1% drops them. See docs/stash-search.md, Test 8. */}
+        <label className="text-muted-foreground flex w-fit items-center gap-2 text-sm">
+          <Checkbox
+            checked={(Number(minimums.quantity) || 0) >= 1}
+            onCheckedChange={(on) =>
+              setMinimums((prev) => ({
+                ...prev,
+                quantity:
+                  on === true ? String(Math.max(asked.quantity, 1)) : "",
+              }))
+            }
+          />
+          Leave white maps dark
+        </label>
+
         {plan.unreachable.length > 0 && (
           <p className="text-destructive text-sm">
             No fragment can single these out without hiding maps you can run:{" "}
@@ -150,7 +177,7 @@ export function MapSearch() {
           {REWARD_STATS.map((stat) => (
             <label
               key={stat.id}
-              className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm"
+              className="flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-sm"
             >
               {stat.label}
               <span className="flex items-center gap-1">
@@ -165,45 +192,13 @@ export function MapSearch() {
                       [stat.id]: e.target.value.replace(/\D/g, "").slice(0, 3),
                     }))
                   }
-                  className="h-8 w-20 text-right tabular-nums"
+                  className="h-7 w-14 text-right tabular-nums"
                 />
                 <span className="text-muted-foreground">%</span>
               </span>
             </label>
           ))}
         </div>
-      </div>
-
-      {/* What you picked stays visible however deep the search goes. */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium">Banned ({chosen.length})</h2>
-          {chosen.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => setBanned([])}>
-              Clear
-            </Button>
-          )}
-        </div>
-
-        {chosen.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            Nothing banned yet, so every map shows.
-          </p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {chosen.map((entry) => (
-              <button
-                key={entry.id}
-                onClick={() => toggle(entry.id)}
-                title="Remove"
-                className="bg-secondary text-secondary-foreground hover:bg-secondary/70 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-left text-sm"
-              >
-                {shortTitle(entry)}
-                <X className="size-3.5 shrink-0 opacity-60" />
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* A preset is a build's answer, so it says what it answers with. */}
@@ -225,7 +220,7 @@ export function MapSearch() {
                 }
                 // A button centres its content, which leaves the shorter card
                 // floating. Stacking from the top lines the two titles up.
-                className={`hover:bg-muted/50 flex flex-col items-stretch rounded-md border p-3 text-left ${
+                className={`group/preset hover:bg-muted/50 flex flex-col items-stretch rounded-md border p-3 text-left ${
                   active ? "border-primary bg-muted/30" : ""
                 }`}
               >
@@ -233,23 +228,67 @@ export function MapSearch() {
                   <span className="text-sm font-medium">{preset.label}</span>
                   {active && <Check className="text-primary size-4 shrink-0" />}
                 </div>
-                <div className="mt-1.5 flex flex-wrap gap-1">
-                  {preset.groups.map((id) => (
-                    <span
-                      key={id}
-                      className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-xs"
-                    >
-                      {(() => {
-                        const entry = BY_ID.get(id);
-                        return entry ? shortTitle(entry) : id;
-                      })()}
-                    </span>
-                  ))}
+                {/* What a preset bans is the answer to a question you only ask
+                    about one of them, so the list unrolls under the pointer
+                    rather than turning both cards into a wall of text. A grid
+                    row from 0fr to 1fr is the one way to animate to a height
+                    nobody knows in advance. */}
+                <div className="grid grid-rows-[0fr] transition-[grid-template-rows,margin] duration-200 group-hover/preset:mt-1.5 group-hover/preset:grid-rows-[1fr]">
+                  <div className={`overflow-hidden ${CHIP_GRID}`}>
+                    {preset.groups.map((id) => {
+                      const entry = BY_ID.get(id);
+                      const title = entry ? shortTitle(entry) : id;
+                      return (
+                        <span
+                          key={id}
+                          title={title}
+                          className="bg-muted text-muted-foreground truncate rounded px-1.5 py-0.5 text-xs"
+                        >
+                          {title}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
               </button>
             );
           })}
         </div>
+      </div>
+
+      {/* What you picked stays visible however deep the search goes. */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium">Banned ({chosen.length})</h2>
+          {chosen.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => setBanned([])}>
+              Clear
+            </Button>
+          )}
+        </div>
+
+        {chosen.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            Nothing banned yet, so every map shows.
+          </p>
+        ) : (
+          // One column width for every modifier: the game's wording runs from
+          // three words to fifteen, and ragged chips read as a ranking of
+          // something. The title carries the line the chip had to cut.
+          <div className={CHIP_GRID}>
+            {chosen.map((entry) => (
+              <button
+                key={entry.id}
+                onClick={() => toggle(entry.id)}
+                title={`Remove: ${shortTitle(entry)}`}
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/70 flex items-center justify-between gap-1.5 rounded-md border px-2.5 py-1.5 text-left text-sm"
+              >
+                <span className="truncate">{shortTitle(entry)}</span>
+                <X className="size-3.5 shrink-0 opacity-60" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">

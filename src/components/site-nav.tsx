@@ -11,22 +11,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TOOLS, activeTool, swapLeague, toolHref } from "@/lib/nav";
-import { leagueSlug, type League } from "@/lib/ninja";
+import { TOOLS, activeTool, toolHref } from "@/lib/nav";
+import { leagueSlug } from "@/lib/ninja";
 import { EXTERNAL_TOOLS, PINNED_TOOLS } from "@/lib/tools";
 import { cn } from "@/lib/utils";
 
 /** What a tab and the menu beside it wear: part of the bar, not on top of it. */
 const trigger =
   "text-muted-foreground hover:text-foreground hover:bg-secondary/50 data-[state=open]:bg-secondary data-[state=open]:text-foreground flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors outline-none";
-
-/**
- * The league is not a place in the site, it is the setting everything else is
- * read against, so it wears the outlined pill the page uses for its own
- * settings rather than the flat look of the tabs.
- */
-const leagueTrigger =
-  "border-border/80 text-foreground hover:border-foreground/40 hover:bg-secondary/40 data-[state=open]:border-foreground/40 data-[state=open]:bg-secondary/60 flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors outline-none";
 
 /** One line of either menu. Internal entries route, external ones open a tab. */
 type Entry = {
@@ -139,19 +131,11 @@ function HoverMenu({
 /**
  * One bar over every page. The tools of this site come first, then the sites
  * that already do a job better than this one could: the three reached for
- * directly sit in the bar, and More Tools holds the ones you go to with a
- * question, handing the two that care which league you are looking at.
- *
- * The league menu on the right keeps whichever tool is open, so switching
- * league never also switches page.
+ * directly sit in the bar under their own logos, and More Tools holds the ones
+ * you go to with a question, handing the two that care which league you are
+ * looking at.
  */
-export function SiteNav({
-  leagues,
-  league,
-}: {
-  leagues: League[];
-  league: string;
-}) {
+export function SiteNav({ league }: { league: string }) {
   const pathname = usePathname() ?? "";
   const current = activeTool(pathname);
   const slug = leagueSlug(league);
@@ -166,15 +150,8 @@ export function SiteNav({
     narrowOnly: tool.pinned,
   }));
 
-  const leagueEntries: Entry[] = leagues.map((l) => ({
-    key: l.id,
-    label: l.name,
-    href: swapLeague(pathname, leagueSlug(l.id)),
-    current: l.id === league,
-  }));
-
   return (
-    <header className="border-border/60 bg-background/80 sticky top-0 z-50 border-b backdrop-blur">
+    <header className="border-border/60 bg-card/90 sticky top-0 z-50 border-b backdrop-blur">
       <nav className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-6">
         <div className="flex items-center gap-1">
           {TOOLS.map((tool) => (
@@ -223,6 +200,17 @@ export function SiteNav({
               rel="noopener noreferrer"
               className={cn(trigger, "hidden md:flex")}
             >
+              {tool.icon && (
+                // Somebody else's mark, so it is rounded off to sit in the bar
+                // rather than to be their logo on our page.
+                <Image
+                  src={tool.icon}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="size-5 shrink-0 rounded opacity-90"
+                />
+              )}
               {tool.name}
               <ArrowUpRight className="size-3.5 shrink-0 opacity-70" />
             </a>
@@ -233,16 +221,6 @@ export function SiteNav({
             entries={tools}
             align="start"
             width="w-52"
-          />
-        </div>
-
-        <div className="ml-auto">
-          <HoverMenu
-            label={leagues.find((l) => l.id === league)?.name ?? league}
-            entries={leagueEntries}
-            align="end"
-            width="w-56"
-            className={leagueTrigger}
           />
         </div>
       </nav>

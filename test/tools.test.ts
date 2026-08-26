@@ -29,7 +29,10 @@ test("trade carries the league the way Path of Exile spells it", () => {
 
 test("poe.ninja carries the league the way poe.ninja spells it", () => {
   const ninja = toolByName("poe.ninja");
-  assert.equal(ninja.href("Allflame"), "https://poe.ninja/poe1/economy/allflame");
+  assert.equal(
+    ninja.href("Allflame"),
+    "https://poe.ninja/poe1/economy/allflame",
+  );
   assert.equal(
     ninja.href("Hardcore Allflame"),
     "https://poe.ninja/poe1/economy/allflamehc",
@@ -69,6 +72,15 @@ test("the links point where they are supposed to", () => {
 
 test("asking for a tool that is not in the list is a mistake, not undefined", () => {
   assert.throws(() => toolByName("Nonexistent"), /Nonexistent/);
+});
+
+test("the three in the bar carry their own logo, the menu carries none", () => {
+  for (const tool of PINNED_TOOLS) {
+    assert.match(tool.icon ?? "", /^\/[^/].*\.(png|webp)$/, tool.name);
+  }
+  for (const tool of MENU_TOOLS) {
+    assert.equal(tool.icon, undefined, tool.name);
+  }
 });
 
 test("the bar carries the three that get opened on their own", () => {

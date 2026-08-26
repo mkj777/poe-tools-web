@@ -7,6 +7,11 @@ import { leagueSlug } from "./ninja.ts";
  */
 export type ExternalTool = {
   name: string;
+  /**
+   * The tool's own logo, for the three that sit in the bar. Behind the menu a
+   * name is enough, and 20px of somebody's brand is not.
+   */
+  icon?: string;
   /** `league` is the name Path of Exile uses, for example "Hardcore Allflame". */
   href: (league: string) => string;
   /**
@@ -25,6 +30,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "FilterBlade",
     href: fixed("https://www.filterblade.xyz/?game=Poe1"),
+    icon: "/FilterBlade_logo.png",
     pinned: true,
   },
   {
@@ -44,11 +50,13 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "Awakened PoE Trade",
     href: fixed("https://snosme.github.io/awakened-poe-trade/download"),
+    icon: "/awakened_poe_trade_logo.png",
     pinned: true,
   },
   {
     name: "Path of Building",
     href: fixed("https://pathofbuilding.community/"),
+    icon: "/pathofbuilding_logo.png",
     pinned: true,
   },
 ];

@@ -9,12 +9,12 @@ export default async function LeagueLayout({
   children,
   params,
 }: LayoutProps<"/[league]">) {
-  const { leagues, league } = await resolveLeague((await params).league);
+  const { league } = await resolveLeague((await params).league);
   if (!league) notFound();
 
   return (
     <>
-      <SiteNav leagues={leagues} league={league} />
+      <SiteNav league={league} />
       {children}
     </>
   );

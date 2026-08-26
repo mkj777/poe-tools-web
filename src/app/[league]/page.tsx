@@ -10,6 +10,7 @@ import { loadBeasts } from "@/lib/beasts";
 import { resolveLeague } from "@/lib/league";
 import { BeastTable } from "@/components/beast-table";
 import { ScarabPrices } from "@/components/scarab-prices";
+import { LeagueSelect } from "@/components/league-select";
 import { PageFrame } from "@/components/page-frame";
 
 export const metadata = {
@@ -26,7 +27,7 @@ export default async function Page({ params }: PageProps<"/[league]">) {
   // where it was always going to run for any threshold that is not a preset.
   await connection();
 
-  const { league } = await resolveLeague((await params).league);
+  const { leagues, league } = await resolveLeague((await params).league);
   if (!league) notFound();
 
   const [beasts, scarabs, currency] = await Promise.all([
@@ -44,20 +45,20 @@ export default async function Page({ params }: PageProps<"/[league]">) {
   return (
     <PageFrame
       aside={
-        <ScarabPrices
-          scarabs={scarabs}
-          divine={divine}
-          mirror={mirrorInDivine}
-          mirrorChaos={mirror}
-        />
+        <div className="flex flex-col gap-2">
+          {/* The league the numbers under it are read from. */}
+          <LeagueSelect leagues={leagues} league={league} />
+          <ScarabPrices
+            scarabs={scarabs}
+            divine={divine}
+            mirror={mirrorInDivine}
+            mirrorChaos={mirror}
+          />
+        </div>
       }
     >
       <main className="mx-auto w-full max-w-6xl px-6 pt-6 pb-12">
-        <BeastTable
-          beasts={beasts}
-          league={league}
-          fetchedAt={fetchedAt}
-        />
+        <BeastTable beasts={beasts} league={league} fetchedAt={fetchedAt} />
       </main>
     </PageFrame>
   );
