@@ -5,12 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import {
-  ArrowUpRight,
-  ChevronRight,
-  Landmark,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowUpRight, ChevronRight } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,26 +35,13 @@ import {
   type SidebarGroup as Group,
 } from "@/lib/nav";
 import { leagueSlug, type League } from "@/lib/ninja";
-import type { GlyphName, ToolIcon } from "@/lib/tools";
+import type { ToolIcon } from "@/lib/tools";
 import { cn } from "@/lib/utils";
-
-/**
- * The stand-ins, for an entry with no icon of its own yet. Each one is a gap in
- * `public/` rather than a choice: an entry that has an asset wears it.
- */
-const GLYPHS: Record<GlyphName, LucideIcon> = {
-  antiquary: Landmark,
-};
 
 /** What the image optimiser can actually read. A favicon is not on the list. */
 const OPTIMISED = /\.(png|jpe?g|webp|avif)$/i;
 
 function Icon({ icon }: { icon: ToolIcon }) {
-  if ("glyph" in icon) {
-    const Glyph = GLYPHS[icon.glyph];
-    return <Glyph className="text-muted-foreground" />;
-  }
-
   return (
     <Image
       src={icon.src}

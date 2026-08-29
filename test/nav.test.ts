@@ -140,12 +140,18 @@ test("every icon names a file that is really in public", () => {
   }
 });
 
-test("the sidebar opens on what a session opens with", () => {
+test("the sidebar opens on what a session is spent in", () => {
   const first = SIDEBAR[0];
   assert.equal(first.id, "essentials");
   assert.deepEqual(
     first.entries.map((e) => (e.kind === "page" ? e.page.label : e.link.name)),
-    ["Path of Building", "FilterBlade", "Awakened PoE Trade"],
+    [
+      "Trade",
+      "Path of Building",
+      "FilterBlade",
+      "Awakened PoE Trade",
+      "PoE Regex",
+    ],
   );
 });
 
@@ -158,29 +164,34 @@ test("the pages built here come next, under their own heading", () => {
   );
 });
 
-test("what you reach for is open, the rest is folded away", () => {
+test("what you reach for is open, the rest is one folded heading", () => {
   assert.deepEqual(
     SIDEBAR.map((g) => [g.id, Boolean(g.folded)]),
     [
       ["essentials", false],
       ["site", false],
-      ["economy", true],
       ["more", true],
     ],
   );
 
-  // Six entries on arrival rather than fifteen.
+  // Eight entries on arrival rather than fifteen.
   const open = SIDEBAR.filter((g) => !g.folded).flatMap((g) => g.entries);
-  assert.equal(open.length, 6);
+  assert.equal(open.length, 8);
 });
 
-test("poe.ninja is one of the economy links, not one of the three", () => {
-  const economy = SIDEBAR.find((g) => g.id === "economy");
+test("the rest is one list, in the order it is declared", () => {
+  const more = SIDEBAR.find((g) => g.id === "more");
   assert.deepEqual(
-    economy?.entries.map((e) =>
-      e.kind === "link" ? e.link.name : e.page.slug,
-    ),
-    ["poe.ninja", "Trade", "Wealthy Exile", "PoE Antiquary", "Disenchanting"],
+    more?.entries.map((e) => (e.kind === "link" ? e.link.name : e.page.slug)),
+    [
+      "poe.ninja",
+      "Wealthy Exile",
+      "PoE Antiquary",
+      "Disenchanting",
+      "Timeless Jewels",
+      "Cluster Jewels",
+      "PoELab",
+    ],
   );
 });
 

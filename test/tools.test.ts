@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { EXTERNAL_TOOLS, WITHOUT_ICON, toolByName } from "../src/lib/tools.ts";
+import { EXTERNAL_TOOLS, toolByName } from "../src/lib/tools.ts";
 
 test("every tool has a name, a blurb and an https link", () => {
   assert.ok(EXTERNAL_TOOLS.length >= 12);
@@ -21,9 +21,8 @@ test("no tool is listed twice", () => {
   assert.equal(new Set(links).size, links.length);
 });
 
-test("an icon is a file in public, and a square mark is rounded off", () => {
+test("every entry wears an icon of its own, and a square one is rounded off", () => {
   for (const tool of EXTERNAL_TOOLS) {
-    if (!("src" in tool.icon)) continue;
     assert.match(tool.icon.src, /^\/[^/]+\.(png|webp|svg|ico)$/, tool.name);
   }
 
@@ -31,28 +30,17 @@ test("an icon is a file in public, and a square mark is rounded off", () => {
   // the column. An item cut out of the game, or the scales drawn on nothing,
   // has no corners to take.
   assert.deepEqual(
-    EXTERNAL_TOOLS.filter((t) => "src" in t.icon && t.icon.rounded).map(
-      (t) => t.name,
-    ),
+    EXTERNAL_TOOLS.filter((t) => t.icon.rounded).map((t) => t.name),
     [
       "Path of Building",
       "FilterBlade",
       "Awakened PoE Trade",
       "poe.ninja",
       "Wealthy Exile",
+      "PoE Antiquary",
       "PoE Regex",
     ],
   );
-});
-
-test("one entry is still waiting for an icon, and it is named", () => {
-  assert.deepEqual(
-    WITHOUT_ICON.map((t) => t.name),
-    ["PoE Antiquary"],
-  );
-  for (const tool of WITHOUT_ICON) {
-    assert.ok("glyph" in tool.icon && tool.icon.glyph.length > 0, tool.name);
-  }
 });
 
 test("poe.ninja is its front page, which is builds as well as prices", () => {

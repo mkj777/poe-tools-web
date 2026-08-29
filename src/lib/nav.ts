@@ -115,18 +115,20 @@ const link = (name: string): SidebarEntry => ({
 
 /**
  * The order the sidebar reads in, which is not the order either list is
- * declared in. First are the three that run beside the client every session,
- * whoever hosts them. Then the pages built here. The rest is folded away under
- * the question it answers, and unfolds on its heading.
+ * declared in. First is what a session is spent in: the trade site, then the
+ * three that run beside the client. Then the pages built here. Everything else
+ * is folded away behind one heading and unfolds on it.
  */
 export const SIDEBAR: readonly SidebarGroup[] = [
   {
     id: "essentials",
     label: "Essentials",
     entries: [
+      link("Trade"),
       link("Path of Building"),
       link("FilterBlade"),
       link("Awakened PoE Trade"),
+      link("PoE Regex"),
     ],
   },
   {
@@ -135,28 +137,18 @@ export const SIDEBAR: readonly SidebarGroup[] = [
     entries: [page("beasts"), page("maps"), page("leveling")],
   },
   {
-    id: "economy",
-    label: "Economy",
-    folded: true,
-    entries: [
-      link("poe.ninja"),
-      link("Trade"),
-      link("Wealthy Exile"),
-      link("PoE Antiquary"),
-      link("Disenchanting"),
-    ],
-  },
-  {
-    // Two jewel calculators, a regex generator and the day's labyrinth. Four
-    // entries that are each reached for now and then, which is one heading
-    // rather than two of two.
+    // Everything else, under one heading rather than sorted into three that
+    // each held two or three entries. A folded group is a line either way.
     id: "more",
     label: "More tools",
     folded: true,
     entries: [
+      link("poe.ninja"),
+      link("Wealthy Exile"),
+      link("PoE Antiquary"),
+      link("Disenchanting"),
       link("Timeless Jewels"),
       link("Cluster Jewels"),
-      link("PoE Regex"),
       link("PoELab"),
     ],
   },

@@ -7,23 +7,20 @@ than copied.
 ## The sidebar
 
 The sidebar is the point of the site now, so it is a directory rather than a
-menu. What opens first is what a session opens with, whoever hosts it: Path of
-Building, FilterBlade and Awakened PoE Trade. The pages built here come under
-their own heading, and the rest is folded away under the question it answers, so
-the column arrives at six entries rather than fifteen and unfolds on a heading.
+menu. What opens first is what a session is spent in, whoever hosts it: the
+trade site, then the three that run beside the client, then the regex tools. The
+pages built here come under their own heading, and everything else is folded
+away behind one, so the column arrives at eight entries rather than fifteen.
 Every entry carries a few words saying what it is, because a name alone is only
 useful once you already know it.
 
 Trade and the disenchanting calculator are handed the league you are looking at,
 so the link lands where you already are.
 
-An entry wears the item out of the game, or the tool's own mark. Whatever has no
-asset yet is on a lucide stand-in, and `WITHOUT_ICON` in `src/lib/tools.ts` is
-the list of those, asserted by a test so the gap stays visible rather than
-becoming the design. One entry is on one today. A second test reads `public/`
-and fails on an icon that names a file which is not there, or is there under
-another capitalisation, which the machine this is written on would not notice
-and the one that serves it would.
+An entry wears the item out of the game, or the tool's own mark, and every entry
+has one. A test reads `public/` and fails on an icon naming a file which is not
+there, or is there under another capitalisation, which the machine this is
+written on would not notice and the one that serves it would.
 
 ## The URLs
 

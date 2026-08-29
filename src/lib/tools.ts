@@ -5,14 +5,10 @@ import { leagueSlug } from "./ninja.ts";
  * own mark, because that is what a player recognises before they have read the
  * label.
  *
- * `glyph` is the stand-in for an entry no asset exists for yet. It names a
- * lucide icon and the sidebar owns the table from that name to the component,
- * which is what keeps this file plain TypeScript. One entry is still on one.
+ * Every entry has one now. A file in `public/`, and `rounded` for a square mark
+ * that would otherwise sit in the column as a hard tile.
  */
-export type ToolIcon =
-  { src: string; rounded?: boolean } | { glyph: GlyphName };
-
-export type GlyphName = "antiquary";
+export type ToolIcon = { src: string; rounded?: boolean };
 
 /**
  * A tool that lives somewhere else. This site does not try to rebuild what
@@ -77,7 +73,9 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "PoE Antiquary",
     blurb: "Prices of past leagues",
-    icon: { glyph: "antiquary" },
+    // The .ico it arrived as carries an empty 256px frame beside the real
+    // 32px one, and a browser reaches for the larger. This is the 32.
+    icon: { src: "/antiquary.png", rounded: true },
     href: fixed("https://poe-antiquary.xyz/"),
   },
   {
@@ -102,7 +100,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   },
   {
     name: "PoE Regex",
-    blurb: "Regex for everything you need",
+    blurb: "Regex for everything",
     icon: { src: "/poere.ico", rounded: true },
     href: fixed("https://poe.re"),
   },
@@ -119,6 +117,3 @@ export function toolByName(name: string) {
   if (!tool) throw new Error(`No external tool named ${name}`);
   return tool;
 }
-
-/** The entries still wearing a stand-in rather than an icon of their own. */
-export const WITHOUT_ICON = EXTERNAL_TOOLS.filter((t) => "glyph" in t.icon);
