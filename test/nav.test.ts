@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readdirSync } from "node:fs";
 import test from "node:test";
 import {
   HOME,
@@ -127,6 +128,16 @@ test("swapLeague leaves a page that has no league alone", () => {
 test("toolBySlug answers with nothing for a slug that is no tool", () => {
   assert.equal(toolBySlug("nonsense"), undefined);
   assert.equal(toolBySlug(""), undefined);
+});
+
+test("every icon names a file that is really in public", () => {
+  // Exact case: what serves these is case sensitive, and this machine is not.
+  const files = new Set(readdirSync(new URL("../public/", import.meta.url)));
+  for (const entry of SIDEBAR_ENTRIES) {
+    const icon = entry.kind === "page" ? entry.page.icon : entry.link.icon;
+    if (!("src" in icon)) continue;
+    assert.ok(files.has(icon.src.slice(1)), `public${icon.src} is missing`);
+  }
 });
 
 test("the sidebar opens on what a session opens with", () => {

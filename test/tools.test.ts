@@ -21,46 +21,38 @@ test("no tool is listed twice", () => {
   assert.equal(new Set(links).size, links.length);
 });
 
-test("the tools with a mark of their own wear it", () => {
-  for (const name of [
-    "Path of Building",
-    "FilterBlade",
-    "Awakened PoE Trade",
-    "Trade",
-  ]) {
-    const { icon } = toolByName(name);
-    assert.ok("src" in icon, `${name} is on a stand-in`);
-    if ("src" in icon) {
-      assert.match(icon.src, /^\/[^/].*\.(png|webp|svg)$/, name);
-      // A square logo is rounded off to sit in the column. The scales are
-      // drawn on nothing, so they are not.
-      assert.equal(icon.rounded, name !== "Trade" ? true : undefined, name);
-    }
+test("an icon is a file in public, and a square mark is rounded off", () => {
+  for (const tool of EXTERNAL_TOOLS) {
+    if (!("src" in tool.icon)) continue;
+    assert.match(tool.icon.src, /^\/[^/]+\.(png|webp|svg|ico)$/, tool.name);
   }
-});
 
-test("the entries still waiting for an icon are named, not forgotten", () => {
+  // A logo is a square somebody else drew, so its corners come off to sit in
+  // the column. An item cut out of the game, or the scales drawn on nothing,
+  // has no corners to take.
   assert.deepEqual(
-    WITHOUT_ICON.map((t) => t.name),
+    EXTERNAL_TOOLS.filter((t) => "src" in t.icon && t.icon.rounded).map(
+      (t) => t.name,
+    ),
     [
+      "Path of Building",
+      "FilterBlade",
+      "Awakened PoE Trade",
       "poe.ninja",
       "Wealthy Exile",
-      "PoE Antiquary",
-      "Disenchanting",
-      "Timeless Jewels",
-      "Cluster Jewels",
       "PoE Regex",
-      "PoELab",
     ],
   );
 });
 
-test("every stand-in names a glyph, and no two entries share one", () => {
-  const glyphs = WITHOUT_ICON.map((t) =>
-    "glyph" in t.icon ? t.icon.glyph : "",
+test("one entry is still waiting for an icon, and it is named", () => {
+  assert.deepEqual(
+    WITHOUT_ICON.map((t) => t.name),
+    ["PoE Antiquary"],
   );
-  assert.ok(glyphs.every(Boolean));
-  assert.equal(new Set(glyphs).size, glyphs.length);
+  for (const tool of WITHOUT_ICON) {
+    assert.ok("glyph" in tool.icon && tool.icon.glyph.length > 0, tool.name);
+  }
 });
 
 test("poe.ninja is its front page, which is builds as well as prices", () => {

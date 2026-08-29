@@ -8,14 +8,7 @@ import { motion, useReducedMotion } from "motion/react";
 import {
   ArrowUpRight,
   ChevronRight,
-  Footprints,
-  Gem,
   Landmark,
-  Recycle,
-  Regex,
-  TrendingUp,
-  Wallet,
-  Waypoints,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -51,19 +44,15 @@ import type { GlyphName, ToolIcon } from "@/lib/tools";
 import { cn } from "@/lib/utils";
 
 /**
- * The stand-ins, for the entries with no icon of their own yet. Each one is a
- * gap in `public/` rather than a choice: an entry that has an asset wears it.
+ * The stand-ins, for an entry with no icon of its own yet. Each one is a gap in
+ * `public/` rather than a choice: an entry that has an asset wears it.
  */
 const GLYPHS: Record<GlyphName, LucideIcon> = {
-  ninja: TrendingUp,
-  wealth: Wallet,
   antiquary: Landmark,
-  disenchant: Recycle,
-  timeless: Gem,
-  cluster: Waypoints,
-  regex: Regex,
-  lab: Footprints,
 };
+
+/** What the image optimiser can actually read. A favicon is not on the list. */
+const OPTIMISED = /\.(png|jpe?g|webp|avif)$/i;
 
 function Icon({ icon }: { icon: ToolIcon }) {
   if ("glyph" in icon) {
@@ -77,9 +66,9 @@ function Icon({ icon }: { icon: ToolIcon }) {
       alt=""
       width={40}
       height={40}
-      // An SVG is already the size it needs to be, and the optimiser will not
-      // serve one anyway without being told to trust it.
-      unoptimized={icon.src.endsWith(".svg")}
+      // The optimiser reads none of these, and an icon that is already the
+      // size of an icon has nothing to gain from it.
+      unoptimized={!OPTIMISED.test(icon.src)}
       // The label names the entry, so the icon is decoration. A square logo is
       // rounded off to sit in the column; an item cut out of the game is not.
       className={cn(

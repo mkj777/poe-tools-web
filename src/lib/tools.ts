@@ -5,23 +5,14 @@ import { leagueSlug } from "./ninja.ts";
  * own mark, because that is what a player recognises before they have read the
  * label.
  *
- * `glyph` is the stand-in for the entries no asset exists for yet. It names a
+ * `glyph` is the stand-in for an entry no asset exists for yet. It names a
  * lucide icon and the sidebar owns the table from that name to the component,
- * which is what keeps this file plain TypeScript. Every glyph here is a gap
- * waiting for an icon, not a decision.
+ * which is what keeps this file plain TypeScript. One entry is still on one.
  */
 export type ToolIcon =
   { src: string; rounded?: boolean } | { glyph: GlyphName };
 
-export type GlyphName =
-  | "ninja"
-  | "wealth"
-  | "antiquary"
-  | "disenchant"
-  | "timeless"
-  | "cluster"
-  | "regex"
-  | "lab";
+export type GlyphName = "antiquary";
 
 /**
  * A tool that lives somewhere else. This site does not try to rebuild what
@@ -65,7 +56,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "poe.ninja",
     blurb: "Builds and economy",
-    icon: { glyph: "ninja" },
+    icon: { src: "/ninja-logo.webp", rounded: true },
     // The front page, which is both halves of the site. The league path it
     // used to be handed answers with nothing.
     href: fixed("https://poe.ninja"),
@@ -80,7 +71,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "Wealthy Exile",
     blurb: "What your stash is worth",
-    icon: { glyph: "wealth" },
+    icon: { src: "/wealthexile_ico.ico", rounded: true },
     href: fixed("https://wealthyexile.com/"),
   },
   {
@@ -92,7 +83,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "Disenchanting",
     blurb: "Vendor or disenchant",
-    icon: { glyph: "disenchant" },
+    icon: { src: "/Disenchant.png" },
     // Its own paths are leagues, spelled the way poe.ninja spells them.
     href: (league) =>
       `https://poe-disenchant-tool.vercel.app/${leagueSlug(league)}`,
@@ -100,25 +91,25 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "Timeless Jewels",
     blurb: "Seeds by passive socket",
-    icon: { glyph: "timeless" },
+    icon: { src: "/Timeless_Jewel_inventory_icon.png" },
     href: fixed("https://vilsol.github.io/timeless-jewels"),
   },
   {
     name: "Cluster Jewels",
     blurb: "Roll the notables you want",
-    icon: { glyph: "cluster" },
+    icon: { src: "/Medium_Cluster_Jewel_inventory_icon.png" },
     href: fixed("https://theodorejbieber.github.io/PoEClusterJewelCalculator/"),
   },
   {
     name: "PoE Regex",
     blurb: "Regexes for everything you need",
-    icon: { glyph: "regex" },
+    icon: { src: "/poere.ico", rounded: true },
     href: fixed("https://poe.re"),
   },
   {
     name: "PoELab",
     blurb: "Today's labyrinth maps",
-    icon: { glyph: "lab" },
+    icon: { src: "/Labyrinth.webp" },
     href: fixed("https://www.poelab.com/"),
   },
 ];

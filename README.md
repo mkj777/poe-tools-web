@@ -17,10 +17,13 @@ useful once you already know it.
 Trade and the disenchanting calculator are handed the league you are looking at,
 so the link lands where you already are.
 
-An entry wears the item out of the game, or the tool's own mark. The ones that
-have no asset yet are on a lucide stand-in, and `WITHOUT_ICON` in
-`src/lib/tools.ts` is the list of them, asserted by a test so the gap stays
-visible rather than becoming the design.
+An entry wears the item out of the game, or the tool's own mark. Whatever has no
+asset yet is on a lucide stand-in, and `WITHOUT_ICON` in `src/lib/tools.ts` is
+the list of those, asserted by a test so the gap stays visible rather than
+becoming the design. One entry is on one today. A second test reads `public/`
+and fails on an icon that names a file which is not there, or is there under
+another capitalisation, which the machine this is written on would not notice
+and the one that serves it would.
 
 ## The URLs
 
