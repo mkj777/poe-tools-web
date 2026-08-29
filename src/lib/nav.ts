@@ -28,15 +28,15 @@ export type SiteTool = {
 export const SITE_TOOLS: readonly SiteTool[] = [
   {
     slug: "beasts",
-    label: "Beast Prices",
-    blurb: "Every beast on the market",
+    label: "Beast Regex",
+    blurb: "Sell Beasts efficiently",
     icon: { src: "/Imprinted_Bestiary_Orb_inventory_icon.png" },
     league: true,
   },
   {
     slug: "maps",
     label: "Map Regex",
-    blurb: "Stash search for maps",
+    blurb: "Filter maps you don't want to run",
     icon: { src: "/Nightmare_Map_(Curse_of_the_Allflame)_inventory_icon.png" },
     league: true,
   },

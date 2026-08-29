@@ -7,8 +7,8 @@ test("every tool has a name, a blurb and an https link", () => {
   for (const tool of EXTERNAL_TOOLS) {
     assert.ok(tool.name.length > 0, tool.name);
     assert.ok(tool.blurb.length > 0, tool.name);
-    // Two lines in a 16rem column, same as the tools of this site.
-    assert.ok(tool.blurb.length <= 28, `${tool.name}: ${tool.blurb}`);
+    // Two lines in the column, same as the tools of this site.
+    assert.ok(tool.blurb.length <= 40, `${tool.name}: ${tool.blurb}`);
     assert.ok(!tool.blurb.endsWith("."), tool.name);
     assert.match(tool.href("Allflame"), /^https:\/\//, tool.name);
   }

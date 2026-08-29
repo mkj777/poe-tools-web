@@ -525,7 +525,7 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
         >
           <div className="space-y-2">
             <p>
-              <span className="font-medium">Beast Prices.</span> Every beast,
+              <span className="font-medium">Beast Regex.</span> Every beast,
               priced by poe.ninja where it has data and by the trade site
               everywhere else. Pick a threshold and a mode, then paste each
               search into the Bestiary in turn.

@@ -30,8 +30,8 @@ test("the site hosts three tools", () => {
 test("every tool says what it is, briefly", () => {
   for (const tool of SITE_TOOLS) {
     assert.ok(tool.label.length > 0, tool.slug);
-    // Two lines in a 16rem column: anything longer is cut off mid word.
-    assert.ok(tool.blurb.length <= 28, `${tool.slug}: ${tool.blurb}`);
+    // The blurb may take a second line in the column, and not a third.
+    assert.ok(tool.blurb.length <= 40, `${tool.slug}: ${tool.blurb}`);
     assert.ok(!tool.blurb.endsWith("."), tool.slug);
   }
 });

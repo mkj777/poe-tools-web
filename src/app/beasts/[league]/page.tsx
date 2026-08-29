@@ -14,7 +14,7 @@ import { LeagueSelect } from "@/components/league-select";
 import { PageFrame, PageHeader } from "@/components/page-frame";
 
 export const metadata = {
-  title: "Beast Prices",
+  title: "Beast Regex",
   description: "Every Path of Exile 1 beast on the market, sortable by value.",
 };
 
@@ -47,7 +47,7 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
       asideFirst
       header={
         <PageHeader
-          title="Beast Prices"
+          title="Beast Regex"
           description="Every beast on the market, and the Bestiary search that picks the ones worth the trip."
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />

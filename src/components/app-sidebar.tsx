@@ -89,12 +89,18 @@ function Icon({ icon }: { icon: ToolIcon }) {
   );
 }
 
-/** Label over blurb. Both are gone once the sidebar is down to its icons. */
+/**
+ * Label over blurb. Both are gone once the sidebar is down to its icons.
+ *
+ * The blurb takes a second line rather than an ellipsis: a sentence cut short
+ * says less than the name above it already does, and a column of names is not
+ * so tidy that it is worth a lost word.
+ */
 function Label({ label, blurb }: { label: string; blurb: string }) {
   return (
     <span className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
       <span className="truncate font-medium">{label}</span>
-      <span className="text-muted-foreground truncate text-xs font-normal">
+      <span className="text-muted-foreground line-clamp-2 text-xs font-normal">
         {blurb}
       </span>
     </span>
@@ -140,7 +146,13 @@ function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
     return (
       <SidebarMenuItem>
         {on && <ActiveMark />}
-        <SidebarMenuButton asChild size="lg" isActive={on} tooltip={tool.label}>
+        <SidebarMenuButton
+          asChild
+          size="lg"
+          isActive={on}
+          tooltip={tool.label}
+          className="h-auto min-h-12 py-1.5"
+        >
           <Link href={toolHref(tool, slug)} onClick={onNavigate}>
             <Icon icon={tool.icon} />
             <Label label={tool.label} blurb={tool.blurb} />
@@ -157,7 +169,7 @@ function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
         asChild
         size="lg"
         tooltip={tool.name}
-        className="group/external"
+        className="group/external h-auto min-h-12 py-1.5"
       >
         <a
           href={tool.href(league)}

@@ -47,13 +47,13 @@ const fixed = (url: string) => () => url;
 export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "Path of Building",
-    blurb: "Plan a build offline",
+    blurb: "Test builds and crunch the numbers",
     icon: { src: "/pathofbuilding_logo.png", rounded: true },
     href: fixed("https://pathofbuilding.community/"),
   },
   {
     name: "FilterBlade",
-    blurb: "Write a loot filter",
+    blurb: "Loot Filters",
     icon: { src: "/FilterBlade_logo.png", rounded: true },
     href: fixed("https://www.filterblade.xyz/?game=Poe1"),
   },
@@ -73,7 +73,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   },
   {
     name: "Trade",
-    blurb: "Official trade search",
+    blurb: "Official trading market",
     icon: { glyph: "trade" },
     href: (league) =>
       `https://www.pathofexile.com/trade/search/${encodeURIComponent(league)}`,
@@ -112,7 +112,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   },
   {
     name: "PoE Regex",
-    blurb: "Regex for every stash tab",
+    blurb: "Regexes for everything you need",
     icon: { glyph: "regex" },
     href: fixed("https://poe.re"),
   },
