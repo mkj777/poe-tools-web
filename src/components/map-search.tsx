@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Copy, Search, X } from "lucide-react";
+import { Check, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CopyGlyph } from "@/components/copy-glyph";
 import { Input } from "@/components/ui/input";
 import {
   COMMON_GROUP_IDS,
@@ -140,12 +141,13 @@ export function MapSearch() {
           <code className="bg-muted flex min-h-10 flex-1 items-center rounded-md px-3 py-2 font-mono text-sm break-all">
             {plan.search || "Pick something to ban."}
           </code>
-          <Button onClick={copy} disabled={!plan.search} size="icon">
-            {copied ? (
-              <Check className="size-4" />
-            ) : (
-              <Copy className="size-4" />
-            )}
+          <Button
+            onClick={copy}
+            disabled={!plan.search}
+            size="icon"
+            aria-label={copied ? "Copied" : "Copy the regex"}
+          >
+            <CopyGlyph copied={copied} />
           </Button>
         </div>
         {/* Magic maps cannot be told from rare ones, so this only reaches the
@@ -238,8 +240,12 @@ export function MapSearch() {
                     about one of them, so the list unrolls under the pointer
                     rather than turning both cards into a wall of text. A grid
                     row from 0fr to 1fr is the one way to animate to a height
-                    nobody knows in advance. */}
-                <div className="grid grid-rows-[0fr] transition-[grid-template-rows,margin] duration-200 group-hover/preset:mt-1.5 group-hover/preset:grid-rows-[1fr]">
+                    nobody knows in advance.
+
+                    A finger has no pointer to unroll it with, so on a touch
+                    screen the list is simply open: hidden behind a hover, it
+                    would be unreachable there rather than merely tidy. */}
+                <div className="grid grid-rows-[0fr] transition-[grid-template-rows,margin] duration-200 group-hover/preset:mt-1.5 group-hover/preset:grid-rows-[1fr] group-focus-visible/preset:mt-1.5 group-focus-visible/preset:grid-rows-[1fr] pointer-coarse:mt-1.5 pointer-coarse:grid-rows-[1fr]">
                   <div className={`overflow-hidden ${PRESET_CHIP_GRID}`}>
                     {preset.groups.map((id) => {
                       const entry = BY_ID.get(id);

@@ -8,7 +8,6 @@ import {
   Check,
   ChevronDown,
   ChevronsUpDown,
-  Copy,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -28,15 +27,12 @@ import {
   useBestiaryPattern,
   type PatternState,
 } from "@/lib/use-bestiary-pattern";
-import {
-  BAND_MIN,
-  PRESET_THRESHOLDS,
-  inBand,
-} from "@/lib/presets";
+import { BAND_MIN, PRESET_THRESHOLDS, inBand } from "@/lib/presets";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { num } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { CopyGlyph } from "@/components/copy-glyph";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -173,7 +169,7 @@ function StepRow({
         className="h-11 font-mono text-sm"
       />
       <Button variant="secondary" onClick={copy} className="shrink-0">
-        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+        <CopyGlyph copied={copied} />
         {copied ? "Copied" : "Copy"}
       </Button>
     </div>
@@ -754,11 +750,7 @@ export function BeastTable({
         </div>
       </div>
 
-      <BestiaryRegex
-        beasts={found}
-        threshold={threshold}
-        mode={mode}
-      />
+      <BestiaryRegex beasts={found} threshold={threshold} mode={mode} />
 
       <div className="overflow-hidden rounded-xl border">
         <Table>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Check, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +14,16 @@ import { swapLeague } from "@/lib/nav";
 import { leagueSlug, type League } from "@/lib/ninja";
 
 /**
- * Which league the prices under it are read from. It sits here rather than in
- * the bar because it is not a place in the site and not a setting every page
- * has: the map regex is the same in every league, and so is the leveling app.
+ * Which league the prices on this page are read from.
  *
- * The entries are links, so a switch is a navigation to a page that is already
- * built rather than a state change nothing was rendered for.
+ * It sits on the page rather than in the chrome, because it is not a setting
+ * the site has: the map mods are the same in every league, the leveling app has
+ * never heard of one, and the tools still to come will each know for
+ * themselves. A page that reads prices carries this beside them, and nothing
+ * else has to pretend to have a league.
+ *
+ * The entries are links, so switching is a navigation to a page that already
+ * exists rather than a state change nothing was rendered for.
  */
 export function LeagueSelect({
   leagues,
@@ -32,11 +37,17 @@ export function LeagueSelect({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="bg-card hover:bg-secondary/40 data-[state=open]:bg-secondary/40 flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors outline-none">
-        {current}
-        <ChevronDown className="text-muted-foreground size-3.5 shrink-0" />
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          className="bg-card min-w-40 justify-between font-medium"
+        >
+          <span className="truncate">{current}</span>
+          <ChevronDown className="text-muted-foreground size-3.5 shrink-0" />
+          <span className="sr-only">Change league</span>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
+      <DropdownMenuContent align="end" className="w-56">
         {leagues.map((l) => (
           <DropdownMenuItem key={l.id} asChild>
             <Link

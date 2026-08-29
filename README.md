@@ -1,24 +1,46 @@
-# PoE Tools
+# Path of Tools
 
-Every Path of Exile 1 beast currently on the market, sortable by value, plus a
-generated Bestiary search pattern for the ones worth farming, and a menu that
-points at the tools which already do the rest of the job.
+One place to reach every Path of Exile tool. Beast prices and the map regex are
+built here; everything else worth having already exists and is pointed at rather
+than copied.
 
-## The Tools menu
+## The sidebar
 
-Beast prices are the only thing this site hosts. Everything else worth having
-already exists and is better than a copy of it would be, so the bar links out
-instead of pretending otherwise: FilterBlade for loot filters, Wealthy Exile for
-stash wealth, the official trade site, poe.ninja, Awakened PoE Trade for in game
-price checks, and Path of Building. Trade and poe.ninja are handed the league
-you are looking at, so the link lands where you already are.
+The sidebar is the point of the site now, so it is a directory rather than a
+menu: this site's three tools at the top, then twelve others grouped by the
+question you arrived with. Economy is what things cost, Planning is what to
+build, In game is what to run beside the client. Every entry carries a few words
+saying what it is, because a name alone is only useful once you already know it.
 
-## The Leveling tab
+Trade, poe.ninja and the disenchanting calculator are handed the league you are
+looking at, so the link lands where you already are. The glyphs are all lucide:
+a column that is meant to be scanned cannot be a wall of somebody else's
+branding, and only three of the twelve have a logo to give anyway.
 
-The one exception to that rule is
-[PoE Leveling Guide](https://github.com/mkj777/poe-leveling-app), because it is
-ours: an overlay that puts the next leveling step in the game window. The tab is
-a download and three steps, nothing the app explains better itself.
+## The URLs
+
+Every URL used to begin with a league, back when the site was one tool with a
+league picker over it. That does not survive more tools: the map mods are the
+same in every league and the leveling app has never heard of one, so a league in
+their path was a fiction.
+
+```
+/beasts/<league>              the beasts, and the Bestiary search for them
+/beasts/<league>/simulation   the same beasts in a mock Bestiary window
+/maps/<league>                the map regex, and what a map costs to set up
+/leveling                     the overlay, which carries no league at all
+```
+
+The league is picked on the page, beside the prices it belongs to, and the tools
+still to come each decide for themselves whether they have one. The old
+league-first URLs redirect to where their pages live now.
+
+## The Leveling page
+
+The one tool here that is ours rather than somebody else's is
+[PoE Leveling Guide](https://github.com/mkj777/poe-leveling-app): an overlay
+that puts the next leveling step in the game window. The page is a download and
+three steps, nothing the app explains better itself.
 
 Which release it hands out lives in `src/lib/leveling-app.ts`: one constant,
 which both the installer and the portable zip are built from, so a new version
@@ -197,7 +219,7 @@ theories, is written up in [docs/bestiary-search.md](docs/bestiary-search.md).
 
 ### Trying a pattern without the game
 
-`/<league>/simulation` is that model made visible: every beast with a listing, the lines
+`/beasts/<league>/simulation` is that model made visible: every beast with a listing, the lines
 the search reads, and a field to paste a pattern into. What comes back is what
 the Bestiary would show — except each tile carries the beast's price and the
 fragment that matched it, so a trash pattern that turns up something expensive
@@ -248,16 +270,19 @@ crosses a preset far more rarely, so most refreshes cost nothing.
 ### Nothing renders per request
 
 Every visitor sees the same page and poe.ninja recomputes every fifteen minutes,
-so there is nothing to render per request. The league lives in the **path**, not
-in a query string — `/allflame`, `/allflame/simulation` — which is what lets the
-pages be prerendered:
+so there is nothing to render per request. A league lives in the **path** of the
+tools that have one, not in a query string, which is what lets the pages be
+prerendered:
 
 ```
-○ /                        15m    (redirects to the current league)
-● /allflame                15m
-● /allflame/simulation     15m
-● /standard, /standard/simulation, /hardcore, /allflamehc …
-ƒ /api/refresh-prices             (the cron, the only dynamic route)
+○ /                                 15m   (redirects to the current league)
+○ /maps, /beasts                    15m   (the tool without a league picks one)
+● /maps/allflame                    15m
+● /beasts/allflame/simulation       15m
+● /standard, /hardcore, /allflamehc …
+○ /leveling                         15m   (no league, one page, built once)
+ƒ /beasts/[league]                        (rendered per visit, for live prices)
+ƒ /api/refresh-prices                     (the cron)
 ```
 
 `export const revalidate = 900` plus `generateStaticParams` gives ISR: the HTML
@@ -294,7 +319,14 @@ warned about.
 
 ## Stack
 
-Next.js 16 (App Router), React 19, Tailwind v4, shadcn/ui, TypeScript.
+Next.js 16 (App Router), React 19, Tailwind v4, shadcn/ui, lucide, motion,
+TypeScript.
+
+Every control on the page is a shadcn component, so the theme reaches all of
+them at once. Motion is used where an animation carries something and nowhere
+else: the bar beside the sidebar entry you are on travels to the entry you pick,
+and the leveling page arrives top to bottom. Both stop dead for a reader who has
+asked their system for less motion.
 
 The palette is "Ash & Marble" out of the Claude Design mockup: four steps of one
 cold grey, with the lightest of them as the accent, so nothing on the page

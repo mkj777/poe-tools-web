@@ -1,64 +1,94 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 /**
- * The logo fills the whole left gutter, so it ends exactly where the heading
- * starts. `72rem` and `1.5rem` are the `max-w-6xl` and `px-6` every page's
- * `<main>` uses, so the two stay aligned by arithmetic rather than by eye.
+ * The shape every page has under the sidebar: one column of content, and an
+ * optional rail beside it for the numbers a page is read against rather than
+ * read for.
  *
- * The `9rem` floor is what keeps the logo readable once the gutter runs out.
- */
-const GUTTER = { width: "max(9rem, calc((100% - 72rem) / 2 + 1.5rem))" };
-
-/**
- * The window corners every page shares: the logo on the left, and whatever the
- * page wants on the right.
- *
- * From 1480px up the gutter is at least as wide as the logo's floor, so the row
- * leaves the flow and sits beside the page instead of pushing it down. Narrower
- * than that it would overlap the content, so there it stays an ordinary row
- * above it.
+ * The rail only becomes a column at 1400px. The sidebar has already taken 17rem
+ * of the window by then, so the usual 1280px would buy the rail its column out
+ * of the content's. Below that it is an ordinary block, over or under the
+ * content depending on which of the two you came for.
  */
 export function PageFrame({
   children,
-  belowLogo,
   aside,
+  asideFirst = false,
 }: {
   children: ReactNode;
-  /** Sits under the logo, in the same gutter. */
-  belowLogo?: ReactNode;
-  /** Fills the right gutter. */
   aside?: ReactNode;
+  /** Puts the rail over the content on a narrow window instead of under it. */
+  asideFirst?: boolean;
 }) {
   return (
-    <div className="relative">
-      {/* Once absolute the row spans the full width, so it would sit on top of
-          the controls below. Only its columns take clicks. */}
-      <div className="pointer-events-none flex items-start justify-between gap-6 pt-6 min-[1480px]:absolute min-[1480px]:inset-x-0 min-[1480px]:top-0">
-        {/* Padding rather than a width, so the logo still ends where the
-            heading starts and only stops short of the gutter's own edges. */}
-        <div className="pointer-events-auto shrink-0 px-8" style={GUTTER}>
-          <Image
-            src="/poe_logo.png"
-            alt="Path of Exile"
-            width={800}
-            height={578}
-            priority
-            className="h-auto w-full"
-          />
-          {belowLogo}
-        </div>
+    <div className="mx-auto w-full max-w-[88rem] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-6 min-[1400px]:flex-row min-[1400px]:items-start min-[1400px]:gap-8">
+        <div className="min-w-0 flex-1">{children}</div>
 
-        {/* Same width as the logo's gutter, so what goes here stays clear of
-            the content column instead of covering its top right. */}
         {aside && (
-          <div className="pointer-events-auto shrink-0 px-4" style={GUTTER}>
+          <aside
+            className={cn(
+              // Sticky, so the numbers stay beside a table that is longer than
+              // the window, and scrolling inside itself when the panel is the
+              // long one, so its own bottom never becomes unreachable.
+              "w-full shrink-0 min-[1400px]:sticky min-[1400px]:top-6 min-[1400px]:order-none min-[1400px]:max-h-[calc(100dvh-3rem)] min-[1400px]:w-72 min-[1400px]:overflow-y-auto",
+              asideFirst && "order-first",
+            )}
+          >
             {aside}
-          </div>
+          </aside>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * What a page opens with: what it is on the left, and whatever it is set to on
+ * the right. The league select is the usual right hand side, which is why it is
+ * per page now: it belongs to the prices under it, not to the site.
+ */
+export function PageHeader({
+  title,
+  titleClassName,
+  description,
+  actions,
+  className,
+}: {
+  title: ReactNode;
+  /** For a page whose heading is a sentence rather than a name. */
+  titleClassName?: string;
+  description?: ReactNode;
+  actions?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <header
+      className={cn(
+        "mb-6 flex flex-wrap items-start justify-between gap-x-6 gap-y-3",
+        className,
+      )}
+    >
+      <div className="min-w-0 space-y-1">
+        <h1
+          className={cn(
+            "text-2xl font-semibold tracking-tight text-balance",
+            titleClassName,
+          )}
+        >
+          {title}
+        </h1>
+        {description && (
+          <p className="text-muted-foreground max-w-2xl text-sm text-pretty">
+            {description}
+          </p>
         )}
       </div>
 
-      {children}
-    </div>
+      {actions && (
+        <div className="flex shrink-0 items-center gap-2">{actions}</div>
+      )}
+    </header>
   );
 }

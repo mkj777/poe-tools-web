@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { Scarab } from "@/lib/ninja";
+import { cn } from "@/lib/utils";
 import { CurrencyIcon, Price } from "@/components/currency";
 
 /** One line of a card: what it is on the left, what it costs under it. */
@@ -31,8 +32,18 @@ function Row({
 }
 
 /** A card is one or more rows, ruled off from each other. */
-function Card({ children }: { children: ReactNode }) {
-  return <div className="bg-card divide-y rounded-xl border">{children}</div>;
+function Card({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("bg-card divide-y rounded-xl border", className)}>
+      {children}
+    </div>
+  );
 }
 
 /**
@@ -64,7 +75,9 @@ export function ScarabPrices({
   const composition = scarabs.map((s) => `${s.run} ${s.name}`).join(" + ");
 
   return (
-    <div className="flex flex-col items-stretch gap-2">
+    /* One column in the rail, and a row of cards when the rail has had to
+       become a block over the table on a narrower window. */
+    <div className="grid items-start gap-2 sm:grid-cols-2 lg:grid-cols-3 min-[1400px]:grid-cols-1">
       {mirror !== undefined && (
         <Card>
           <Row
@@ -105,7 +118,7 @@ export function ScarabPrices({
       )}
 
       {scarabs.length > 0 && (
-        <Card>
+        <Card className="sm:col-span-2 lg:col-span-1">
           {scarabs.map((scarab) => (
             <Row
               key={scarab.id}

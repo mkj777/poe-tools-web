@@ -1,10 +1,13 @@
-import { getLeagues, leagueSlug } from "./ninja";
+import { getLeagues, leagueSlug } from "./ninja.ts";
 
 /**
- * Leagues live in the path rather than in a query string, which is what lets
- * the pages be statically generated and revalidated instead of rendered per
- * request. The slug is the same one poe.ninja uses in its own URLs — one
- * spelling to think about, and `/allflame` here lines up with theirs.
+ * A league lives in the path of the tools that read prices, rather than in a
+ * query string, which is what lets those pages be statically generated and
+ * revalidated instead of rendered per request. The tools that read no prices
+ * carry no league at all.
+ *
+ * The slug is the one poe.ninja uses in its own URLs: one spelling to think
+ * about, and `/beasts/allflame` here lines up with theirs.
  */
 export async function resolveLeague(slug: string) {
   const leagues = await getLeagues();

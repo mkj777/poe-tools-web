@@ -1,6 +1,6 @@
-import { getAllBeastNames, getBeasts, type Beast } from "./ninja";
-import { getTradePrices } from "./trade-prices";
-import { rarityOf } from "./beast-rarity";
+import { getAllBeastNames, getBeasts, type Beast } from "./ninja.ts";
+import { getTradePrices } from "./trade-prices.ts";
+import { rarityOf } from "./beast-rarity.ts";
 
 /**
  * Every beast for a league, priced wherever a price exists.
