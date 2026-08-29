@@ -30,6 +30,7 @@ same in every league and the leveling app has never heard of one, so a league in
 their path was a fiction.
 
 ```
+/                             the directory: every tool, with a sentence each
 /beasts/<league>              the beasts, and the Bestiary search for them
 /beasts/<league>/simulation   the same beasts in a mock Bestiary window,
                               unfinished, and in no menu because of it
@@ -40,6 +41,46 @@ their path was a fiction.
 The league is picked on the page, beside the prices it belongs to, and the tools
 still to come each decide for themselves whether they have one. The old
 league-first URLs redirect to where their pages live now.
+
+`/` used to redirect to the beasts. It does not any more: the strongest URL a
+site has cannot be a page that only points somewhere else, and there was nothing
+here at all for anybody looking for Path of Exile tools rather than for this
+one. It is the sidebar as a page, every tool with a sentence saying what it is
+for, which is also the only thing on the site a search engine can read about a
+tool that lives somewhere else.
+
+## Being found
+
+Everything a crawler reads is built from two files. `src/lib/site.ts` holds the
+origin and the copy the site introduces itself with; `src/lib/seo.ts` holds the
+sitemap, the robots rules, `/llms.txt` and the schema.org blocks, all of them
+pure functions over the catalogue, so a new tool cannot fall out of them and
+`test/seo.test.ts` can read the lot without a build.
+
+```
+/sitemap.xml   the home page, the overlay and every league page, current first
+/robots.txt    everything but /api/, and the answer engines welcomed by name
+/llms.txt      the site as one page of markdown, generated from the catalogue
+```
+
+Set **`NEXT_PUBLIC_SITE_URL`** to the domain the site actually answers on. Left
+unset it falls back to `VERCEL_PROJECT_PRODUCTION_URL`, which names the
+`*.vercel.app` host: correct until there is a custom domain, and quietly wrong
+after, because every canonical would then be telling Google the real domain is
+the copy. `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` renders the Search Console
+tag, and nothing at all when it is absent.
+
+Each page carries its own canonical, title and Open Graph block, so nothing is
+inherited by a page it was not written for. The Bestiary simulation is
+`noindex, follow` and deliberately still crawlable: a robots.txt ban would hide
+that line rather than obey it. The card a link unfurls into is drawn at
+`app/opengraph-image.tsx`, from the same palette as the site.
+
+Questions and their answers live in `src/lib/faq.ts` and are rendered on the
+page as well as marked up, because an engine that answers a question itself
+quotes the page that answered it first. What they say about the two search
+fields comes from the in game testing in `docs/`, which is the one thing this
+site knows that no other page about Path of Exile does.
 
 ## The Leveling page
 

@@ -20,6 +20,8 @@ export type SiteTool = {
   label: string;
   /** A few words under the label, saying what the tool is for. */
   blurb: string;
+  /** The same thing said properly, for the directory on the home page. */
+  about: string;
   icon: ToolIcon;
   /** Reads prices, so its URL carries the league they were read for. */
   league?: boolean;
@@ -30,6 +32,8 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     slug: "beasts",
     label: "Beast Regex",
     blurb: "Sell Beasts efficiently",
+    about:
+      "Every beast on the market for the league you picked, with its chaos value, its seven day change and how many are listed. Set a threshold and it writes the Bestiary search that lights up the ones worth the trip.",
     icon: { src: "/Imprinted_Bestiary_Orb_inventory_icon.png" },
     league: true,
   },
@@ -37,6 +41,8 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     slug: "maps",
     label: "Map Regex",
     blurb: "Filter maps in stash",
+    about:
+      "Tick the map modifiers your build cannot survive and get back the stash search that dims every map carrying one of them, short enough to paste into the field in one go.",
     icon: { src: "/Nightmare_Map_(Curse_of_the_Allflame)_inventory_icon.png" },
     league: true,
   },
@@ -44,6 +50,8 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     slug: "leveling",
     label: "Leveling Guide",
     blurb: "Overlay for the campaign",
+    about:
+      "A Windows overlay that keeps the next campaign step in the game window and turns its own page when you change zone, so a leveling guide stops being a second monitor.",
     icon: { src: "/poe_leveling_guide_icon.png", rounded: true },
   },
 ] as const;

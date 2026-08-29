@@ -1,15 +1,30 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FaqSection } from "@/components/faq-section";
+import { JsonLd } from "@/components/json-ld";
 import { PageFrame, PageHeader } from "@/components/page-frame";
 import { Reveal } from "@/components/reveal";
+import { LEVELING_FAQ } from "@/lib/faq";
 import { LEVELING_APP, LEVELING_SETUP } from "@/lib/leveling-app";
+import { breadcrumbLd, downloadLd } from "@/lib/seo";
+import { OG_IMAGE, canonical } from "@/lib/site";
 
-export const metadata = {
-  title: "PoE Leveling Guide",
-  description:
-    "An overlay that shows the next leveling step in game and turns the page when you change zone.",
+const DESCRIPTION =
+  "A free Windows overlay that keeps the next Path of Exile campaign step in the game window and turns its own page when you change zone.";
+
+export const metadata: Metadata = {
+  title: "PoE Leveling Guide Overlay",
+  description: DESCRIPTION,
+  alternates: { canonical: "/leveling" },
+  openGraph: {
+    url: canonical("/leveling"),
+    title: "PoE Leveling Guide Overlay",
+    description: DESCRIPTION,
+    images: [OG_IMAGE],
+  },
 };
 
 /**
@@ -20,6 +35,22 @@ export const metadata = {
 export default function Page() {
   return (
     <PageFrame>
+      <JsonLd
+        data={downloadLd({
+          name: "PoE Leveling Guide",
+          path: "/leveling",
+          description: DESCRIPTION,
+          downloadUrl: LEVELING_APP.setup,
+          version: LEVELING_APP.version,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbLd([
+          { name: "Path of Exile tools", path: "/" },
+          { name: "Leveling guide overlay", path: "/leveling" },
+        ])}
+      />
+
       {/* A page that is read rather than worked in, so it keeps a column
           narrow enough to read across instead of taking the whole window the
           price table wants. */}
@@ -107,6 +138,11 @@ export default function Page() {
             </Reveal>
           ))}
         </ol>
+
+        <FaqSection
+          faqs={LEVELING_FAQ}
+          className="border-border/60 mt-12 border-t pt-8"
+        />
 
         <p className="text-muted-foreground border-border/60 mt-10 border-t pt-6 text-sm">
           MIT, built on{" "}

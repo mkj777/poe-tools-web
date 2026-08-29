@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -25,6 +24,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { ToolIcon } from "@/components/tool-icon";
 import { Wordmark } from "@/components/wordmark";
 import {
   SIDEBAR,
@@ -35,31 +35,7 @@ import {
   type SidebarGroup as Group,
 } from "@/lib/nav";
 import { leagueSlug, type League } from "@/lib/ninja";
-import type { ToolIcon } from "@/lib/tools";
 import { cn } from "@/lib/utils";
-
-/** What the image optimiser can actually read. A favicon is not on the list. */
-const OPTIMISED = /\.(png|jpe?g|webp|avif)$/i;
-
-function Icon({ icon }: { icon: ToolIcon }) {
-  return (
-    <Image
-      src={icon.src}
-      alt=""
-      width={40}
-      height={40}
-      // The optimiser reads none of these, and an icon that is already the
-      // size of an icon has nothing to gain from it.
-      unoptimized={!OPTIMISED.test(icon.src)}
-      // The label names the entry, so the icon is decoration. A square logo is
-      // rounded off to sit in the column; an item cut out of the game is not.
-      className={cn(
-        "size-5 shrink-0 object-contain",
-        icon.rounded && "rounded",
-      )}
-    />
-  );
-}
 
 /**
  * Label over blurb. Both are gone once the sidebar is down to its icons.
@@ -126,7 +102,7 @@ function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
           className="h-auto min-h-12 py-1.5"
         >
           <Link href={toolHref(tool, slug)} onClick={onNavigate}>
-            <Icon icon={tool.icon} />
+            <ToolIcon icon={tool.icon} />
             <Label label={tool.label} blurb={tool.blurb} />
           </Link>
         </SidebarMenuButton>
@@ -149,7 +125,7 @@ function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
           rel="noopener noreferrer"
           onClick={onNavigate}
         >
-          <Icon icon={tool.icon} />
+          <ToolIcon icon={tool.icon} />
           <Label label={tool.name} blurb={tool.blurb} />
           <ArrowUpRight
             className={cn(

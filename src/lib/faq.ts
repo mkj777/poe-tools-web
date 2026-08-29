@@ -1,0 +1,97 @@
+import type { Faq } from "./seo.ts";
+
+/**
+ * The questions a page is actually asked, answered on the page itself.
+ *
+ * Two readers want this. A person who arrived from a search wants the answer
+ * without going back, and a search engine that writes the answer itself wants a
+ * short block it can lift whole. Both are served by the same thing: the
+ * question as somebody would type it, and forty to sixty words under it that
+ * settle it without a preamble.
+ *
+ * Nothing here is guessed. What the two search fields do comes from the in game
+ * testing logged in `docs/bestiary-search.md` and `docs/stash-search.md`, which
+ * is the one thing this site knows that no other page about it does.
+ */
+
+export const HOME_FAQ: readonly Faq[] = [
+  {
+    question: "What tools do you need for Path of Exile?",
+    answer:
+      "Four cover almost everything. Path of Building plans the build, a FilterBlade loot filter decides what you see on the ground, Awakened PoE Trade price checks an item from inside the game, and poe.ninja shows what other people are playing and what things sell for. The official trade site does the buying.",
+  },
+  {
+    question: "Are these Path of Exile tools free?",
+    answer:
+      "Yes. Every tool listed here is free and community made, and most are open source. This site asks for no account, runs no ads and stores nothing about you. It is a directory with two tools of its own, not a service.",
+  },
+  {
+    question: "Where do the prices on this site come from?",
+    answer:
+      "From the poe.ninja economy API for Path of Exile 1, which recomputes about every 15 minutes, with the official trade site filling in the beasts poe.ninja does not list. Values are shown in chaos, with the current divine rate beside them so you can convert.",
+  },
+  {
+    question: "Do these tools work with Path of Exile 2?",
+    answer:
+      "The pages built here are Path of Exile 1 only, because the Bestiary and the map stash search are Path of Exile 1 things. Several of the linked tools do cover both: Path of Building and FilterBlade ship separate Path of Exile 2 versions, and Exiled Exchange 2 succeeds Awakened PoE Trade there.",
+  },
+];
+
+export const BEASTS_FAQ: readonly Faq[] = [
+  {
+    question: "How do I find valuable beasts in Path of Exile?",
+    answer:
+      "Set a chaos threshold on this page and it writes the search for the beasts worth more than that. Paste it into the search field of the Bestiary window in your hideout and only those captures stay lit, so you can release the rest without reading a single name.",
+  },
+  {
+    question: "Does the Bestiary search field accept a regex?",
+    answer:
+      "It does. Testing in game shows a real regex engine applied one line at a time, so alternation, groups, quantifiers, anchors and lookaheads all work, and a beast is shown when any single one of its lines matches. The field holds 249 characters and truncates at 250.",
+  },
+  {
+    question: "What does the Bestiary search actually look at?",
+    answer:
+      "The beast type name, its genus and family, and the full text of every modifier it rolled, names and descriptions alike. That last part is why a careless fragment misfires: search for far and every beast holding Farric Presence comes back with it.",
+  },
+  {
+    question: "How much are beasts worth in Path of Exile?",
+    answer:
+      "Most are worth close to nothing and a handful carry the whole trip. This page lists every beast on the market for the league you picked with its chaos value, its seven day change and how many are currently listed, sorted so the ones worth catching are at the top.",
+  },
+];
+
+export const MAPS_FAQ: readonly Faq[] = [
+  {
+    question: "How do I use a regex in the Path of Exile stash?",
+    answer:
+      "Type it into the search field above an open stash tab and the maps that do not match go dim. Tick the modifiers your build cannot handle on this page and it writes the search for you, short enough to paste in one go.",
+  },
+  {
+    question: "How does the Path of Exile stash search work?",
+    answer:
+      "Whitespace splits what you type into terms, and every term has to be satisfied, though not by the same line of the item. Each term is a regex tried line by line. Quotes let a term contain spaces, and a term starting with an exclamation mark must match nothing on the item, which is how exclusion works.",
+  },
+  {
+    question: "Which map mods should you avoid?",
+    answer:
+      "That depends on the build, which is why this page asks instead of assuming. The ones most often banned are the reflecting thorns modifiers, no life and mana regeneration, less recovery rate, and monster damage taken as an extra element. Tick what would kill you and the rest stay lit.",
+  },
+  {
+    question: "Do map modifiers change between leagues?",
+    answer:
+      "The modifier list itself does not, so the search you build here holds from one league to the next. The prices beside it do change, which is the only reason this page carries a league at all: the scarabs and the divine rate come from poe.ninja for the one you picked.",
+  },
+];
+
+export const LEVELING_FAQ: readonly Faq[] = [
+  {
+    question: "What is a Path of Exile leveling overlay?",
+    answer:
+      "A small window drawn over the game that shows the next step of the campaign, so the guide is in front of you instead of on a second monitor. This one turns its own page when you change zone, which means you never alt tab to find your place again.",
+  },
+  {
+    question: "Is the PoE Leveling Guide free?",
+    answer:
+      "Yes, and it is open source under the MIT licence. It is built on Kazte/path-of-levelling, runs on Windows, and is offered as an installer or a portable zip. There is no account and nothing to buy.",
+  },
+];

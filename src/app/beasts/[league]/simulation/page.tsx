@@ -8,6 +8,10 @@ import { PageFrame, PageHeader } from "@/components/page-frame";
 export const metadata = {
   title: "Bestiary Sim",
   description: "Try a Bestiary search against every beast that has a listing.",
+  // Unfinished, and in no menu because of it. A page nobody is sent to should
+  // not be a page anybody is sent to by a search engine either. Crawling stays
+  // allowed, because a robots.txt ban would hide this line rather than obey it.
+  robots: { index: false, follow: true },
 };
 
 /** Same beasts, same 15 minute window as the prices page. */

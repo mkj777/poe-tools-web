@@ -8,6 +8,11 @@ import { PageFrame, PageHeader } from "@/components/page-frame";
  * only has to say what happened and point at the one tool that has no league to
  * get wrong.
  */
+export const metadata = {
+  title: "Nothing here",
+  robots: { index: false, follow: true },
+};
+
 export default function NotFound() {
   return (
     <PageFrame>
