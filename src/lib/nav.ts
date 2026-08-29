@@ -36,7 +36,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
   {
     slug: "maps",
     label: "Map Regex",
-    blurb: "Filter maps you don't want to run",
+    blurb: "Filter maps in stash",
     icon: { src: "/Nightmare_Map_(Curse_of_the_Allflame)_inventory_icon.png" },
     league: true,
   },

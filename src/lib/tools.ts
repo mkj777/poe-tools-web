@@ -37,7 +37,7 @@ const fixed = (url: string) => () => url;
 export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "Path of Building",
-    blurb: "Test builds and crunch the numbers",
+    blurb: "Crunch the numbers",
     icon: { src: "/pathofbuilding_logo.png", rounded: true },
     href: fixed("https://pathofbuilding.community/"),
   },
@@ -102,13 +102,13 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   },
   {
     name: "PoE Regex",
-    blurb: "Regexes for everything you need",
+    blurb: "Regex for everything you need",
     icon: { src: "/poere.ico", rounded: true },
     href: fixed("https://poe.re"),
   },
   {
     name: "PoELab",
-    blurb: "Today's labyrinth maps",
+    blurb: "Today's labyrinth layout",
     icon: { src: "/Labyrinth.webp" },
     href: fixed("https://www.poelab.com/"),
   },
