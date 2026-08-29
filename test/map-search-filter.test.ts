@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   MOD_GROUPS,
+  displayLine,
   looseLines,
   matchesQuery,
 } from "../src/lib/map-mod-groups.ts";
@@ -41,6 +42,21 @@ test("a query spanning two lines does not match", () => {
 
 test("an unrelated query matches nothing", () => {
   assert.equal(matchesQuery(reflect, "bestiary"), false);
+});
+
+test("displayLine turns every rolled number back into a placeholder x", () => {
+  assert.equal(
+    displayLine("#% increased Monster Damage"),
+    "x% increased Monster Damage",
+  );
+  assert.equal(
+    displayLine("Monsters deal #% extra Physical Damage as #% #"),
+    "Monsters deal x% extra Physical Damage as x% x",
+  );
+});
+
+test("displayLine leaves a line with no # untouched", () => {
+  assert.equal(displayLine("Area is inhabited by Ghosts"), "Area is inhabited by Ghosts");
 });
 
 test("every loose line is reachable by searching its own text", () => {

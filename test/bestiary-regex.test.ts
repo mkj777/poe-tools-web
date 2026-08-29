@@ -134,6 +134,26 @@ test("names what no search can single out", () => {
   assert.deepEqual(unreachable, ["Maw"]);
 });
 
+test("a full name that a random capture could also spell is unreachable, but adding a title rescues it", () => {
+  // "Dark" and "mauler" are both real words in the capture pool, so
+  // "Darkmauler" is itself a name any capture could roll, and no fragment could
+  // single it out without also lighting up that capture. The same base name
+  // with "the Unbreakable" tacked on is not a coincidence a bare capture can
+  // reach, since risk-checking only samples that combination, not every
+  // combination with every title, so a fragment distinguishing it exists.
+  assert.ok(MONSTER_NAME_PREFIXES.includes("Dark"));
+  assert.ok(MONSTER_NAME_SUFFIXES.includes("mauler"));
+  assert.ok(MONSTER_NAME_TITLES.includes("the Unbreakable"));
+
+  const { steps, unreachable } = planBestiaryPatterns(
+    [{ name: "Darkmauler" }, { name: "Darkmauler the Unbreakable" }],
+    [{ name: "Something Else" }],
+  );
+  assert.deepEqual(unreachable, ["Darkmauler"]);
+  assert.equal(steps.length, 1);
+  assert.deepEqual(steps[0].covers, ["Darkmauler the Unbreakable"]);
+});
+
 test("splits into more searches rather than losing precision", () => {
   const { wanted, unwanted } = split(1);
   const { steps } = assertExact("1c trash-sized set", wanted, unwanted);
@@ -144,6 +164,14 @@ test("matches substrings, not subsequences", () => {
   // Searching "wldbrstl" in game returned nothing at all, not even "Wild
   // Bristle Matron", so the field does not skip characters.
   assert.ok(!matchesBestiaryPattern("wldbrstl", "Wild Bristle Matron"));
+});
+
+test("a pattern that is not even a finished regex matches nothing rather than throwing", () => {
+  // A player free-typing into the field can leave a group unclosed. The game
+  // itself would just show no results, so the simulator mirrors that instead
+  // of crashing on it.
+  assert.ok(!matchesBestiaryPattern("^craicic(", "Craicic Croaker"));
+  assert.ok(!matchesBestiaryPattern("[", "Craicic Croaker"));
 });
 
 test("never builds on text a modifier also carries", () => {
@@ -329,6 +357,13 @@ test("names the fragment behind a match", () => {
     "Insects",
   ]);
   assert.deepEqual(hits, [{ fragment: "arasite", line: "Plated Parasite" }]);
+});
+
+test("an empty alternative and one that will not compile are skipped, not attributed", () => {
+  // A hand-typed pattern can leave "||" or an unclosed group between the
+  // pipes; both are simply not a fragment that could have caused the match.
+  const hits = matchingFragments("|craicic|(", ["Craicic Croaker"]);
+  assert.deepEqual(hits, [{ fragment: "craicic", line: "Craicic Croaker" }]);
 });
 
 for (const threshold of THRESHOLDS) {

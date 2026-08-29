@@ -91,6 +91,16 @@ test("banning everything at once still leaves nothing unreachable", () => {
   assert.deepEqual(planMapSearch(all).unreachable, []);
 });
 
+test("a banned line with no letters at all cannot be isolated, and is reported unreachable", () => {
+  // SAFE_FRAGMENT only accepts letters and spaces, so a line of pure digits
+  // offers no fragment to build on. The planner has to give up on it rather
+  // than emit an unsafe one, and the search still comes back well formed.
+  const plan = planMapSearch(["0000"]);
+  assert.deepEqual(plan.fragments, []);
+  assert.deepEqual(plan.unreachable, ["0000"]);
+  assert.ok(!plan.search.includes("!("), plan.search);
+});
+
 test("the search is one negated quoted term", () => {
   const plan = planMapSearch([
     "Players are Cursed with Temporal Chains",
