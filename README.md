@@ -7,15 +7,21 @@ than copied.
 ## The sidebar
 
 The sidebar is the point of the site now, so it is a directory rather than a
-menu: this site's three tools at the top, then twelve others grouped by the
-question you arrived with. Economy is what things cost, Planning is what to
-build, In game is what to run beside the client. Every entry carries a few words
-saying what it is, because a name alone is only useful once you already know it.
+menu. What opens first is what a session opens with, whether or not this site is
+the one hosting it: Path of Building, FilterBlade and Awakened PoE Trade, then
+the leveling overlay, then poe.ninja. The pages built here come under their own
+heading, and the rest are folded away under the question they answer, so the
+column arrives at seven entries rather than fifteen. Every entry carries a few
+words saying what it is, because a name alone is only useful once you already
+know it.
 
-Trade, poe.ninja and the disenchanting calculator are handed the league you are
-looking at, so the link lands where you already are. The glyphs are all lucide:
-a column that is meant to be scanned cannot be a wall of somebody else's
-branding, and only three of the twelve have a logo to give anyway.
+Trade and the disenchanting calculator are handed the league you are looking at,
+so the link lands where you already are.
+
+An entry wears the item out of the game, or the tool's own mark. The ones that
+have no asset yet are on a lucide stand-in, and `WITHOUT_ICON` in
+`src/lib/tools.ts` is the list of them, asserted by a test so the gap stays
+visible rather than becoming the design.
 
 ## The URLs
 
@@ -26,7 +32,8 @@ their path was a fiction.
 
 ```
 /beasts/<league>              the beasts, and the Bestiary search for them
-/beasts/<league>/simulation   the same beasts in a mock Bestiary window
+/beasts/<league>/simulation   the same beasts in a mock Bestiary window,
+                              unfinished, and in no menu because of it
 /maps/<league>                the map regex, and what a map costs to set up
 /leveling                     the overlay, which carries no league at all
 ```

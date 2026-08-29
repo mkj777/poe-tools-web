@@ -1,148 +1,134 @@
 import { leagueSlug } from "./ninja.ts";
 
 /**
- * A tool that lives somewhere else. This site does not try to rebuild what
- * these already do well: it points at them, and hands the ones that care the
- * league you are looking at.
+ * What an entry wears in the sidebar: the item out of the game, or the tool's
+ * own mark, because that is what a player recognises before they have read the
+ * label.
  *
- * The list is long enough now that it reads as a directory rather than as a
- * menu, which is what the groups are for: you arrive knowing what you want to
- * do, not what the thing that does it is called.
+ * `glyph` is the stand-in for the entries no asset exists for yet. It names a
+ * lucide icon and the sidebar owns the table from that name to the component,
+ * which is what keeps this file plain TypeScript. Every glyph here is a gap
+ * waiting for an icon, not a decision.
  */
-export type ToolGroup = "economy" | "planning" | "ingame";
+export type ToolIcon =
+  { src: string; rounded?: boolean } | { glyph: GlyphName };
 
-/** Keyed rather than imported, for the same reason the site tools are. */
-export type ExternalIcon =
+export type GlyphName =
   | "trade"
   | "ninja"
   | "wealth"
   | "antiquary"
   | "disenchant"
-  | "pob"
   | "timeless"
   | "cluster"
-  | "filter"
-  | "pricecheck"
   | "regex"
   | "lab";
 
+/**
+ * A tool that lives somewhere else. This site does not try to rebuild what
+ * these already do well: it points at them, and hands the ones that care the
+ * league you are looking at.
+ *
+ * This list is the catalogue. Which of them the sidebar shows first and which
+ * it folds away is `SIDEBAR` in nav.ts.
+ */
 export type ExternalTool = {
   name: string;
   /** A few words under the name. What you would go there to do. */
   blurb: string;
-  icon: ExternalIcon;
-  group: ToolGroup;
+  icon: ToolIcon;
   /** `league` is the name Path of Exile uses, for example "Hardcore Allflame". */
   href: (league: string) => string;
 };
-
-export const TOOL_GROUPS: readonly { id: ToolGroup; label: string }[] = [
-  { id: "economy", label: "Economy" },
-  { id: "planning", label: "Planning" },
-  { id: "ingame", label: "In game" },
-] as const;
 
 /** Ignores the league, because the tool has no notion of one. */
 const fixed = (url: string) => () => url;
 
 export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
-    name: "Trade",
-    blurb: "Official trade search",
-    icon: "trade",
-    group: "economy",
-    href: (league) =>
-      `https://www.pathofexile.com/trade/search/${encodeURIComponent(league)}`,
-  },
-  {
-    name: "poe.ninja",
-    blurb: "The whole economy",
-    icon: "ninja",
-    group: "economy",
-    // The same spelling this site uses in its own paths: /allflame, /allflamehc.
-    href: (league) => `https://poe.ninja/poe1/economy/${leagueSlug(league)}`,
-  },
-  {
-    name: "Wealthy Exile",
-    blurb: "What your stash is worth",
-    icon: "wealth",
-    group: "economy",
-    href: fixed("https://wealthyexile.com/"),
-  },
-  {
-    name: "PoE Antiquary",
-    blurb: "Prices of past leagues",
-    icon: "antiquary",
-    group: "economy",
-    href: fixed("https://poe-antiquary.xyz/"),
-  },
-  {
-    name: "Disenchanting",
-    blurb: "Vendor or disenchant",
-    icon: "disenchant",
-    group: "economy",
-    // Its own paths are leagues, spelled the way poe.ninja spells them.
-    href: (league) =>
-      `https://poe-disenchant-tool.vercel.app/${leagueSlug(league)}`,
-  },
-  {
     name: "Path of Building",
     blurb: "Plan a build offline",
-    icon: "pob",
-    group: "planning",
+    icon: { src: "/pathofbuilding_logo.png", rounded: true },
     href: fixed("https://pathofbuilding.community/"),
-  },
-  {
-    name: "Timeless Jewels",
-    blurb: "Seeds by passive socket",
-    icon: "timeless",
-    group: "planning",
-    href: fixed("https://vilsol.github.io/timeless-jewels"),
-  },
-  {
-    name: "Cluster Jewels",
-    blurb: "Roll the notables you want",
-    icon: "cluster",
-    group: "planning",
-    href: fixed("https://theodorejbieber.github.io/PoEClusterJewelCalculator/"),
   },
   {
     name: "FilterBlade",
     blurb: "Write a loot filter",
-    icon: "filter",
-    group: "ingame",
+    icon: { src: "/FilterBlade_logo.png", rounded: true },
     href: fixed("https://www.filterblade.xyz/?game=Poe1"),
   },
   {
     name: "Awakened PoE Trade",
     blurb: "Price check in game",
-    icon: "pricecheck",
-    group: "ingame",
+    icon: { src: "/awakened_poe_trade_logo.png", rounded: true },
     href: fixed("https://snosme.github.io/awakened-poe-trade/download"),
+  },
+  {
+    name: "poe.ninja",
+    blurb: "Builds and economy",
+    icon: { glyph: "ninja" },
+    // The front page, which is both halves of the site. The league path it
+    // used to be handed answers with nothing.
+    href: fixed("https://poe.ninja"),
+  },
+  {
+    name: "Trade",
+    blurb: "Official trade search",
+    icon: { glyph: "trade" },
+    href: (league) =>
+      `https://www.pathofexile.com/trade/search/${encodeURIComponent(league)}`,
+  },
+  {
+    name: "Wealthy Exile",
+    blurb: "What your stash is worth",
+    icon: { glyph: "wealth" },
+    href: fixed("https://wealthyexile.com/"),
+  },
+  {
+    name: "PoE Antiquary",
+    blurb: "Prices of past leagues",
+    icon: { glyph: "antiquary" },
+    href: fixed("https://poe-antiquary.xyz/"),
+  },
+  {
+    name: "Disenchanting",
+    blurb: "Vendor or disenchant",
+    icon: { glyph: "disenchant" },
+    // Its own paths are leagues, spelled the way poe.ninja spells them.
+    href: (league) =>
+      `https://poe-disenchant-tool.vercel.app/${leagueSlug(league)}`,
+  },
+  {
+    name: "Timeless Jewels",
+    blurb: "Seeds by passive socket",
+    icon: { glyph: "timeless" },
+    href: fixed("https://vilsol.github.io/timeless-jewels"),
+  },
+  {
+    name: "Cluster Jewels",
+    blurb: "Roll the notables you want",
+    icon: { glyph: "cluster" },
+    href: fixed("https://theodorejbieber.github.io/PoEClusterJewelCalculator/"),
   },
   {
     name: "PoE Regex",
     blurb: "Regex for every stash tab",
-    icon: "regex",
-    group: "ingame",
+    icon: { glyph: "regex" },
     href: fixed("https://poe.re"),
   },
   {
     name: "PoELab",
     blurb: "Today's labyrinth maps",
-    icon: "lab",
-    group: "ingame",
+    icon: { glyph: "lab" },
     href: fixed("https://www.poelab.com/"),
   },
 ];
-
-/** The tools of one group, in the order the list declares them. */
-export function toolsIn(group: ToolGroup) {
-  return EXTERNAL_TOOLS.filter((t) => t.group === group);
-}
 
 export function toolByName(name: string) {
   const tool = EXTERNAL_TOOLS.find((t) => t.name === name);
   if (!tool) throw new Error(`No external tool named ${name}`);
   return tool;
 }
+
+/** The entries still wearing a stand-in rather than an icon of their own. */
+export const WITHOUT_ICON = EXTERNAL_TOOLS.filter((t) => "glyph" in t.icon);

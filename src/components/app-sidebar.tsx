@@ -1,84 +1,93 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   ArrowLeftRight,
   ArrowUpRight,
-  Compass,
-  FlaskConical,
+  ChevronRight,
   Footprints,
-  Funnel,
   Gem,
-  Hammer,
   Landmark,
-  Map as MapIcon,
-  PawPrint,
   Recycle,
   Regex,
-  Tag,
   TrendingUp,
   Wallet,
   Waypoints,
   type LucideIcon,
 } from "lucide-react";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Wordmark } from "@/components/wordmark";
 import {
-  SITE_TOOLS,
-  activePage,
+  SIDEBAR,
   activeTool,
   leagueFromPath,
-  pageHref,
   toolHref,
-  type ToolIcon,
+  type SidebarEntry,
+  type SidebarGroup as Group,
 } from "@/lib/nav";
 import { leagueSlug, type League } from "@/lib/ninja";
-import { TOOL_GROUPS, toolsIn, type ExternalIcon } from "@/lib/tools";
+import type { GlyphName, ToolIcon } from "@/lib/tools";
 import { cn } from "@/lib/utils";
 
 /**
- * Every glyph in the sidebar comes from one set, so sixteen entries read as one
- * list. A vendor logo would be the loudest thing in a column that is meant to
- * be scanned, and only three of the twelve have one to give.
+ * The stand-ins, for the entries with no icon of their own yet. Each one is a
+ * gap in `public/` rather than a choice: an entry that has an asset wears it.
  */
-const TOOL_ICONS: Record<ToolIcon, LucideIcon> = {
-  beasts: PawPrint,
-  simulation: FlaskConical,
-  maps: MapIcon,
-  leveling: Compass,
-};
-
-const EXTERNAL_ICONS: Record<ExternalIcon, LucideIcon> = {
+const GLYPHS: Record<GlyphName, LucideIcon> = {
   trade: ArrowLeftRight,
   ninja: TrendingUp,
   wealth: Wallet,
   antiquary: Landmark,
   disenchant: Recycle,
-  pob: Hammer,
   timeless: Gem,
   cluster: Waypoints,
-  filter: Funnel,
-  pricecheck: Tag,
   regex: Regex,
   lab: Footprints,
 };
+
+function Icon({ icon }: { icon: ToolIcon }) {
+  if ("glyph" in icon) {
+    const Glyph = GLYPHS[icon.glyph];
+    return <Glyph className="text-muted-foreground" />;
+  }
+
+  return (
+    <Image
+      src={icon.src}
+      alt=""
+      width={40}
+      height={40}
+      // The label names the entry, so the icon is decoration. A square logo is
+      // rounded off to sit in the column; an item cut out of the game is not.
+      className={cn(
+        "size-5 shrink-0 object-contain",
+        icon.rounded && "rounded",
+      )}
+    />
+  );
+}
 
 /** Label over blurb. Both are gone once the sidebar is down to its icons. */
 function Label({ label, blurb }: { label: string; blurb: string }) {
@@ -113,6 +122,120 @@ function ActiveMark() {
   );
 }
 
+type EntryProps = {
+  entry: SidebarEntry;
+  /** The league as Path of Exile spells it, for the links that take one. */
+  league: string;
+  /** The same league as a path segment. */
+  slug: string;
+  /** The slug of the tool the current page belongs to. */
+  active: string;
+  onNavigate: () => void;
+};
+
+function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
+  if (entry.kind === "page") {
+    const tool = entry.page;
+    const on = tool.slug === active;
+    return (
+      <SidebarMenuItem>
+        {on && <ActiveMark />}
+        <SidebarMenuButton asChild size="lg" isActive={on} tooltip={tool.label}>
+          <Link href={toolHref(tool, slug)} onClick={onNavigate}>
+            <Icon icon={tool.icon} />
+            <Label label={tool.label} blurb={tool.blurb} />
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
+
+  const tool = entry.link;
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        size="lg"
+        tooltip={tool.name}
+        className="group/external"
+      >
+        <a
+          href={tool.href(league)}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onNavigate}
+        >
+          <Icon icon={tool.icon} />
+          <Label label={tool.name} blurb={tool.blurb} />
+          <ArrowUpRight
+            className={cn(
+              "text-muted-foreground -translate-x-0.5 opacity-0 transition-all duration-150",
+              "group-hover/external:translate-x-0 group-hover/external:opacity-100",
+              "group-focus-visible/external:translate-x-0 group-focus-visible/external:opacity-100",
+              // A finger cannot hover, and on a phone the arrow is the only
+              // thing saying the entry leaves.
+              "pointer-coarse:translate-x-0 pointer-coarse:opacity-70",
+              "group-data-[collapsible=icon]:hidden",
+            )}
+          />
+        </a>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+/**
+ * One heading and what hangs under it. The lower groups start rolled up, so the
+ * column opens on the seven entries a session begins with rather than on all
+ * fifteen at once.
+ *
+ * Down to its icons a folded group would be unreachable, because the heading
+ * that unfolds it is the thing that is hidden. So there, everything is open.
+ */
+function NavGroup({
+  group,
+  ...rest
+}: { group: Group } & Omit<EntryProps, "entry">) {
+  const { state, isMobile } = useSidebar();
+  const [open, setOpen] = useState(!group.folded);
+  const icons = state === "collapsed" && !isMobile;
+
+  return (
+    <Collapsible
+      open={open || icons}
+      onOpenChange={setOpen}
+      className="group/fold"
+    >
+      <SidebarGroup className="py-1">
+        <SidebarGroupLabel asChild>
+          <CollapsibleTrigger className="hover:text-foreground w-full cursor-pointer">
+            {group.label}
+            {group.folded && (
+              <ChevronRight className="ml-auto size-3.5 transition-transform duration-200 group-data-open/fold:rotate-90" />
+            )}
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
+
+        <CollapsibleContent className="overflow-hidden data-closed:animate-collapsible-up data-open:animate-collapsible-down">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {group.entries.map((entry) => (
+                <Entry
+                  key={
+                    entry.kind === "page" ? entry.page.slug : entry.link.name
+                  }
+                  entry={entry}
+                  {...rest}
+                />
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
+  );
+}
+
 export function AppSidebar({
   leagues,
   fallback,
@@ -124,12 +247,9 @@ export function AppSidebar({
   const pathname = usePathname() ?? "";
   const { setOpenMobile } = useSidebar();
 
-  const tool = activeTool(pathname);
-  const page = activePage(pathname);
-
-  // The chrome has no league of its own any more: it follows the page, and
-  // falls back to the one a bare visit lands on. The picking happens on the
-  // pages that read prices, beside the prices they read.
+  // The chrome has no league of its own: it follows the page, and falls back to
+  // the one a bare visit lands on. The picking happens on the pages that read
+  // prices, beside the prices they read.
   const slug = leagueFromPath(pathname) || fallback;
   const league =
     leagues.find((l) => leagueSlug(l.id) === slug)?.id ?? leagues[0]?.id ?? "";
@@ -155,97 +275,15 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="gap-0 pb-[env(safe-area-inset-bottom)]">
-        <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
-          <SidebarMenu>
-            {SITE_TOOLS.map((site) => {
-              const Icon = TOOL_ICONS[site.icon];
-              const on = site.slug === tool;
-              return (
-                <SidebarMenuItem key={site.slug}>
-                  {on && !page && <ActiveMark />}
-                  <SidebarMenuButton
-                    asChild
-                    size="lg"
-                    isActive={on && !page}
-                    tooltip={site.label}
-                  >
-                    <Link href={toolHref(site, slug)} onClick={close}>
-                      <Icon />
-                      <Label label={site.label} blurb={site.blurb} />
-                    </Link>
-                  </SidebarMenuButton>
-
-                  {/* A page of the tool rather than a tool of its own, so it
-                      is indented under it instead of listed beside it. */}
-                  {site.pages && on && (
-                    <SidebarMenuSub className="group-data-[collapsible=icon]:hidden">
-                      {site.pages.map((sub) => (
-                        <SidebarMenuSubItem key={sub.slug}>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={sub.slug === page}
-                          >
-                            <Link
-                              href={pageHref(site, sub, slug)}
-                              onClick={close}
-                            >
-                              <span className="truncate">{sub.label}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  )}
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {/* Everything under this line leaves the site. The groups are the
-            question you arrived with: what things cost, what to build, what
-            to run with. */}
-        {TOOL_GROUPS.map((group) => (
-          <SidebarGroup key={group.id}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-            <SidebarMenu>
-              {toolsIn(group.id).map((external) => {
-                const Icon = EXTERNAL_ICONS[external.icon];
-                return (
-                  <SidebarMenuItem key={external.name}>
-                    <SidebarMenuButton
-                      asChild
-                      size="lg"
-                      tooltip={external.name}
-                      className="group/external"
-                    >
-                      <a
-                        href={external.href(league)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={close}
-                      >
-                        <Icon />
-                        <Label label={external.name} blurb={external.blurb} />
-                        <ArrowUpRight
-                          className={cn(
-                            "text-muted-foreground -translate-x-0.5 opacity-0 transition-all duration-150",
-                            "group-hover/external:translate-x-0 group-hover/external:opacity-100",
-                            "group-focus-visible/external:translate-x-0 group-focus-visible/external:opacity-100",
-                            // A finger cannot hover, and on a phone the arrow
-                            // is the only thing saying the entry leaves.
-                            "pointer-coarse:translate-x-0 pointer-coarse:opacity-70",
-                            "group-data-[collapsible=icon]:hidden",
-                          )}
-                        />
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroup>
+        {SIDEBAR.map((group) => (
+          <NavGroup
+            key={group.id}
+            group={group}
+            league={league}
+            slug={slug}
+            active={activeTool(pathname)}
+            onNavigate={close}
+          />
         ))}
       </SidebarContent>
 
