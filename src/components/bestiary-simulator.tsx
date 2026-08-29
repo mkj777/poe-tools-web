@@ -39,7 +39,7 @@ function Tile({ row, danger }: { row: Row; danger: boolean }) {
           height={22}
           className="shrink-0"
         />
-        <span className="truncate font-medium">{capture.name}</span>
+        <span className="min-w-0 truncate font-medium">{capture.name}</span>
         <Price
           value={beast.chaosValue ?? 0}
           size={15}
@@ -143,7 +143,7 @@ export function BestiarySimulator({ beasts }: { beasts: Beast[] }) {
             onChange={(e) => setPattern(e.target.value)}
             placeholder="Paste a Bestiary search…"
             spellCheck={false}
-            className="h-11 min-w-0 flex-1 font-mono text-sm"
+            className="h-11 w-full min-w-0 flex-1 font-mono text-base sm:w-auto sm:text-sm"
           />
           <span
             className={`text-sm tabular-nums ${
@@ -158,7 +158,7 @@ export function BestiarySimulator({ beasts }: { beasts: Beast[] }) {
             variant="secondary"
             onClick={() => setRoll((r) => r + 1)}
             title="Roll new names and modifiers for every beast"
-            className="shrink-0"
+            className="h-10 shrink-0 sm:h-9"
           >
             <Dices className="size-4" />
             Reroll
@@ -238,7 +238,7 @@ export function BestiarySimulator({ beasts }: { beasts: Beast[] }) {
       </div>
 
       {matched.length > 0 && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {matched.map((row) => (
             <Tile
               key={row.beast.name}
@@ -267,7 +267,7 @@ export function BestiarySimulator({ beasts }: { beasts: Beast[] }) {
           </button>
 
           {showRest && (
-            <div className="grid gap-3 opacity-60 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 opacity-60 sm:grid-cols-2 lg:grid-cols-3">
               {rest.map((row) => (
                 <Tile key={row.beast.name} row={row} danger={false} />
               ))}

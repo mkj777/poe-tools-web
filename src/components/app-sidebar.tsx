@@ -151,10 +151,10 @@ export function AppSidebar({
         >
           <Wordmark />
         </Link>
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground hidden size-8 md:flex" />
+        <SidebarTrigger className="text-muted-foreground hover:text-foreground hidden size-8 lg:flex" />
       </SidebarHeader>
 
-      <SidebarContent className="gap-0">
+      <SidebarContent className="gap-0 pb-[env(safe-area-inset-bottom)]">
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarMenu>

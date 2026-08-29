@@ -6,24 +6,32 @@ import { cn } from "@/lib/utils";
  * optional rail beside it for the numbers a page is read against rather than
  * read for.
  *
- * The rail only becomes a column at 1400px. The sidebar has already taken 17rem
- * of the window by then, so the usual 1280px would buy the rail its column out
- * of the content's. Below that it is an ordinary block, over or under the
- * content depending on which of the two you came for.
+ * The rail becomes a column at the `rail` breakpoint, 1440px, which is where
+ * the content beside it still has room for a table of beast names. Below that
+ * it is an ordinary block, over or under the content depending on which of the
+ * two you came for, and always under the heading.
  */
 export function PageFrame({
   children,
+  header,
   aside,
   asideFirst = false,
 }: {
   children: ReactNode;
+  /**
+   * The page's heading row. It sits above both columns rather than inside the
+   * content, so that a rail which has had to become a block still lands under
+   * the name of the page rather than over it.
+   */
+  header?: ReactNode;
   aside?: ReactNode;
   /** Puts the rail over the content on a narrow window instead of under it. */
   asideFirst?: boolean;
 }) {
   return (
     <div className="mx-auto w-full max-w-[88rem] px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-6 min-[1400px]:flex-row min-[1400px]:items-start min-[1400px]:gap-8">
+      {header}
+      <div className="flex flex-col gap-6 rail:flex-row rail:items-start rail:gap-8">
         <div className="min-w-0 flex-1">{children}</div>
 
         {aside && (
@@ -32,7 +40,7 @@ export function PageFrame({
               // Sticky, so the numbers stay beside a table that is longer than
               // the window, and scrolling inside itself when the panel is the
               // long one, so its own bottom never becomes unreachable.
-              "w-full shrink-0 min-[1400px]:sticky min-[1400px]:top-6 min-[1400px]:order-none min-[1400px]:max-h-[calc(100dvh-3rem)] min-[1400px]:w-72 min-[1400px]:overflow-y-auto",
+              "w-full shrink-0 rail:sticky rail:top-6 rail:order-none rail:max-h-[calc(100dvh-3rem)] rail:w-64 rail:overflow-y-auto",
               asideFirst && "order-first",
             )}
           >

@@ -41,7 +41,7 @@ const COMMON = MOD_GROUPS.filter((g) => COMMON_GROUP_IDS.includes(g.id));
  * Every chip in the same column width, in both lists. A modifier is not more
  * important for being longer, and a ragged wrap reads as if it were.
  */
-const CHIP_GRID = "grid grid-cols-2 gap-1.5 lg:grid-cols-3";
+const CHIP_GRID = "grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3";
 
 /**
  * Inside a preset the same rule holds, but the card is half the page wide, so
@@ -94,9 +94,14 @@ export function MapSearch() {
     );
 
   const copy = async () => {
-    await navigator.clipboard.writeText(plan.search);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(plan.search);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // No clipboard on an insecure origin. The regex is on screen and
+      // selectable, so the button simply does not claim to have copied it.
+    }
   };
 
   const searching = query.trim() !== "";
@@ -146,6 +151,7 @@ export function MapSearch() {
             disabled={!plan.search}
             size="icon"
             aria-label={copied ? "Copied" : "Copy the regex"}
+            className="size-10 shrink-0"
           >
             <CopyGlyph copied={copied} />
           </Button>
@@ -153,7 +159,7 @@ export function MapSearch() {
         {/* Magic maps cannot be told from rare ones, so this only reaches the
             unrolled white ones: they print no quantity line at all, and asking
             for one at 1% drops them. See docs/stash-search.md, Test 8. */}
-        <label className="text-muted-foreground flex w-fit items-center gap-2 text-sm">
+        <label className="text-muted-foreground flex w-fit items-center gap-2 py-2 text-sm">
           <Checkbox
             checked={(Number(minimums.quantity) || 0) >= 1}
             onCheckedChange={(on) =>
@@ -181,7 +187,7 @@ export function MapSearch() {
           which is what keeps an unrolled map dark. */}
       <div className="space-y-2">
         <h2 className="text-sm font-medium">Minimums</h2>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {REWARD_STATS.map((stat) => (
             <label
               key={stat.id}
@@ -200,7 +206,7 @@ export function MapSearch() {
                       [stat.id]: e.target.value.replace(/\D/g, "").slice(0, 3),
                     }))
                   }
-                  className="h-7 w-14 text-right tabular-nums"
+                  className="h-9 w-14 text-right tabular-nums sm:h-7"
                 />
                 <span className="text-muted-foreground">%</span>
               </span>
@@ -212,7 +218,7 @@ export function MapSearch() {
       {/* A preset is a build's answer, so it says what it answers with. */}
       <div className="space-y-2">
         <h2 className="text-sm font-medium">Presets</h2>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-2">
           {PRESETS.map((preset) => {
             const active = preset.groups.every((id) => banned.includes(id));
 
@@ -273,7 +279,12 @@ export function MapSearch() {
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium">Banned ({chosen.length})</h2>
           {chosen.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => setBanned([])}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 sm:h-8"
+              onClick={() => setBanned([])}
+            >
               Clear
             </Button>
           )}
@@ -321,7 +332,7 @@ export function MapSearch() {
               : "Everything here is banned already."}
           </p>
         ) : (
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {shown.map((group) => (
               <label
                 key={group.id}
@@ -350,6 +361,7 @@ export function MapSearch() {
           <Button
             variant="ghost"
             size="sm"
+            className="h-9 sm:h-8"
             onClick={() => setShowAll((v) => !v)}
           >
             {showAll

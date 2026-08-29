@@ -54,10 +54,20 @@ export default function Page() {
                 </a>
               </Button>
               <span className="flex gap-1">
-                <Button asChild variant="link" size="sm" className="underline">
+                <Button
+                  asChild
+                  variant="link"
+                  size="sm"
+                  className="h-9 underline"
+                >
                   <a href={LEVELING_APP.portable}>Portable zip</a>
                 </Button>
-                <Button asChild variant="link" size="sm" className="underline">
+                <Button
+                  asChild
+                  variant="link"
+                  size="sm"
+                  className="h-9 underline"
+                >
                   <a
                     href={LEVELING_APP.repo}
                     target="_blank"
@@ -82,7 +92,7 @@ export default function Page() {
           />
         </Reveal>
 
-        <ol className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-3">
+        <ol className="mt-8 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-3">
           {LEVELING_SETUP.map((step, i) => (
             <Reveal
               key={step}

@@ -9,15 +9,20 @@ function Row({
   icon,
   name,
   title,
+  className,
   children,
 }: {
   icon?: ReactNode;
   name: string;
   title?: string;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <div title={title ?? name} className="flex items-center gap-2.5 px-3 py-2">
+    <div
+      title={title ?? name}
+      className={cn("flex items-center gap-2.5 px-3 py-2", className)}
+    >
       {icon}
       <div className="min-w-0">
         <div className="truncate text-sm font-medium">{name}</div>
@@ -77,7 +82,7 @@ export function ScarabPrices({
   return (
     /* One column in the rail, and a row of cards when the rail has had to
        become a block over the table on a narrower window. */
-    <div className="grid items-start gap-2 sm:grid-cols-2 lg:grid-cols-3 min-[1400px]:grid-cols-1">
+    <div className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 rail:grid-cols-1">
       {mirror !== undefined && (
         <Card>
           <Row
@@ -118,10 +123,14 @@ export function ScarabPrices({
       )}
 
       {scarabs.length > 0 && (
-        <Card className="sm:col-span-2 lg:col-span-1">
+        <Card className="col-span-2 sm:col-span-1">
+          {/* What the three cost one by one is a rail's worth of detail. On a
+              phone the band is over the table, where the total is the whole
+              answer and three more rows are three screens of scrolling. */}
           {scarabs.map((scarab) => (
             <Row
               key={scarab.id}
+              className="max-sm:hidden"
               name={scarab.name}
               title={scarab.fullName}
               icon={

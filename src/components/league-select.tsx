@@ -40,7 +40,7 @@ export function LeagueSelect({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="bg-card min-w-40 justify-between font-medium"
+          className="bg-card h-10 min-w-40 justify-between font-medium sm:h-9"
         >
           <span className="truncate">{current}</span>
           <ChevronDown className="text-muted-foreground size-3.5 shrink-0" />

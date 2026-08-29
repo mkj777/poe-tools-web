@@ -4,6 +4,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * The width at which a page can afford a rail beside its content. The sidebar
+ * has already taken 17rem, and a table of beast names wants 45rem of what is
+ * left, so the rail waits until there is room for both rather than taking its
+ * column out of the table's. Named, because the frame and the price cards have
+ * to agree on it.
+ */
+@theme {
+  --breakpoint-rail: 90rem;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

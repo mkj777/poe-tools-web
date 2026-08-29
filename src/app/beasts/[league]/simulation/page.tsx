@@ -26,13 +26,15 @@ export default async function Page({
   const beasts = (await loadBeasts(league)).filter(hasListing);
 
   return (
-    <PageFrame>
-      <PageHeader
-        title="Bestiary Sim"
-        description={`${beasts.length} beasts with a listing in ${league}, searched the way the game does, and priced, which the game will not do. An empty search shows all of them, as in game.`}
-        actions={<LeagueSelect leagues={leagues} league={league} />}
-      />
-
+    <PageFrame
+      header={
+        <PageHeader
+          title="Bestiary Sim"
+          description={`${beasts.length} beasts with a listing in ${league}, searched the way the game does, and priced, which the game will not do. An empty search shows all of them, as in game.`}
+          actions={<LeagueSelect leagues={leagues} league={league} />}
+        />
+      }
+    >
       <BestiarySimulator beasts={beasts} />
     </PageFrame>
   );

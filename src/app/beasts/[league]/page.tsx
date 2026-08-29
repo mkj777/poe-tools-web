@@ -45,6 +45,13 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
   return (
     <PageFrame
       asideFirst
+      header={
+        <PageHeader
+          title="Beast Prices"
+          description="Every beast on the market, and the Bestiary search that picks the ones worth the trip."
+          actions={<LeagueSelect leagues={leagues} league={league} />}
+        />
+      }
       aside={
         <ScarabPrices
           scarabs={scarabs}
@@ -54,12 +61,6 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
         />
       }
     >
-      <PageHeader
-        title="Beast Prices"
-        description="Every beast on the market, and the Bestiary search that picks the ones worth the trip."
-        actions={<LeagueSelect leagues={leagues} league={league} />}
-      />
-
       <BeastTable beasts={beasts} league={league} fetchedAt={fetchedAt} />
     </PageFrame>
   );

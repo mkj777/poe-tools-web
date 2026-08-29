@@ -248,7 +248,10 @@ export function MapSetup({
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          {/* Under the trigger rather than over it: aligned to the item, the
+              list is clipped to three of eleven and the rest are behind a
+              scroll button a finger cannot hold. */}
+          <SelectContent position="popper">
             <SelectItem value={NONE}>None</SelectItem>
             {astrolabes.map((entry) => (
               <SelectItem key={entry.id} value={entry.id}>

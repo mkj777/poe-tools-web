@@ -154,9 +154,14 @@ function StepRow({
   const [copied, setCopied] = useState(false);
 
   async function copy() {
-    await navigator.clipboard.writeText(step.pattern);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(step.pattern);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // No clipboard on an insecure origin. The field beside the button holds
+      // the pattern and selects itself on focus, so there is still a way.
+    }
   }
 
   return (
@@ -508,7 +513,7 @@ function HelpTip({ beasts }: { beasts: Beast[] }) {
       <Tooltip>
         <TooltipTrigger
           aria-label="What this is and how the patterns work"
-          className="text-foreground border-foreground/40 bg-secondary hover:bg-foreground hover:text-background mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border font-medium transition-colors"
+          className="text-foreground border-foreground/40 bg-secondary hover:bg-foreground hover:text-background mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full border font-medium transition-colors sm:size-7"
         >
           ?
         </TooltipTrigger>
@@ -679,7 +684,7 @@ export function BeastTable({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <label
             htmlFor="min-chaos"
             className="text-muted-foreground flex items-center gap-1.5"
@@ -700,7 +705,7 @@ export function BeastTable({
                   setTyped("");
                 }}
                 aria-pressed={threshold === preset}
-                className={`w-8 rounded-full py-1.5 text-sm tabular-nums transition-colors ${
+                className={`w-9 rounded-full py-2.5 text-sm tabular-nums transition-colors max-[359px]:w-8 sm:w-8 sm:py-1.5 ${
                   threshold === preset
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -726,7 +731,7 @@ export function BeastTable({
               placeholder="Other"
               aria-label="Any other minimum"
               // No spinner: the arrows are useless at these ranges and steal room.
-              className={`placeholder:text-muted-foreground/70 w-16 rounded-full border py-1.5 text-center text-sm tabular-nums transition-colors outline-none [appearance:textfield] focus:border-transparent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+              className={`placeholder:text-muted-foreground/70 w-16 rounded-full border py-1.5 text-center text-base tabular-nums max-[359px]:w-14 transition-colors outline-none [appearance:textfield] focus:border-transparent sm:text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
                 custom
                   ? "bg-background text-foreground border-transparent shadow-sm"
                   : "text-foreground border-border/80 hover:border-foreground/40 focus:bg-background border-dashed bg-transparent focus:shadow-sm"
@@ -772,7 +777,7 @@ export function BeastTable({
                       type="button"
                       onClick={() => toggle(col.key)}
                       aria-label={`Sort by ${col.name}`}
-                      className={`inline-flex items-center gap-1 hover:text-foreground ${
+                      className={`inline-flex items-center gap-1 py-2 hover:text-foreground ${
                         active ? "text-foreground font-medium" : ""
                       } ${col.numeric ? "flex-row-reverse" : ""}`}
                     >
@@ -828,7 +833,7 @@ export function BeastTable({
                             href={`https://poe.ninja/poe1/economy/${leagueSlug(league)}/beasts/${beast.detailsId}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="font-medium hover:underline"
+                            className="-my-2 inline-block py-2 font-medium hover:underline"
                           >
                             {beast.name}
                           </a>

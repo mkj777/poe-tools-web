@@ -38,6 +38,16 @@ export default async function Page({ params }: PageProps<"/maps/[league]">) {
 
   return (
     <PageFrame
+      header={
+        /* The page is one field and the controls that fill it, so the heading
+           says what the field is for rather than naming the page again over
+           the sidebar entry that already names it. */
+        <PageHeader
+          title="Highlight all the Maps you want to run with this Regex"
+          titleClassName="text-lg font-normal"
+          actions={<LeagueSelect leagues={leagues} league={league} />}
+        />
+      }
       aside={
         <MapSetup
           scarabs={scarabs}
@@ -46,15 +56,6 @@ export default async function Page({ params }: PageProps<"/maps/[league]">) {
         />
       }
     >
-      {/* The page is one field and the controls that fill it, so the heading
-          says what the field is for rather than naming the page again over the
-          sidebar entry that already names it. */}
-      <PageHeader
-        title="Highlight all the Maps you want to run with this Regex"
-        titleClassName="text-lg font-normal"
-        actions={<LeagueSelect leagues={leagues} league={league} />}
-      />
-
       <MapSearch />
     </PageFrame>
   );
