@@ -14,7 +14,6 @@ export type ToolIcon =
   { src: string; rounded?: boolean } | { glyph: GlyphName };
 
 export type GlyphName =
-  | "trade"
   | "ninja"
   | "wealth"
   | "antiquary"
@@ -74,7 +73,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   {
     name: "Trade",
     blurb: "Official trading market",
-    icon: { glyph: "trade" },
+    icon: { src: "/poe_trade_icon.svg" },
     href: (league) =>
       `https://www.pathofexile.com/trade/search/${encodeURIComponent(league)}`,
   },

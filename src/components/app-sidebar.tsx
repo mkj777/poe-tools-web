@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import {
-  ArrowLeftRight,
   ArrowUpRight,
   ChevronRight,
   Footprints,
@@ -56,7 +55,6 @@ import { cn } from "@/lib/utils";
  * gap in `public/` rather than a choice: an entry that has an asset wears it.
  */
 const GLYPHS: Record<GlyphName, LucideIcon> = {
-  trade: ArrowLeftRight,
   ninja: TrendingUp,
   wealth: Wallet,
   antiquary: Landmark,
@@ -79,6 +77,9 @@ function Icon({ icon }: { icon: ToolIcon }) {
       alt=""
       width={40}
       height={40}
+      // An SVG is already the size it needs to be, and the optimiser will not
+      // serve one anyway without being told to trust it.
+      unoptimized={icon.src.endsWith(".svg")}
       // The label names the entry, so the icon is decoration. A square logo is
       // rounded off to sit in the column; an item cut out of the game is not.
       className={cn(

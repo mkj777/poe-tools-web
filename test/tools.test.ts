@@ -21,18 +21,20 @@ test("no tool is listed twice", () => {
   assert.equal(new Set(links).size, links.length);
 });
 
-test("the three that run beside the client wear their own logo", () => {
+test("the tools with a mark of their own wear it", () => {
   for (const name of [
     "Path of Building",
     "FilterBlade",
     "Awakened PoE Trade",
+    "Trade",
   ]) {
     const { icon } = toolByName(name);
     assert.ok("src" in icon, `${name} is on a stand-in`);
     if ("src" in icon) {
-      assert.match(icon.src, /^\/[^/].*\.(png|webp)$/, name);
-      // Somebody else's square mark, rounded off to sit in the column.
-      assert.equal(icon.rounded, true, name);
+      assert.match(icon.src, /^\/[^/].*\.(png|webp|svg)$/, name);
+      // A square logo is rounded off to sit in the column. The scales are
+      // drawn on nothing, so they are not.
+      assert.equal(icon.rounded, name !== "Trade" ? true : undefined, name);
     }
   }
 });
@@ -42,7 +44,6 @@ test("the entries still waiting for an icon are named, not forgotten", () => {
     WITHOUT_ICON.map((t) => t.name),
     [
       "poe.ninja",
-      "Trade",
       "Wealthy Exile",
       "PoE Antiquary",
       "Disenchanting",

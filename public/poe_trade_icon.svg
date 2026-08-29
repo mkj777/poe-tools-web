@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="#dcc685">
+  <!-- The balance the trade site is marked with, redrawn: the beam and its
+       hook, two pans on their cords, and the flared foot under the post. The
+       colour is the average of the icon's own body, #dcc685. -->
+  <rect x="18.6" y="4.2" width="2.8" height="3" rx="0.9" />
+  <rect x="8" y="6.4" width="24" height="2.4" rx="1.2" />
+  <rect x="18.2" y="7" width="3.6" height="19.4" />
+  <g stroke="#dcc685" stroke-width="1.7" stroke-linecap="round" fill="none">
+    <path d="M9 9.2 3.4 17.2M9 9.2 14.6 17.2M31 9.2 25.4 17.2M31 9.2 36.6 17.2" />
+  </g>
+  <path d="M2.7 17.4a6.3 6.3 0 0 0 12.6 0Z" />
+  <path d="M24.7 17.4a6.3 6.3 0 0 0 12.6 0Z" />
+  <path d="M18.2 25.8q-1.2 4.2-11 6.8h25.6q-9.8-2.6-11-6.8Z" />
+</svg>
