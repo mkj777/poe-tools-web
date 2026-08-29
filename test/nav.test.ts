@@ -134,13 +134,7 @@ test("the sidebar opens on what a session opens with", () => {
   assert.equal(first.id, "essentials");
   assert.deepEqual(
     first.entries.map((e) => (e.kind === "page" ? e.page.label : e.link.name)),
-    [
-      "Path of Building",
-      "FilterBlade",
-      "Awakened PoE Trade",
-      "Leveling Guide",
-      "poe.ninja",
-    ],
+    ["Path of Building", "FilterBlade", "Awakened PoE Trade"],
   );
 });
 
@@ -149,7 +143,7 @@ test("the pages built here come next, under their own heading", () => {
   assert.equal(site.id, "site");
   assert.deepEqual(
     site.entries.map((e) => (e.kind === "page" ? e.page.slug : e.link.name)),
-    ["beasts", "maps"],
+    ["beasts", "maps", "leveling"],
   );
 });
 
@@ -160,14 +154,23 @@ test("what you reach for is open, the rest is folded away", () => {
       ["essentials", false],
       ["site", false],
       ["economy", true],
-      ["planning", true],
-      ["ingame", true],
+      ["more", true],
     ],
   );
 
-  // Seven entries on arrival rather than fifteen.
+  // Six entries on arrival rather than fifteen.
   const open = SIDEBAR.filter((g) => !g.folded).flatMap((g) => g.entries);
-  assert.equal(open.length, 7);
+  assert.equal(open.length, 6);
+});
+
+test("poe.ninja is one of the economy links, not one of the three", () => {
+  const economy = SIDEBAR.find((g) => g.id === "economy");
+  assert.deepEqual(
+    economy?.entries.map((e) =>
+      e.kind === "link" ? e.link.name : e.page.slug,
+    ),
+    ["poe.ninja", "Trade", "Wealthy Exile", "PoE Antiquary", "Disenchanting"],
+  );
 });
 
 test("every group has a heading and something under it", () => {

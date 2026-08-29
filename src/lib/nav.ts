@@ -115,10 +115,9 @@ const link = (name: string): SidebarEntry => ({
 
 /**
  * The order the sidebar reads in, which is not the order either list is
- * declared in. First is what a player opens every session, whether or not this
- * site is the one hosting it: the three that run beside the client, then the
- * overlay, then poe.ninja. The pages built here follow, and the rest are folded
- * away under the question they answer.
+ * declared in. First are the three that run beside the client every session,
+ * whoever hosts them. Then the pages built here. The rest is folded away under
+ * the question it answers, and unfolds on its heading.
  */
 export const SIDEBAR: readonly SidebarGroup[] = [
   {
@@ -128,20 +127,19 @@ export const SIDEBAR: readonly SidebarGroup[] = [
       link("Path of Building"),
       link("FilterBlade"),
       link("Awakened PoE Trade"),
-      page("leveling"),
-      link("poe.ninja"),
     ],
   },
   {
     id: "site",
     label: "This site",
-    entries: [page("beasts"), page("maps")],
+    entries: [page("beasts"), page("maps"), page("leveling")],
   },
   {
     id: "economy",
     label: "Economy",
     folded: true,
     entries: [
+      link("poe.ninja"),
       link("Trade"),
       link("Wealthy Exile"),
       link("PoE Antiquary"),
@@ -149,16 +147,18 @@ export const SIDEBAR: readonly SidebarGroup[] = [
     ],
   },
   {
-    id: "planning",
-    label: "Planning",
+    // Two jewel calculators, a regex generator and the day's labyrinth. Four
+    // entries that are each reached for now and then, which is one heading
+    // rather than two of two.
+    id: "more",
+    label: "More tools",
     folded: true,
-    entries: [link("Timeless Jewels"), link("Cluster Jewels")],
-  },
-  {
-    id: "ingame",
-    label: "In game",
-    folded: true,
-    entries: [link("PoE Regex"), link("PoELab")],
+    entries: [
+      link("Timeless Jewels"),
+      link("Cluster Jewels"),
+      link("PoE Regex"),
+      link("PoELab"),
+    ],
   },
 ];
 

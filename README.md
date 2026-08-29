@@ -7,13 +7,12 @@ than copied.
 ## The sidebar
 
 The sidebar is the point of the site now, so it is a directory rather than a
-menu. What opens first is what a session opens with, whether or not this site is
-the one hosting it: Path of Building, FilterBlade and Awakened PoE Trade, then
-the leveling overlay, then poe.ninja. The pages built here come under their own
-heading, and the rest are folded away under the question they answer, so the
-column arrives at seven entries rather than fifteen. Every entry carries a few
-words saying what it is, because a name alone is only useful once you already
-know it.
+menu. What opens first is what a session opens with, whoever hosts it: Path of
+Building, FilterBlade and Awakened PoE Trade. The pages built here come under
+their own heading, and the rest is folded away under the question it answers, so
+the column arrives at six entries rather than fifteen and unfolds on a heading.
+Every entry carries a few words saying what it is, because a name alone is only
+useful once you already know it.
 
 Trade and the disenchanting calculator are handed the league you are looking at,
 so the link lands where you already are.
