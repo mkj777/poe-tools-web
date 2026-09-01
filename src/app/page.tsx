@@ -163,7 +163,7 @@ export default async function Page() {
       header={
         <PageHeader
           title="Path of Exile tools"
-          description="Everything worth having in one list, and two of them built here. Beast prices and the map stash regex read live from poe.ninja; the rest are the community tools a league is actually played with. No account, no ads, nothing to install unless you want the leveling overlay."
+          description="Everything worth having in one list, and three of them built here. Beast prices and the Atlas exclusion costs read live from poe.ninja; the rest are the community tools a league is actually played with. No account, no ads, nothing to install unless you want the leveling overlay."
         />
       }
     >
@@ -172,7 +172,7 @@ export default async function Page() {
       <Section
         id="built-here"
         title="Built here"
-        lead="Two searches the game asks for and nothing else generates well, plus the overlay that walks you through the campaign."
+        lead="The Bestiary search the game asks for and nothing else generates well, what each Atlas exclusion costs you in scarabs, and the overlay that walks you through the campaign."
         entries={group("site").entries}
         league={league}
         slug={slug}

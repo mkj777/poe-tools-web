@@ -6,6 +6,7 @@ import {
   HOME_FAQ,
   LEVELING_FAQ,
   MAPS_FAQ,
+  SCARABS_FAQ,
 } from "../src/lib/faq.ts";
 import {
   ANSWER_ENGINES,
@@ -52,15 +53,30 @@ test("the origin carries no trailing slash of its own", () => {
 /* sitemap                                                                     */
 /* -------------------------------------------------------------------------- */
 
-test("the sitemap lists the home page, the overlay and every league page", () => {
+test("the sitemap lists the home page and every page of every tool", () => {
   const urls = sitemapEntries(LEAGUES).map((e) => e.url);
+  const withLeague = SITE_TOOLS.filter((t) => t.league);
+  const without = SITE_TOOLS.filter((t) => !t.league);
+
   assert.ok(urls.includes(canonical("/")));
-  assert.ok(urls.includes(canonical("/leveling")));
-  for (const league of LEAGUES) {
-    assert.ok(urls.includes(canonical(`/beasts/${league}`)), league);
-    assert.ok(urls.includes(canonical(`/maps/${league}`)), league);
+  for (const tool of without) {
+    assert.ok(urls.includes(canonical(`/${tool.slug}`)), tool.slug);
   }
-  assert.equal(urls.length, 2 + LEAGUES.length * 2);
+  for (const league of LEAGUES) {
+    for (const tool of withLeague) {
+      assert.ok(urls.includes(canonical(`/${tool.slug}/${league}`)), tool.slug);
+    }
+  }
+  assert.equal(
+    urls.length,
+    1 + without.length + LEAGUES.length * withLeague.length,
+  );
+});
+
+test("a tool the sidebar no longer offers is still in the sitemap", () => {
+  // Unlisted is not gone: the page answers, so a search result should land.
+  const urls = sitemapEntries(LEAGUES).map((e) => e.url);
+  assert.ok(urls.includes(canonical("/maps/allflame")));
 });
 
 test("the sitemap names no URL twice", () => {
@@ -83,6 +99,7 @@ test("the league everybody is playing outranks the ones they are not", () => {
   assert.equal(at("/").priority, 1);
   assert.ok(at("/beasts/allflame").priority > at("/beasts/standard").priority);
   assert.ok(at("/maps/allflame").priority > at("/maps/standard").priority);
+  assert.equal(at("/beasts/standard").changeFrequency, "monthly");
   for (const entry of entries) {
     assert.ok(entry.priority > 0 && entry.priority <= 1, entry.url);
   }
@@ -203,10 +220,11 @@ test("the site names itself once and everything else points at that", () => {
   assert.equal(site.publisher["@id"], org["@id"]);
 });
 
-test("the directory lists every tool the site has, once, in order", () => {
+test("the directory lists every tool the site offers, once, in order", () => {
   const list = ld(toolListLd());
   const items = list.itemListElement;
-  assert.equal(list.numberOfItems, SITE_TOOLS.length + EXTERNAL_TOOLS.length);
+  const offered = SITE_TOOLS.filter((t) => !t.unlisted).length;
+  assert.equal(list.numberOfItems, offered + EXTERNAL_TOOLS.length);
   assert.equal(items.length, list.numberOfItems);
   items.forEach((item: { position: number; url: string }, i: number) => {
     assert.equal(item.position, i + 1);
@@ -246,7 +264,13 @@ test("a question in the markup is the same question as on the page", () => {
 /* the copy itself                                                             */
 /* -------------------------------------------------------------------------- */
 
-const ALL_FAQ = [...HOME_FAQ, ...BEASTS_FAQ, ...MAPS_FAQ, ...LEVELING_FAQ];
+const ALL_FAQ = [
+  ...HOME_FAQ,
+  ...BEASTS_FAQ,
+  ...MAPS_FAQ,
+  ...SCARABS_FAQ,
+  ...LEVELING_FAQ,
+];
 
 test("every question is a question, and no two are the same", () => {
   for (const faq of ALL_FAQ) {

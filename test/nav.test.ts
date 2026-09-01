@@ -12,6 +12,7 @@ import {
   swapLeague,
   toolBySlug,
   toolHref,
+  unlistedPages,
   unlistedTools,
 } from "../src/lib/nav.ts";
 import { EXTERNAL_TOOLS } from "../src/lib/tools.ts";
@@ -20,10 +21,10 @@ const beasts = toolBySlug("beasts")!;
 const maps = toolBySlug("maps")!;
 const leveling = toolBySlug("leveling")!;
 
-test("the site hosts three tools", () => {
+test("the site hosts four tools", () => {
   assert.deepEqual(
     SITE_TOOLS.map((t) => t.slug),
-    ["beasts", "maps", "leveling"],
+    ["beasts", "maps", "scarabs", "leveling"],
   );
   assert.equal(HOME.slug, "beasts");
 });
@@ -55,6 +56,7 @@ test("slugs are unique and URL safe", () => {
 test("only the tools that read prices carry a league", () => {
   assert.equal(beasts.league, true);
   assert.equal(maps.league, true);
+  assert.equal(toolBySlug("scarabs")!.league, true);
   assert.equal(leveling.league, undefined);
 });
 
@@ -160,8 +162,21 @@ test("the pages built here come next, under their own heading", () => {
   assert.equal(site.id, "site");
   assert.deepEqual(
     site.entries.map((e) => (e.kind === "page" ? e.page.slug : e.link.name)),
-    ["beasts", "maps", "leveling"],
+    ["beasts", "scarabs", "leveling"],
   );
+});
+
+test("the map regex is built, reachable and offered to nobody", () => {
+  // It answers at /maps/<league> and is in the sitemap. It is in no menu, on
+  // no card, and `page()` refuses to put it in one by accident.
+  assert.deepEqual(
+    unlistedPages().map((t) => t.slug),
+    ["maps"],
+  );
+  const names = SIDEBAR_ENTRIES.map((e) =>
+    e.kind === "page" ? e.page.slug : e.link.name,
+  );
+  assert.ok(!names.includes("maps"));
 });
 
 test("what you reach for is open, the rest is one folded heading", () => {
@@ -217,11 +232,12 @@ test("no entry is listed twice", () => {
   assert.equal(new Set(names).size, names.length);
 });
 
-test("every tool of this site is somewhere in the sidebar", () => {
+test("every tool of this site that is offered is in the sidebar", () => {
   const pages = SIDEBAR_ENTRIES.flatMap((e) =>
     e.kind === "page" ? [e.page.slug] : [],
   );
-  assert.deepEqual([...pages].sort(), ["beasts", "leveling", "maps"]);
+  const offered = SITE_TOOLS.filter((t) => !t.unlisted).map((t) => t.slug);
+  assert.deepEqual([...pages].sort(), [...offered].sort());
 });
 
 test("the simulation exists and is deliberately not in the sidebar", () => {

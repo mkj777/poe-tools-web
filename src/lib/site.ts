@@ -32,7 +32,7 @@ export const SITE_NAME = "Path of Tools";
  * answer engine quotes.
  */
 export const SITE_DESCRIPTION =
-  "A directory of every Path of Exile tool worth using, with live Bestiary beast prices and a map stash regex built in. Free, no account, no ads.";
+  "A directory of every Path of Exile tool worth using, with live Bestiary beast prices and Atlas scarab exclusion costs built in. Free, no account, no ads.";
 
 /**
  * Terms a page may be found by. Google has ignored the keywords meta since

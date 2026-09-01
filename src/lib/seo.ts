@@ -25,10 +25,15 @@ export type SitemapEntry = {
 /**
  * Every URL worth crawling, and nothing else.
  *
- * The bare tool paths are left out on purpose: they redirect to a league, and a
- * sitemap full of redirects spends crawl budget to arrive where the next line
- * already points. The first league poe.ninja lists is the current one, which is
- * the page nearly every visit wants, so it is the one ranked highest here.
+ * Built from the same list the sidebar is, so a tool added to the site is in
+ * the sitemap without anybody remembering to put it there, and a tool the
+ * sidebar no longer offers is still listed here: unlisted means offered to
+ * nobody, not gone.
+ *
+ * The bare tool paths are left out on purpose. They redirect to a league, and
+ * a sitemap full of redirects spends a crawl to arrive where the next line
+ * already points. The first league poe.ninja lists is the current one, which
+ * is the page nearly every visit wants, so it is the one ranked highest.
  */
 export function sitemapEntries(
   leagueSlugs: readonly string[],
@@ -41,33 +46,32 @@ export function sitemapEntries(
       changeFrequency: "weekly",
       priority: 1,
     },
-    {
-      url: canonical("/leveling"),
+  ];
+
+  for (const tool of SITE_TOOLS) {
+    if (tool.league) continue;
+    entries.push({
+      url: canonical(`/${tool.slug}`),
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.8,
-    },
-  ];
+    });
+  }
 
   leagueSlugs.forEach((slug, i) => {
     // Past leagues are the same pages over colder numbers. They stay in, since
     // a standard price is still a price somebody looks up, but they do not
     // compete with the league everyone is actually playing.
     const current = i === 0;
-    entries.push(
-      {
-        url: canonical(`/beasts/${slug}`),
-        lastModified: now,
-        changeFrequency: "daily",
-        priority: current ? 0.9 : 0.5,
-      },
-      {
-        url: canonical(`/maps/${slug}`),
+    for (const tool of SITE_TOOLS) {
+      if (!tool.league) continue;
+      entries.push({
+        url: canonical(`/${tool.slug}/${slug}`),
         lastModified: now,
         changeFrequency: current ? "daily" : "monthly",
-        priority: current ? 0.9 : 0.4,
-      },
-    );
+        priority: current ? 0.9 : 0.5,
+      });
+    }
   });
 
   return entries;
@@ -289,7 +293,9 @@ export function faqLd(faqs: readonly Faq[]): Ld {
 /** The directory itself: what the home page lists, in the order it lists it. */
 export function toolListLd(): Ld {
   const listed = [
-    ...SITE_TOOLS.map((tool) => ({
+    // The unlisted ones are on no card of the home page, and structured data
+    // that describes a page has to describe the page that is there.
+    ...SITE_TOOLS.filter((tool) => !tool.unlisted).map((tool) => ({
       name: tool.label,
       url: canonical(`/${tool.slug}`),
       description: tool.blurb,

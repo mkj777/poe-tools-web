@@ -25,6 +25,14 @@ export type SiteTool = {
   icon: ToolIcon;
   /** Reads prices, so its URL carries the league they were read for. */
   league?: boolean;
+  /**
+   * Answers at its URL and appears in no menu, no directory and no card.
+   *
+   * Not the same as gone: the page is built, linked to from outside and listed
+   * in the sitemap, so a bookmark and a search result both still land on it.
+   * It is simply not something the site offers you.
+   */
+  unlisted?: boolean;
 };
 
 export const SITE_TOOLS: readonly SiteTool[] = [
@@ -41,9 +49,20 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     slug: "maps",
     label: "Map Regex",
     blurb: "Filter maps in stash",
+    // Reachable at /maps/<league> and from nowhere on the site.
+    unlisted: true,
     about:
       "Tick the map modifiers your build cannot survive and get back the stash search that dims every map carrying one of them, short enough to paste into the field in one go.",
     icon: { src: "/Nightmare_Map_(Curse_of_the_Allflame)_inventory_icon.png" },
+    league: true,
+  },
+  {
+    slug: "scarabs",
+    label: "Scarab Exclusion",
+    blurb: "What each exclusion costs you",
+    about:
+      "The Atlas keystones that take a mechanic out of your maps, priced by the scarabs they take with it, so you can see which content you can afford to switch off and which you cannot.",
+    icon: { src: "/Kalguuran_Scarab_inventory_icon.png" },
     league: true,
   },
   {
@@ -113,6 +132,7 @@ export type SidebarGroup = {
 const page = (slug: string): SidebarEntry => {
   const tool = toolBySlug(slug);
   if (!tool) throw new Error(`No tool at /${slug}`);
+  if (tool.unlisted) throw new Error(`/${slug} is unlisted`);
   return { kind: "page", page: tool };
 };
 
@@ -142,7 +162,7 @@ export const SIDEBAR: readonly SidebarGroup[] = [
   {
     id: "site",
     label: "This site",
-    entries: [page("beasts"), page("maps"), page("leveling")],
+    entries: [page("beasts"), page("scarabs"), page("leveling")],
   },
   {
     // Everything else, under one heading rather than sorted into three that
@@ -171,6 +191,11 @@ export const SIDEBAR_ENTRIES = SIDEBAR.flatMap((group) => group.entries);
  * unfinished, and a sidebar is a promise that what is in it is not.
  */
 export const UNLISTED = ["simulation"] as const;
+
+/** The pages this site builds and does not offer. */
+export function unlistedPages() {
+  return SITE_TOOLS.filter((t) => t.unlisted);
+}
 
 /** What the catalogue holds that the sidebar forgot. */
 export function unlistedTools() {

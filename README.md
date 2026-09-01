@@ -34,13 +34,19 @@ their path was a fiction.
 /beasts/<league>              the beasts, and the Bestiary search for them
 /beasts/<league>/simulation   the same beasts in a mock Bestiary window,
                               unfinished, and in no menu because of it
-/maps/<league>                the map regex, and what a map costs to set up
+/scarabs/<league>             what each Atlas exclusion costs you in scarabs
+/maps/<league>                the map regex, in no menu and reachable by URL
 /leveling                     the overlay, which carries no league at all
 ```
 
 The league is picked on the page, beside the prices it belongs to, and the tools
 still to come each decide for themselves whether they have one. The old
 league-first URLs redirect to where their pages live now.
+
+The map regex is `unlisted`: it answers, it is in the sitemap and in
+`/llms.txt`, and it appears in no menu and on no card. `page()` throws if
+anybody puts an unlisted tool in the sidebar by accident, so it stays that way
+until the flag comes off.
 
 `/` used to redirect to the beasts. It does not any more: the strongest URL a
 site has cannot be a page that only points somewhere else, and there was nothing

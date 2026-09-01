@@ -23,7 +23,7 @@ export const HOME_FAQ: readonly Faq[] = [
   {
     question: "Are these Path of Exile tools free?",
     answer:
-      "Yes. Every tool listed here is free and community made, and most are open source. This site asks for no account, runs no ads and stores nothing about you. It is a directory with two tools of its own, not a service.",
+      "Yes. Every tool listed here is free and community made, and most are open source. This site asks for no account, runs no ads and stores nothing about you. It is a directory with three tools of its own, not a service.",
   },
   {
     question: "Where do the prices on this site come from?",
@@ -80,6 +80,29 @@ export const MAPS_FAQ: readonly Faq[] = [
     question: "Do map modifiers change between leagues?",
     answer:
       "The modifier list itself does not, so the search you build here holds from one league to the next. The prices beside it do change, which is the only reason this page carries a league at all: the scarabs and the divine rate come from poe.ninja for the one you picked.",
+  },
+];
+
+export const SCARABS_FAQ: readonly Faq[] = [
+  {
+    question: "Which Atlas content is cheapest to disable?",
+    answer:
+      "Straight and Narrow, and it is not close. Smuggler's Caches are the one mechanic of the twelve with no scarabs of their own, so switching Heist off costs you nothing on the exchange. Every other answer moves with the league, which is what the prices on this page are for.",
+  },
+  {
+    question: "What are the Atlas passives that disable map content?",
+    answer:
+      "Twelve of them, each taking one mechanic out of your maps and stopping that mechanic's scarabs dropping there. In return each gives your maps two percent more chance of carrying the other kinds of content, so taking several of them is how a specialised atlas gets built.",
+  },
+  {
+    question: "Are they Atlas keystones or notables?",
+    answer:
+      "Notables. Everyone calls them keystones, this page included, but not one of the twelve carries the keystone flag in the tree data the game serves, and none sits in a keystone socket. It only matters if you are counting what your keystone allocations have left to spend.",
+  },
+  {
+    question: "Do the scarabs still drop if I take the passive?",
+    answer:
+      "No. Each of the twelve adds a line saying the scarabs found in your maps cannot be that mechanic's, so the family stops appearing for you at all. That is why the price of the family is the price of the passive, and why comparing them is worth doing.",
   },
 ];
 
