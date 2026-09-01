@@ -4,7 +4,6 @@ import {
   BOOSTS,
   EXCLUSIONS,
   priceNodes,
-  unclaimedScarabs,
   type ScarabNode,
 } from "../src/lib/scarab-nodes.ts";
 import type { ExchangeItem } from "../src/lib/ninja.ts";
@@ -104,25 +103,20 @@ test("a row says the part of the name the heading has not said", () => {
 
 test("a family is matched on a whole word, not on a run of letters", () => {
   // "Ambushing Scarab of Nothing" is worth more than the rest put together,
-  // so claiming it would put its keystone at the top of the page.
+  // so claiming it would put its node at the top of the page.
   const [ambush] = priceNodes(MARKET, FAKE);
   assert.ok(!ambush.scarabs.some((s) => s.name.startsWith("Ambushing")));
-  assert.ok(
-    unclaimedScarabs(MARKET, FAKE).some((s) => s.name.startsWith("Ambushing")),
-  );
 });
 
-test("what no keystone claims is what no keystone can take from you", () => {
-  const left = unclaimedScarabs(MARKET, FAKE).map((s) => s.name);
-  assert.deepEqual(left, [
-    "Cartography Scarab of Risk",
-    "Ambushing Scarab of Nothing",
-  ]);
+test("a family nothing belongs to takes nothing with it", () => {
+  const priced = priceNodes(MARKET, FAKE);
+  const claimed = priced.flatMap((n) => n.scarabs.map((s) => s.name));
+  // Cartography belongs to no node in FAKE, so it is nobody's to lose.
+  assert.ok(!claimed.includes("Cartography Scarab of Risk"));
 });
 
 test("nothing is priced when the exchange answers with nothing", () => {
   assert.deepEqual(priceNodes([], FAKE), []);
-  assert.deepEqual(unclaimedScarabs([], FAKE), []);
 });
 
 test("every keystone is named once and knows what it takes away", () => {
@@ -135,7 +129,6 @@ test("every keystone is named once and knows what it takes away", () => {
     assert.match(keystone.id, /^[a-z-]+$/, keystone.notable);
     assert.ok(keystone.notable.length > 0, keystone.id);
     assert.ok(keystone.effect.endsWith("."), keystone.id);
-    if (keystone.note) assert.ok(keystone.note.endsWith("."), keystone.id);
     // Every one but the scarabless has a family to take away from you.
     assert.equal(keystone.prefixes.length > 0, !keystone.scarabless);
   }

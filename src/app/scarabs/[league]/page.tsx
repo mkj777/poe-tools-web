@@ -3,12 +3,7 @@ import { notFound } from "next/navigation";
 import { leagueParams, resolveLeague } from "@/lib/league";
 import { getAllScarabs, leagueSlug } from "@/lib/ninja";
 import { SCARABS_FAQ } from "@/lib/faq";
-import {
-  BOOSTS,
-  EXCLUSIONS,
-  priceNodes,
-  unclaimedScarabs,
-} from "@/lib/scarab-nodes";
+import { BOOSTS, EXCLUSIONS, priceNodes } from "@/lib/scarab-nodes";
 import { breadcrumbLd, webAppLd } from "@/lib/seo";
 import { OG_IMAGE, canonical } from "@/lib/site";
 import { FaqSection } from "@/components/faq-section";
@@ -61,16 +56,13 @@ export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
   const scarabs = await getAllScarabs(league).catch(() => []);
   const exclusions = priceNodes(scarabs, EXCLUSIONS);
   const boosts = priceNodes(scarabs, BOOSTS);
-  // Most scarabs belong to content that cannot be switched off at all, which
-  // is worth saying once: the twelve are a small part of the scarab economy.
-  const untouchable = unclaimedScarabs(scarabs, EXCLUSIONS).length;
 
   return (
     <PageFrame
       header={
         <PageHeader
           title="Scarab Exclusion"
-          description="Every Atlas passive that touches one family of scarabs: the twelve that take a mechanic out of your maps, and the nine that make a family drop more often. Both are priced off the currency exchange, so the decision is made on what a family is actually selling for."
+          description="What each Atlas passive is worth, in the scarabs it takes away or finds."
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />
       }
@@ -91,13 +83,6 @@ export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
       />
 
       <ScarabNodes exclusions={exclusions} boosts={boosts} />
-
-      {untouchable > 0 && (
-        <p className="text-muted-foreground mt-6 text-sm text-pretty">
-          {untouchable} other priced scarabs belong to content no Atlas passive
-          can switch off, so they are not part of the comparison.
-        </p>
-      )}
 
       <FaqSection
         faqs={SCARABS_FAQ}

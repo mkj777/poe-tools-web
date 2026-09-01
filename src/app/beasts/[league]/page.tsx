@@ -79,7 +79,7 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
       header={
         <PageHeader
           title="Beast Regex"
-          description="Every beast on the market for this league, and the Bestiary search that picks out the ones worth the trip. Prices come from poe.ninja and the trade site, and are never more than 15 minutes old."
+          description="Every beast on the market, and the Bestiary search for the ones worth catching."
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />
       }

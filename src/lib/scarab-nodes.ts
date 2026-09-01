@@ -15,8 +15,14 @@ import type { ExchangeItem } from "./ninja.ts";
  * one mechanic has no scarabs at all, which is why this is a table rather than
  * a string comparison.
  *
- * Names and stat lines were read out of GGG's own Atlas tree data and the trade
- * site's static item list at 3.29.3, not out of a wiki.
+ * Every name and every line below was read out of GGG's published Atlas tree
+ * export at 3.29 and then checked a second time against the wiki, which agrees
+ * on all twenty one. Nothing here is remembered or inferred. The lines are the
+ * game's own words with the subject dropped, since the card above them has
+ * already said whose maps and whose scarabs are meant:
+ *
+ *   "Your Maps have no chance to contain Abysses"
+ *   "Scarabs dropped in your Maps have 100% increased chance to be Essence Scarabs"
  */
 export type ScarabNode = {
   id: string;
@@ -26,8 +32,6 @@ export type ScarabNode = {
   effect: string;
   /** What the names of the family's scarabs begin with. */
   prefixes: readonly string[];
-  /** Anything this one does that the ones beside it do not. */
-  note?: string;
   /**
    * The content has no scarabs of its own, so nothing is at stake here. A real
    * zero, and not the same thing as a family the exchange failed to price.
@@ -36,25 +40,20 @@ export type ScarabNode = {
 };
 
 /**
- * What all twelve exclusions hand back, word for word, so the cards do not each
- * repeat it.
+ * The twelve that switch a mechanic off. Notables, strictly: not one carries
+ * the keystone flag in the tree data, though everybody calls them keystones and
+ * so does this page's title. A sweep of every node for "no chance to contain"
+ * returns these twelve and nothing else.
  *
- * They really are identical. poedb still shows +5% on two of them and drops the
- * line from two others; the tree data GGG serves says +2% on all twelve.
- */
-export const SHARED_GRANT =
-  "Your Maps have +2% chance to contain other Extra Content that can be turned off through Atlas Passives";
-
-/**
- * The twelve that switch a mechanic off. Notables, strictly: not one of them
- * carries the keystone flag in the tree data, though everybody calls them
- * keystones and so does this page's title.
+ * Eleven of them also say "Scarabs found in your Maps cannot be X Scarabs",
+ * which is where each family below comes from. Three of those families are not
+ * named after the mechanic, and the twelfth has no such line at all.
  */
 export const EXCLUSIONS: readonly ScarabNode[] = [
   {
     id: "loved-by-the-sun",
     notable: "Loved by the Sun",
-    effect: "Disables Abysses.",
+    effect: "No chance to contain Abysses.",
     // The 3.29 notes rename one of these to "Abyssal Scarab of the Consort"
     // while the live item list still says "Abyss". Both prefixes are claimed,
     // because whichever is right, the family should not quietly go missing.
@@ -63,31 +62,31 @@ export const EXCLUSIONS: readonly ScarabNode[] = [
   {
     id: "fungal-remission",
     notable: "Fungal Remission",
-    effect: "Disables Blight Encounters.",
+    effect: "No chance to contain Blight Encounters.",
     prefixes: ["Blight"],
   },
   {
     id: "dimensional-barrier",
     notable: "Dimensional Barrier",
-    effect: "Disables Breaches.",
+    effect: "No chance to contain Breaches.",
     prefixes: ["Breach"],
   },
   {
     id: "trade-embargo",
     notable: "Trade Embargo",
-    effect: "Disables Expedition Encounters.",
+    effect: "No chance to contain Expedition Encounters.",
     prefixes: ["Expedition"],
   },
   {
     id: "sealed-domain",
     notable: "Sealed Domain",
-    effect: "Disables Legion Encounters.",
+    effect: "No chance to contain Legion Encounters.",
     prefixes: ["Legion"],
   },
   {
     id: "civil-war-in-trarthus",
     notable: "Civil War in Trarthus",
-    effect: "Disables Mercenaries.",
+    effect: "No chance to contain Mercenaries.",
     // Named after Trarthus, not after the mercenaries it removes. New in 3.29,
     // which is why every list of these written before it counts eleven.
     prefixes: ["Trarthan"],
@@ -95,41 +94,40 @@ export const EXCLUSIONS: readonly ScarabNode[] = [
   {
     id: "ominous-silence",
     notable: "Ominous Silence",
-    effect: "Disables Mirrors of Delirium.",
+    effect: "No chance to contain Mirrors of Delirium.",
     prefixes: ["Delirium"],
   },
   {
     id: "miners-strike",
     notable: "Miner's Strike",
-    effect: "Disables Ore Deposits.",
+    effect: "No chance to contain Ore Deposits.",
     // The Kalguur dig for them, and the scarabs are named after the Kalguur.
     prefixes: ["Kalguuran"],
   },
   {
     id: "secular-focus",
     notable: "Secular Focus",
-    effect: "Disables Ritual Altars.",
+    effect: "No chance to contain Ritual Altars.",
     prefixes: ["Ritual"],
   },
   {
     id: "black-thumb",
     notable: "Black Thumb",
-    effect: "Disables the Sacred Grove.",
+    effect: "No chance to contain the Sacred Grove.",
     // The grove is Harvest, and the scarabs kept the league's name.
     prefixes: ["Harvest"],
   },
   {
     id: "straight-and-narrow",
     notable: "Straight and Narrow",
-    effect: "Disables Smuggler's Caches.",
+    effect: "No chance to contain Smuggler's Caches.",
     prefixes: [],
     scarabless: true,
-    note: "Rogue's Markers, Contracts and Blueprints stop dropping in your maps as well.",
   },
   {
     id: "servant-of-order",
     notable: "Servant of Order",
-    effect: "Disables Ultimatum Encounters.",
+    effect: "No chance to contain Ultimatum Encounters.",
     prefixes: ["Ultimatum"],
   },
 ];
@@ -140,12 +138,13 @@ export const EXCLUSIONS: readonly ScarabNode[] = [
  * the family, the more the node is worth spending points on.
  *
  * Not one of the nine is named after the family it finds, and the node icons
- * are of other leagues entirely, so every line below comes from the stat text
- * of the node itself rather than from its name or its picture.
+ * belong to other leagues entirely, so every family below comes from the stat
+ * text of the node rather than from its name or its picture.
  *
- * Fifteen further notables bias a family too, at 16 to 40 percent and bundled
- * with a spawn chance line, and they are deliberately not here: these nine are
- * the set that does nothing else.
+ * Exactly nine: a sweep for "Carapace" across the tree returns these and no
+ * tenth. Fifteen further notables bias a family too, but at 16 to 40 percent
+ * and bundled with a spawn chance line. These nine are the set at 100 that
+ * does nothing else.
  */
 export const BOOSTS: readonly ScarabNode[] = [
   {
@@ -277,17 +276,4 @@ export function priceNodes(
       },
     ];
   });
-}
-
-/**
- * The scarabs no exclusion can take away from you: the families whose content
- * cannot be switched off, plus the handful that carry no family name at all.
- * They roll on any map, so they are not part of that comparison.
- */
-export function unclaimedScarabs(
-  scarabs: readonly ExchangeItem[],
-  nodes: readonly ScarabNode[] = EXCLUSIONS,
-) {
-  const prefixes = nodes.flatMap((n) => n.prefixes);
-  return scarabs.filter((s) => !belongsTo(s.name, prefixes));
 }

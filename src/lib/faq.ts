@@ -74,7 +74,7 @@ export const MAPS_FAQ: readonly Faq[] = [
   {
     question: "Which map mods should you avoid?",
     answer:
-      "That depends on the build, which is why this page asks instead of assuming. The ones most often banned are the reflecting thorns modifiers, no life and mana regeneration, less recovery rate, and monster damage taken as an extra element. Tick what would kill you and the rest stay lit.",
+      "That depends on the build, which is why this page asks instead of assuming. Tick the modifiers your character cannot survive and it writes the stash search that hides every map carrying one of them, short enough to paste into the field in one go.",
   },
   {
     question: "Do map modifiers change between leagues?",
@@ -87,12 +87,12 @@ export const SCARABS_FAQ: readonly Faq[] = [
   {
     question: "Which Atlas content is cheapest to disable?",
     answer:
-      "Straight and Narrow, and it is not close. Smuggler's Caches are the one mechanic of the twelve with no scarabs of their own, so switching Heist off costs you nothing on the exchange. Every other answer moves with the league, which is what the prices on this page are for.",
+      "Straight and Narrow. Smuggler's Caches are the one mechanic of the twelve with no scarabs of their own, so nothing on the currency exchange is given up by switching Heist off. Every other answer moves with the league, which is what the prices on this page are for.",
   },
   {
     question: "What are the Atlas passives that disable map content?",
     answer:
-      "Twelve of them, each taking one mechanic out of your maps and stopping that mechanic's scarabs dropping there. In return each gives your maps two percent more chance of carrying the other kinds of content, so taking several of them is how a specialised atlas gets built.",
+      "Twelve notables, each carrying a line saying your maps have no chance to contain one mechanic. All twelve give back the same thing, word for word: your maps have a two percent better chance of containing the other kinds of content that an Atlas passive can turn off.",
   },
   {
     question: "Which Atlas passives increase scarab drop chance?",
@@ -102,12 +102,12 @@ export const SCARABS_FAQ: readonly Faq[] = [
   {
     question: "Are they Atlas keystones or notables?",
     answer:
-      "Notables. Everyone calls them keystones, this page included, but not one of the twelve carries the keystone flag in the tree data the game serves, and none sits in a keystone socket. It only matters if you are counting what your keystone allocations have left to spend.",
+      "Notables. Everybody calls them keystones, this page included, but not one of the twelve carries the keystone flag in the Atlas tree data the game itself serves, and not one of them sits in a keystone socket. The only Atlas keystone that touches scarabs at all is Unwavering Vision.",
   },
   {
     question: "Do the scarabs still drop if I take the passive?",
     answer:
-      "No. Each of the twelve adds a line saying the scarabs found in your maps cannot be that mechanic's, so the family stops appearing for you at all. That is why the price of the family is the price of the passive, and why comparing them is worth doing.",
+      "No. Eleven of the twelve carry a second line saying the scarabs found in your maps cannot be that mechanic's, so the whole family stops dropping for you. The twelfth, Straight and Narrow, needs no such line, because Smuggler's Caches have no scarabs to stop in the first place.",
   },
 ];
 

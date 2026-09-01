@@ -103,7 +103,6 @@ function ToolCard({
 function Section({
   id,
   title,
-  lead,
   entries,
   league,
   slug,
@@ -111,7 +110,6 @@ function Section({
 }: {
   id: string;
   title: string;
-  lead: string;
   entries: readonly SidebarEntry[];
   league: string;
   slug: string;
@@ -123,9 +121,6 @@ function Section({
         <h2 id={id} className="text-lg font-semibold tracking-tight">
           {title}
         </h2>
-        <p className="text-muted-foreground mt-1 max-w-2xl text-sm text-pretty">
-          {lead}
-        </p>
         <ul className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 rail:grid-cols-3">
           {entries.map((entry) => (
             <ToolCard
@@ -163,7 +158,7 @@ export default async function Page() {
       header={
         <PageHeader
           title="Path of Exile tools"
-          description="Everything worth having in one list, and three of them built here. Beast prices and the Atlas exclusion costs read live from poe.ninja; the rest are the community tools a league is actually played with. No account, no ads, nothing to install unless you want the leveling overlay."
+          description="Every Path of Exile tool worth having, in one list. Three of them are built here."
         />
       }
     >
@@ -172,7 +167,6 @@ export default async function Page() {
       <Section
         id="built-here"
         title="Built here"
-        lead="The Bestiary search the game asks for and nothing else generates well, what each Atlas exclusion costs you in scarabs, and the overlay that walks you through the campaign."
         entries={group("site").entries}
         league={league}
         slug={slug}
@@ -182,7 +176,6 @@ export default async function Page() {
       <Section
         id="essentials"
         title="The essentials"
-        lead="If you install nothing else, install these. Between them they cover planning a character, seeing your loot, pricing an item and buying it."
         entries={group("essentials").entries}
         league={league}
         slug={slug}
@@ -192,7 +185,6 @@ export default async function Page() {
       <Section
         id="more-tools"
         title="Worth knowing about"
-        lead="Narrower tools that are the best answer to one question each, from what your stash is worth to which timeless jewel seed you need."
         entries={group("more").entries}
         league={league}
         slug={slug}

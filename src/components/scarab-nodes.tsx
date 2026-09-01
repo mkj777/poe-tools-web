@@ -4,54 +4,37 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Price } from "@/components/currency";
 import { Button } from "@/components/ui/button";
-import { SHARED_GRANT, type PricedNode } from "@/lib/scarab-nodes";
+import type { PricedNode } from "@/lib/scarab-nodes";
 import { cn } from "@/lib/utils";
 
 /**
  * The Atlas passives that touch one family of scarabs, priced.
  *
- * Two lists, read in opposite directions and ranked the same way. An exclusion
- * takes a family out of your maps, so its price is what the passive costs you
- * and the cheapest is the one to take. A boost raises how often a family drops,
- * so its price is what the passive is worth and the dearest is the one to take.
+ * Two lists, ranked the same way and read in opposite directions: an exclusion
+ * takes a family out of your maps, so its price is what it costs you, and a
+ * boost raises how often a family drops, so its price is what it is worth.
  *
- * Both need more than one number. The families are not the same size, so a sum
- * rewards the big ones and an average rewards a family with one expensive
- * scarab in it, and which of those is the fair comparison depends on whether
- * you farm the whole pool or the one line at the top of it.
+ * Three numbers rather than one, because the families are not the same size.
+ * The buttons are the whole explanation: a page that has to say in a paragraph
+ * what a sum and an average are is not worth the paragraph.
  */
 
 type SortKey = "total" | "average" | "top";
 
-const SORTS: Record<
-  SortKey,
-  { label: string; note: string; of: (m: PricedNode) => number }
-> = {
-  total: {
-    label: "One of each",
-    note: "Every scarab of the family added up. It rewards the larger families, which is fair when what is at stake is the whole drop pool.",
-    of: (m) => m.total,
-  },
-  average: {
-    label: "Average",
-    note: "The same pool per scarab. The comparison to use when a family of three should not lose to a family of six for being smaller.",
-    of: (m) => m.average,
-  },
-  top: {
-    label: "Dearest",
-    note: "The single most expensive scarab of the family, which is usually the only one anybody sets out to farm.",
-    of: (m) => m.top,
-  },
-};
+const SORTS: Record<SortKey, { label: string; of: (m: PricedNode) => number }> =
+  {
+    total: { label: "One of each", of: (m) => m.total },
+    average: { label: "Average", of: (m) => m.average },
+    top: { label: "Dearest", of: (m) => m.top },
+  };
 
 const ORDER = ["total", "average", "top"] as const;
 
 function Scarabs({ node }: { node: PricedNode }) {
   if (node.scarabs.length === 0) {
     return (
-      <p className="text-muted-foreground px-3 py-2 text-sm text-pretty">
-        That content has no scarabs of its own, so this one costs you nothing to
-        take.
+      <p className="text-muted-foreground px-3 py-2 text-sm">
+        No scarabs of its own.
       </p>
     );
   }
@@ -108,13 +91,10 @@ function Card({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2">
             <h3 className="font-medium text-pretty">{node.notable}</h3>
-            {extreme && (
-              <span className="text-primary text-xs">{extreme}</span>
-            )}
+            {extreme && <span className="text-primary text-xs">{extreme}</span>}
           </div>
           <p className="text-muted-foreground mt-0.5 text-sm text-pretty">
             {node.effect}
-            {node.note ? ` ${node.note}` : ""}
           </p>
         </div>
         <Price value={metric} className="shrink-0 font-medium" size={16} />
@@ -130,7 +110,6 @@ function Card({
 function Section({
   id,
   title,
-  lead,
   nodes,
   sort,
   most,
@@ -138,7 +117,6 @@ function Section({
 }: {
   id: string;
   title: string;
-  lead: string;
   nodes: readonly PricedNode[];
   sort: SortKey;
   /** What to call the top of this list, and the bottom. */
@@ -158,12 +136,9 @@ function Section({
 
   return (
     <section aria-labelledby={id} className="mt-10 first:mt-0">
-      <h2 id={id} className="text-lg font-semibold tracking-tight">
+      <h2 id={id} className="mb-4 text-lg font-semibold tracking-tight">
         {title}
       </h2>
-      <p className="text-muted-foreground mt-1 mb-4 max-w-3xl text-sm text-pretty">
-        {lead}
-      </p>
 
       <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 rail:grid-cols-3">
         {ranked.map((node, i) => (
@@ -209,7 +184,7 @@ export function ScarabNodes({
     <>
       {/* One control for both lists: the three numbers mean the same thing in
           each, only the direction you read them in changes. */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="mb-8 flex flex-wrap items-center gap-2">
         <span className="text-muted-foreground text-sm">Compare by</span>
         {ORDER.map((key) => (
           <Button
@@ -226,14 +201,10 @@ export function ScarabNodes({
           </Button>
         ))}
       </div>
-      <p className="text-muted-foreground mt-3 mb-8 max-w-3xl text-sm text-pretty">
-        {SORTS[sort].note}
-      </p>
 
       <Section
         id="turn-content-off"
         title="Turn content off"
-        lead={`Each of these takes one mechanic out of your maps and its scarabs with it, so what the family sells for is what the passive costs you. The content you can most afford to give up is at the bottom. All twelve give back the same thing: ${SHARED_GRANT}.`}
         nodes={exclusions}
         sort={sort}
         most="costs the most"
@@ -243,7 +214,6 @@ export function ScarabNodes({
       <Section
         id="find-more"
         title="Find more of them"
-        lead="Each of these raises how often one family of scarabs drops for you. Read the other way round: here the number is what the passive is worth taking for, so the best of them is at the top."
         nodes={boosts}
         sort={sort}
         most="worth the most"
