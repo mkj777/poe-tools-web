@@ -3,14 +3,19 @@ import { notFound } from "next/navigation";
 import { leagueParams, resolveLeague } from "@/lib/league";
 import { getAllScarabs, leagueSlug } from "@/lib/ninja";
 import { SCARABS_FAQ } from "@/lib/faq";
-import { priceMechanics, unclaimedScarabs } from "@/lib/scarab-exclusion";
+import {
+  BOOSTS,
+  EXCLUSIONS,
+  priceNodes,
+  unclaimedScarabs,
+} from "@/lib/scarab-nodes";
 import { breadcrumbLd, webAppLd } from "@/lib/seo";
 import { OG_IMAGE, canonical } from "@/lib/site";
 import { FaqSection } from "@/components/faq-section";
 import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
 import { PageFrame, PageHeader } from "@/components/page-frame";
-import { ScarabExclusion } from "@/components/scarab-exclusion";
+import { ScarabNodes } from "@/components/scarab-nodes";
 
 export async function generateMetadata({
   params,
@@ -20,7 +25,7 @@ export async function generateMetadata({
   const name = league ?? slug;
   const path = `/scarabs/${slug}`;
   const title = `PoE Scarab Prices by Atlas Keystone (${name})`;
-  const description = `The Atlas keystones that switch a mechanic off, ranked by what their scarabs sell for in ${name}. See which content costs you the least to give up.`;
+  const description = `The Atlas passives that switch a mechanic off, and the nine that make a family of scarabs drop more often, ranked by what those scarabs sell for in ${name}.`;
 
   return {
     title,
@@ -41,10 +46,10 @@ export const revalidate = 900;
 export const generateStaticParams = leagueParams;
 
 /**
- * What each content-disabling Atlas keystone costs you.
+ * What each Atlas passive that touches a scarab family is worth.
  *
- * The keystones themselves do not change with the league, and the mapping from
- * one to its scarabs does not either. Only the prices do, which is the whole
+ * The passives themselves do not change with the league, and the mapping from
+ * one to its family does not either. Only the prices do, which is the whole
  * reason this page carries a league.
  */
 export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
@@ -54,27 +59,28 @@ export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
   // No prices means no page worth showing, but it is still a page: the
   // component says so itself rather than the route answering with a 404.
   const scarabs = await getAllScarabs(league).catch(() => []);
-  const mechanics = priceMechanics(scarabs);
+  const exclusions = priceNodes(scarabs, EXCLUSIONS);
+  const boosts = priceNodes(scarabs, BOOSTS);
   // Most scarabs belong to content that cannot be switched off at all, which
   // is worth saying once: the twelve are a small part of the scarab economy.
-  const untouchable = unclaimedScarabs(scarabs).length;
+  const untouchable = unclaimedScarabs(scarabs, EXCLUSIONS).length;
 
   return (
     <PageFrame
       header={
         <PageHeader
           title="Scarab Exclusion"
-          description="Every Atlas passive that takes a mechanic out of your maps, with the scarabs it takes with it. Whichever way you compare them, the cheapest content to give up is the one at the bottom."
+          description="Every Atlas passive that touches one family of scarabs: the twelve that take a mechanic out of your maps, and the nine that make a family drop more often. Both are priced off the currency exchange, so the decision is made on what a family is actually selling for."
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />
       }
     >
       <JsonLd
         data={webAppLd({
-          name: "PoE scarab prices by Atlas keystone",
+          name: "PoE scarab prices by Atlas passive",
           path: `/scarabs/${leagueSlug(league)}`,
           description:
-            "Ranks the content-disabling Atlas keystones by what the scarabs of the mechanic they disable are worth.",
+            "Ranks the Atlas passives that disable a mechanic or find its scarabs by what those scarabs are worth.",
         })}
       />
       <JsonLd
@@ -84,7 +90,7 @@ export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
         ])}
       />
 
-      <ScarabExclusion mechanics={mechanics} />
+      <ScarabNodes exclusions={exclusions} boosts={boosts} />
 
       {untouchable > 0 && (
         <p className="text-muted-foreground mt-6 text-sm text-pretty">

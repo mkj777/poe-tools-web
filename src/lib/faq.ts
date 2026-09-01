@@ -95,6 +95,11 @@ export const SCARABS_FAQ: readonly Faq[] = [
       "Twelve of them, each taking one mechanic out of your maps and stopping that mechanic's scarabs dropping there. In return each gives your maps two percent more chance of carrying the other kinds of content, so taking several of them is how a specialised atlas gets built.",
   },
   {
+    question: "Which Atlas passives increase scarab drop chance?",
+    answer:
+      "The nine Carapaces notables. Each gives scarabs dropped in your maps a 100% increased chance to belong to one family. Not one of them is named after the family it finds: Tainted is Beyond, Possessed is Torment, Trapping is Ambush, Outcasted is Anarchy, and Devoted is Domination.",
+  },
+  {
     question: "Are they Atlas keystones or notables?",
     answer:
       "Notables. Everyone calls them keystones, this page included, but not one of the twelve carries the keystone flag in the tree data the game serves, and none sits in a keystone socket. It only matters if you are counting what your keystone allocations have left to spend.",

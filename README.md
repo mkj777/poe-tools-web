@@ -34,7 +34,7 @@ their path was a fiction.
 /beasts/<league>              the beasts, and the Bestiary search for them
 /beasts/<league>/simulation   the same beasts in a mock Bestiary window,
                               unfinished, and in no menu because of it
-/scarabs/<league>             what each Atlas exclusion costs you in scarabs
+/scarabs/<league>             what each Atlas scarab passive is worth
 /maps/<league>                the map regex, in no menu and reachable by URL
 /leveling                     the overlay, which carries no league at all
 ```

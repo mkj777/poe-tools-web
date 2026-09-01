@@ -305,7 +305,15 @@ test("every tool says more about itself than four words", () => {
 test("no copy on this site carries an em dash", () => {
   // A rule of the project, and the one kind of typo a language model reaches
   // for by itself. Cheap to check on the files that are nothing but prose.
-  for (const file of ["site.ts", "faq.ts", "seo.ts", "tools.ts", "nav.ts"]) {
+  const prose = [
+    "site.ts",
+    "faq.ts",
+    "seo.ts",
+    "tools.ts",
+    "nav.ts",
+    "scarab-nodes.ts",
+  ];
+  for (const file of prose) {
     const source = readFileSync(
       new URL(`../src/lib/${file}`, import.meta.url),
       "utf8",

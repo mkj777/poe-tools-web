@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  KEYSTONES,
-  priceMechanics,
+  BOOSTS,
+  EXCLUSIONS,
+  priceNodes,
   unclaimedScarabs,
-  type Keystone,
-} from "../src/lib/scarab-exclusion.ts";
+  type ScarabNode,
+} from "../src/lib/scarab-nodes.ts";
 import type { ExchangeItem } from "../src/lib/ninja.ts";
 
 const scarab = (name: string, chaosValue: number): ExchangeItem => ({
@@ -29,29 +30,29 @@ const MARKET: ExchangeItem[] = [
   scarab("Ambushing Scarab of Nothing", 1000),
 ];
 
-const FAKE: Keystone[] = [
+const FAKE: ScarabNode[] = [
   {
     id: "ambush",
-    keystone: "Fake Ambush Keystone",
-    disables: "Strongboxes",
+    notable: "Fake Ambush Notable",
+    effect: "Disables Strongboxes.",
     prefixes: ["Ambush"],
   },
   {
     id: "betrayal",
-    keystone: "Fake Betrayal Keystone",
-    disables: "Betrayal",
+    notable: "Fake Betrayal Notable",
+    effect: "Disables Betrayal.",
     prefixes: ["Betrayal"],
   },
   {
     id: "absent",
-    keystone: "Fake Keystone With No Scarabs",
-    disables: "Something unpriced",
+    notable: "Fake Notable With No Scarabs",
+    effect: "Disables something unpriced.",
     prefixes: ["Nonexistent"],
   },
 ];
 
 test("a scarab goes to the keystone that turns its content off", () => {
-  const priced = priceMechanics(MARKET, FAKE);
+  const priced = priceNodes(MARKET, FAKE);
   assert.deepEqual(
     priced.map((m) => m.id),
     ["ambush", "betrayal"],
@@ -69,12 +70,12 @@ test("a scarab goes to the keystone that turns its content off", () => {
 test("a keystone the exchange prices nothing for is left out", () => {
   // Shown at zero it would look like the cheapest content to give up, which
   // is the one wrong answer this page could give.
-  const priced = priceMechanics(MARKET, FAKE);
+  const priced = priceNodes(MARKET, FAKE);
   assert.ok(!priced.some((m) => m.id === "absent"));
 });
 
 test("the three ways of comparing are all computed", () => {
-  const [ambush, betrayal] = priceMechanics(MARKET, FAKE);
+  const [ambush, betrayal] = priceNodes(MARKET, FAKE);
   assert.equal(ambush.total, 42);
   assert.equal(ambush.average, 14);
   assert.equal(ambush.top, 30);
@@ -84,7 +85,7 @@ test("the three ways of comparing are all computed", () => {
 });
 
 test("the scarabs of a keystone come dearest first", () => {
-  for (const mechanic of priceMechanics(MARKET, FAKE)) {
+  for (const mechanic of priceNodes(MARKET, FAKE)) {
     const values = mechanic.scarabs.map((s) => s.chaosValue);
     assert.deepEqual(
       values,
@@ -94,7 +95,7 @@ test("the scarabs of a keystone come dearest first", () => {
 });
 
 test("a row says the part of the name the heading has not said", () => {
-  const [ambush] = priceMechanics(MARKET, FAKE);
+  const [ambush] = priceNodes(MARKET, FAKE);
   assert.deepEqual(
     ambush.scarabs.map((s) => s.short),
     ["of Hidden Compartments", "of Potency", "Scarab"],
@@ -104,7 +105,7 @@ test("a row says the part of the name the heading has not said", () => {
 test("a family is matched on a whole word, not on a run of letters", () => {
   // "Ambushing Scarab of Nothing" is worth more than the rest put together,
   // so claiming it would put its keystone at the top of the page.
-  const [ambush] = priceMechanics(MARKET, FAKE);
+  const [ambush] = priceNodes(MARKET, FAKE);
   assert.ok(!ambush.scarabs.some((s) => s.name.startsWith("Ambushing")));
   assert.ok(
     unclaimedScarabs(MARKET, FAKE).some((s) => s.name.startsWith("Ambushing")),
@@ -120,20 +121,20 @@ test("what no keystone claims is what no keystone can take from you", () => {
 });
 
 test("nothing is priced when the exchange answers with nothing", () => {
-  assert.deepEqual(priceMechanics([], FAKE), []);
+  assert.deepEqual(priceNodes([], FAKE), []);
   assert.deepEqual(unclaimedScarabs([], FAKE), []);
 });
 
 test("every keystone is named once and knows what it takes away", () => {
-  const ids = KEYSTONES.map((k) => k.id);
+  const ids = EXCLUSIONS.map((k) => k.id);
   assert.equal(new Set(ids).size, ids.length);
-  const names = KEYSTONES.map((k) => k.keystone);
+  const names = EXCLUSIONS.map((k) => k.notable);
   assert.equal(new Set(names).size, names.length);
 
-  for (const keystone of KEYSTONES) {
-    assert.match(keystone.id, /^[a-z-]+$/, keystone.keystone);
-    assert.ok(keystone.keystone.length > 0, keystone.id);
-    assert.ok(keystone.disables.length > 0, keystone.id);
+  for (const keystone of EXCLUSIONS) {
+    assert.match(keystone.id, /^[a-z-]+$/, keystone.notable);
+    assert.ok(keystone.notable.length > 0, keystone.id);
+    assert.ok(keystone.effect.endsWith("."), keystone.id);
     if (keystone.note) assert.ok(keystone.note.endsWith("."), keystone.id);
     // Every one but the scarabless has a family to take away from you.
     assert.equal(keystone.prefixes.length > 0, !keystone.scarabless);
@@ -141,9 +142,9 @@ test("every keystone is named once and knows what it takes away", () => {
 });
 
 test("the twelve are twelve, and one of them takes no scarabs", () => {
-  assert.equal(KEYSTONES.length, 12);
+  assert.equal(EXCLUSIONS.length, 12);
   assert.deepEqual(
-    KEYSTONES.filter((k) => k.scarabless).map((k) => k.id),
+    EXCLUSIONS.filter((k) => k.scarabless).map((k) => k.id),
     ["straight-and-narrow"],
   );
 });
@@ -152,7 +153,7 @@ test("the four families not named after their mechanic are claimed", () => {
   // These are the ones a string comparison against the mechanic would miss:
   // mercenaries are Trarthan, ore deposits are Kalguuran, the Sacred Grove is
   // Harvest, and Smuggler's Caches have nothing at all.
-  const by = (id: string) => KEYSTONES.find((k) => k.id === id)!;
+  const by = (id: string) => EXCLUSIONS.find((k) => k.id === id)!;
   assert.deepEqual([...by("civil-war-in-trarthus").prefixes], ["Trarthan"]);
   assert.deepEqual([...by("miners-strike").prefixes], ["Kalguuran"]);
   assert.deepEqual([...by("black-thumb").prefixes], ["Harvest"]);
@@ -160,17 +161,68 @@ test("the four families not named after their mechanic are claimed", () => {
 });
 
 test("a scarabless passive is kept, at the zero that is its answer", () => {
-  const only = KEYSTONES.filter((k) => k.scarabless);
-  const [priced] = priceMechanics([], only);
+  const only = EXCLUSIONS.filter((k) => k.scarabless);
+  const [priced] = priceNodes([], only);
   assert.equal(priced.total, 0);
   assert.equal(priced.average, 0);
   assert.equal(priced.top, 0);
   assert.deepEqual(priced.scarabs, []);
 });
 
-test("no two keystones fish in the same pool", () => {
-  // A scarab that two keystones both claim would be counted twice, and both
-  // of them would read as more expensive to take than they are.
-  const prefixes = KEYSTONES.flatMap((k) => k.prefixes);
-  assert.equal(new Set(prefixes).size, prefixes.length);
+test("no two nodes of a list fish in the same pool", () => {
+  // A scarab that two nodes both claim would be counted twice, and both of
+  // them would read as worth more than they are.
+  for (const list of [EXCLUSIONS, BOOSTS]) {
+    const prefixes = list.flatMap((k) => k.prefixes);
+    assert.equal(new Set(prefixes).size, prefixes.length);
+  }
+});
+
+test("the nine Carapaces are nine, and each finds one family", () => {
+  assert.equal(BOOSTS.length, 9);
+  for (const boost of BOOSTS) {
+    assert.match(boost.notable, /Carapaces$/, boost.id);
+    assert.equal(boost.prefixes.length, 1, boost.id);
+    assert.ok(!boost.scarabless, boost.id);
+  }
+  const ids = BOOSTS.map((b) => b.id);
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test("not one of the nine is named after what it finds", () => {
+  // Which is the whole reason the mapping is a table: Tainted is Beyond and
+  // Trapping is Ambush, and no amount of reading the name gets you there.
+  for (const boost of BOOSTS) {
+    const family = boost.prefixes[0];
+    assert.ok(
+      !boost.notable.includes(family),
+      `${boost.notable} says ${family}`,
+    );
+  }
+});
+
+test("what you can switch off and what you can find are different families", () => {
+  // True at 3.29.3 and worth knowing: no family is both disabled by one
+  // passive and boosted by another, so the two lists never argue.
+  const off = new Set(EXCLUSIONS.flatMap((n) => n.prefixes));
+  for (const boost of BOOSTS) {
+    assert.ok(!off.has(boost.prefixes[0]), boost.notable);
+  }
+});
+
+test("a boost is priced from the same list the exclusions are", () => {
+  const found = priceNodes(
+    [
+      scarab("Ambush Scarab of Potency", 10),
+      scarab("Ambush Scarab", 2),
+      scarab("Legion Scarab", 7),
+    ],
+    BOOSTS,
+  );
+  assert.deepEqual(
+    found.map((n) => n.id),
+    ["trapping-carapaces"],
+  );
+  assert.equal(found[0].total, 12);
+  assert.equal(found[0].top, 10);
 });
