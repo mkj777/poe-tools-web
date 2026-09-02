@@ -359,6 +359,7 @@ pnpm test             # regex tests against a real 218-beast fixture
 pnpm build
 
 pnpm prices:snapshot            # refresh the committed price fallback (~1 h)
+pnpm atlas:icons                # re-download the Atlas passive icons
 pnpm mods:update                # re-scrape the Bestiary modifier list
 pnpm mods:monsters              # re-scrape the generic monster modifier list
 pnpm rarity:update              # re-derive which beasts are red

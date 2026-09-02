@@ -14,7 +14,8 @@
     "mods:maps": "node scripts/update-map-mods.mjs",
     "words:update": "node scripts/update-monster-words.mjs",
     "rarity:update": "node scripts/update-beast-rarity.mjs",
-    "prices:snapshot": "node scripts/fetch-trade-prices.mjs"
+    "prices:snapshot": "node scripts/fetch-trade-prices.mjs",
+    "atlas:icons": "node scripts/fetch-atlas-icons.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

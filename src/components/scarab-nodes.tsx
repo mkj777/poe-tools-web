@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Price } from "@/components/currency";
+import { ToolIcon } from "@/components/tool-icon";
 import { Button } from "@/components/ui/button";
 import type { PricedNode } from "@/lib/scarab-nodes";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,10 @@ import { cn } from "@/lib/utils";
  * Two lists, ranked the same way and read in opposite directions: an exclusion
  * takes a family out of your maps, so its price is what it costs you, and a
  * boost raises how often a family drops, so its price is what it is worth.
+ *
+ * They stand side by side because that is the comparison. Stacked, the second
+ * list read as an afterthought to the first; beside it, and sorted by the same
+ * number, what you give up and what you gain are one decision.
  *
  * Three numbers rather than one, because the families are not the same size.
  * The buttons are the whole explanation: a page that has to say in a paragraph
@@ -85,9 +90,17 @@ function Card({
       )}
     >
       <div className="flex items-start gap-3 p-3">
-        <span className="text-muted-foreground w-4 shrink-0 pt-0.5 text-sm tabular-nums">
+        <span className="text-muted-foreground w-4 shrink-0 pt-1.5 text-sm tabular-nums">
           {rank}
         </span>
+        {/* The art the Atlas tree draws for this passive. It says nothing
+            about the scarabs below it: Crystalline Carapaces finds Essence
+            scarabs and wears the Harvest art. It is here to be recognised on
+            the tree, not to be read. */}
+        <ToolIcon
+          icon={{ src: `/atlas/${node.id}.png`, rounded: true }}
+          className="mt-0.5 size-9"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2">
             <h3 className="font-medium text-pretty">{node.notable}</h3>
@@ -135,12 +148,14 @@ function Section({
   const ends = ranked.length > 1 && SORTS[sort].of(ranked[0]) > 0;
 
   return (
-    <section aria-labelledby={id} className="mt-10 first:mt-0">
+    <section aria-labelledby={id}>
       <h2 id={id} className="mb-4 text-lg font-semibold tracking-tight">
         {title}
       </h2>
 
-      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 rail:grid-cols-3">
+      {/* One column once the two lists are side by side, two while they are
+          stacked, so a card is never dragged across the whole window. */}
+      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-1">
         {ranked.map((node, i) => (
           <Card
             key={node.id}
@@ -202,23 +217,27 @@ export function ScarabNodes({
         ))}
       </div>
 
-      <Section
-        id="turn-content-off"
-        title="Turn content off"
-        nodes={exclusions}
-        sort={sort}
-        most="costs the most"
-        least="costs the least"
-      />
+      {/* Side by side from the width where two columns of cards still hold a
+          scarab name, and one under the other below it. */}
+      <div className="grid gap-10 xl:grid-cols-2 xl:gap-6">
+        <Section
+          id="turn-content-off"
+          title="Turn content off"
+          nodes={exclusions}
+          sort={sort}
+          most="costs the most"
+          least="costs the least"
+        />
 
-      <Section
-        id="find-more"
-        title="Find more of them"
-        nodes={boosts}
-        sort={sort}
-        most="worth the most"
-        least="worth the least"
-      />
+        <Section
+          id="find-more"
+          title="Find more of them"
+          nodes={boosts}
+          sort={sort}
+          most="worth the most"
+          least="worth the least"
+        />
+      </div>
     </>
   );
 }

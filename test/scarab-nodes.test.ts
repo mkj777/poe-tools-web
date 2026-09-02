@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readdirSync } from "node:fs";
 import test from "node:test";
 import {
   BOOSTS,
@@ -169,6 +170,19 @@ test("no two nodes of a list fish in the same pool", () => {
     const prefixes = list.flatMap((k) => k.prefixes);
     assert.equal(new Set(prefixes).size, prefixes.length);
   }
+});
+
+test("every passive wears the icon the Atlas tree draws for it", () => {
+  // Exact case: what serves these is case sensitive, and this machine is not.
+  // Run `node scripts/fetch-atlas-icons.mjs` when a passive is added.
+  const files = new Set(
+    readdirSync(new URL("../public/atlas/", import.meta.url)),
+  );
+  for (const node of [...EXCLUSIONS, ...BOOSTS]) {
+    assert.ok(files.has(`${node.id}.png`), `public/atlas/${node.id}.png`);
+  }
+  // And nothing left behind by a passive that has since gone.
+  assert.equal(files.size, EXCLUSIONS.length + BOOSTS.length);
 });
 
 test("the nine Carapaces are nine, and each finds one family", () => {
