@@ -6,7 +6,6 @@ import { Price } from "@/components/currency";
 import { ToolIcon } from "@/components/tool-icon";
 import { Button } from "@/components/ui/button";
 import type { PricedNode } from "@/lib/scarab-nodes";
-import { cn } from "@/lib/utils";
 
 /**
  * The Atlas passives that touch one family of scarabs, priced.
@@ -74,21 +73,13 @@ function Card({
   node,
   rank,
   metric,
-  extreme,
 }: {
   node: PricedNode;
   rank: number;
   metric: number;
-  /** What the two ends of the list are called here, once they are worth naming. */
-  extreme?: string;
 }) {
   return (
-    <li
-      className={cn(
-        "bg-card/40 flex flex-col rounded-xl border",
-        extreme ? "border-primary/40" : "border-border/60",
-      )}
-    >
+    <li className="bg-card/40 border-border/60 flex flex-col rounded-xl border">
       <div className="flex items-start gap-3 p-3">
         <span className="text-muted-foreground w-4 shrink-0 pt-1.5 text-sm tabular-nums">
           {rank}
@@ -102,10 +93,7 @@ function Card({
           className="mt-0.5 size-9"
         />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2">
-            <h3 className="font-medium text-pretty">{node.notable}</h3>
-            {extreme && <span className="text-primary text-xs">{extreme}</span>}
-          </div>
+          <h3 className="font-medium text-pretty">{node.notable}</h3>
           <p className="text-muted-foreground mt-0.5 text-sm text-pretty">
             {node.effect}
           </p>
@@ -125,16 +113,11 @@ function Section({
   title,
   nodes,
   sort,
-  most,
-  least,
 }: {
   id: string;
   title: string;
   nodes: readonly PricedNode[];
   sort: SortKey;
-  /** What to call the top of this list, and the bottom. */
-  most: string;
-  least: string;
 }) {
   const ranked = useMemo(() => {
     const of = SORTS[sort].of;
@@ -142,10 +125,6 @@ function Section({
   }, [nodes, sort]);
 
   if (ranked.length === 0) return null;
-
-  // With no prices at all every card ties at nothing, and the two ends would be
-  // whichever order the list happened to be in.
-  const ends = ranked.length > 1 && SORTS[sort].of(ranked[0]) > 0;
 
   return (
     <section aria-labelledby={id}>
@@ -162,15 +141,6 @@ function Section({
             node={node}
             rank={i + 1}
             metric={SORTS[sort].of(node)}
-            extreme={
-              !ends
-                ? undefined
-                : i === 0
-                  ? most
-                  : i === ranked.length - 1
-                    ? least
-                    : undefined
-            }
           />
         ))}
       </ul>
@@ -225,8 +195,6 @@ export function ScarabNodes({
           title="Turn content off"
           nodes={exclusions}
           sort={sort}
-          most="costs the most"
-          least="costs the least"
         />
 
         <Section
@@ -234,8 +202,6 @@ export function ScarabNodes({
           title="Find more of them"
           nodes={boosts}
           sort={sort}
-          most="worth the most"
-          least="worth the least"
         />
       </div>
     </>
