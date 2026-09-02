@@ -76,6 +76,21 @@ function ActiveMark() {
   );
 }
 
+/**
+ * A row tall enough for a wrapped blurb, and a square once the column is down
+ * to its icons.
+ *
+ * The two want opposite things. Open, the row has to grow past the 48px of the
+ * `lg` size so a two line blurb is not clipped, which is what `min-h-12` and
+ * the padding are for. Collapsed, shadcn asks for a 32px square, and a
+ * min-height beats the height it sets: the row stayed 51px tall in a 34px wide
+ * rail, with the icon flush against the left edge because the button never
+ * centres what is in it. So the growth is scoped to the open column, and the
+ * icon is centred for the collapsed one.
+ */
+const ROW =
+  "h-auto min-h-12 py-1.5 group-data-[collapsible=icon]:min-h-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:py-0";
+
 type EntryProps = {
   entry: SidebarEntry;
   /** The league as Path of Exile spells it, for the links that take one. */
@@ -99,7 +114,7 @@ function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
           size="lg"
           isActive={on}
           tooltip={tool.label}
-          className="h-auto min-h-12 py-1.5"
+          className={ROW}
         >
           <Link href={toolHref(tool, slug)} onClick={onNavigate}>
             <ToolIcon icon={tool.icon} />
@@ -117,7 +132,7 @@ function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
         asChild
         size="lg"
         tooltip={tool.name}
-        className="group/external h-auto min-h-12 py-1.5"
+        className={cn("group/external", ROW)}
       >
         <a
           href={tool.href(league)}
