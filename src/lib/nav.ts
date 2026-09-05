@@ -58,8 +58,8 @@ export const SITE_TOOLS: readonly SiteTool[] = [
   },
   {
     slug: "scarabs",
-    label: "Scarab Exclusion",
-    blurb: "What each scarab node is worth",
+    label: "Scarab Nodes",
+    blurb: "Economy of Scarab Nodes",
     about:
       "The twelve Atlas passives that take a mechanic out of your maps and the nine that make a family drop more often, each priced by what its scarabs are selling for, so the decision is made on numbers.",
     icon: { src: "/Kalguuran_Scarab_inventory_icon.png" },

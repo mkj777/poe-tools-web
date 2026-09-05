@@ -8,12 +8,23 @@ import {
   type ScarabNode,
 } from "../src/lib/scarab-nodes.ts";
 import type { ExchangeItem } from "../src/lib/ninja.ts";
+import { SCARAB_TIERS } from "../src/lib/scarab-tiers.ts";
 
 const scarab = (name: string, chaosValue: number): ExchangeItem => ({
   id: name.toLowerCase().replace(/\W+/g, "-"),
   name,
   icon: "https://web.poecdn.com/x.png",
   chaosValue,
+});
+
+/** The weights `expected` is built on, repeated so the sums below are read. */
+const W = { common: 616, uncommon: 414, rare: 210, mythic: 24 };
+
+const node = (prefix: string): ScarabNode => ({
+  id: prefix.toLowerCase(),
+  notable: prefix,
+  effect: "Something.",
+  prefixes: [prefix],
 });
 
 /** A stand-in economy, so the arithmetic is checked against known numbers. */
@@ -84,6 +95,66 @@ test("the three ways of comparing are all computed", () => {
   assert.equal(betrayal.top, 15);
 });
 
+test("what a drop is worth counts a scarab for as often as it drops", () => {
+  // The whole reason the number exists. Ambush Scarab of Containment is the
+  // dear one and it is mythic, so it moves the answer by almost nothing.
+  const [ambush] = priceNodes(
+    [
+      scarab("Ambush Scarab", 10), // common
+      scarab("Ambush Scarab of Potency", 4), // uncommon
+      scarab("Ambush Scarab of Containment", 200), // mythic
+    ],
+    [node("Ambush")],
+  );
+  const pool = W.common + W.uncommon + W.mythic;
+  assert.equal(
+    ambush.expected,
+    (W.common * 10 + W.uncommon * 4 + W.mythic * 200) / pool,
+  );
+  // Against 71.3 for the flat average and 200 for the dearest.
+  assert.ok(ambush.expected < 12, String(ambush.expected));
+});
+
+test("a scarab's share of its family is its share of the drops", () => {
+  const [ambush] = priceNodes(
+    [scarab("Ambush Scarab", 10), scarab("Ambush Scarab of Containment", 200)],
+    [node("Ambush")],
+  );
+  const shares = Object.fromEntries(ambush.scarabs.map((s) => [s.name, s.share]));
+  assert.equal(shares["Ambush Scarab"], W.common / (W.common + W.mythic));
+  assert.equal(
+    shares["Ambush Scarab of Containment"],
+    W.mythic / (W.common + W.mythic),
+  );
+});
+
+test("a scarab of no known tier weighs nothing rather than weighing common", () => {
+  // A scarab added since the tier table was last written. Counted as common it
+  // would take over the answer for its family.
+  const [ambush] = priceNodes(
+    [scarab("Ambush Scarab", 10), scarab("Ambush Scarab of Nothing", 900)],
+    [node("Ambush")],
+  );
+  assert.equal(ambush.expected, 10);
+  assert.equal(ambush.scarabs.find((s) => s.chaosValue === 900)?.share, 0);
+});
+
+test("a family of no known tiers at all falls back to the flat average", () => {
+  // Zero would read as a family worth nothing, which is a different claim from
+  // one whose tiers this build does not know.
+  const [made] = priceNodes(
+    [scarab("Invented Scarab", 30), scarab("Invented Scarab of Air", 10)],
+    [node("Invented")],
+  );
+  assert.equal(made.expected, 20);
+  assert.equal(made.expected, made.average);
+});
+
+test("every scarab carries the tier its price was weighted by", () => {
+  const [ambush] = priceNodes([scarab("Ambush Scarab", 10)], [node("Ambush")]);
+  assert.equal(ambush.scarabs[0].tier, "common");
+});
+
 test("the scarabs of a keystone come dearest first", () => {
   for (const mechanic of priceNodes(MARKET, FAKE)) {
     const values = mechanic.scarabs.map((s) => s.chaosValue);
@@ -94,11 +165,17 @@ test("the scarabs of a keystone come dearest first", () => {
   }
 });
 
-test("a row says the part of the name the heading has not said", () => {
+test("a scarab keeps the whole name the game gave it", () => {
+  // It used to be shortened against the family in the heading, which left the
+  // plain one of every family reading as "Scarab" and nothing else.
   const [ambush] = priceNodes(MARKET, FAKE);
   assert.deepEqual(
-    ambush.scarabs.map((s) => s.short),
-    ["of Hidden Compartments", "of Potency", "Scarab"],
+    ambush.scarabs.map((s) => s.name),
+    [
+      "Ambush Scarab of Hidden Compartments",
+      "Ambush Scarab of Potency",
+      "Ambush Scarab",
+    ],
   );
 });
 
@@ -160,6 +237,7 @@ test("a scarabless passive is kept, at the zero that is its answer", () => {
   assert.equal(priced.total, 0);
   assert.equal(priced.average, 0);
   assert.equal(priced.top, 0);
+  assert.equal(priced.expected, 0);
   assert.deepEqual(priced.scarabs, []);
 });
 
@@ -232,4 +310,27 @@ test("a boost is priced from the same list the exclusions are", () => {
   );
   assert.equal(found[0].total, 12);
   assert.equal(found[0].top, 10);
+});
+
+test("every scarab a node fishes for has a tier to be weighted by", () => {
+  // The answer the page leads with is built on these. A family half of which
+  // has no tier is a family whose number is quietly the average again.
+  // Run `node scripts/fetch-scarab-tiers.mjs` when a league adds scarabs.
+  const names = Object.keys(SCARAB_TIERS);
+  for (const node of [...EXCLUSIONS, ...BOOSTS]) {
+    if (node.scarabless) continue;
+    const family = names.filter((n) =>
+      node.prefixes.some((p) => n.startsWith(`${p} `)),
+    );
+    assert.ok(family.length > 0, `${node.notable} has no scarabs at all`);
+    for (const name of family) assert.ok(SCARAB_TIERS[name], name);
+  }
+});
+
+test("the tier table is the whole of what drops, not part of it", () => {
+  // 115 at 3.29.1, every one of them tiered. A short table would mean the
+  // weighting had quietly gone missing for whatever it dropped.
+  const tiers = Object.values(SCARAB_TIERS);
+  assert.equal(tiers.length, 115);
+  assert.ok(tiers.every(Boolean));
 });

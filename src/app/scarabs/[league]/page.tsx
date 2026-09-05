@@ -19,7 +19,7 @@ export async function generateMetadata({
   const { league } = await resolveLeague(slug);
   const name = league ?? slug;
   const path = `/scarabs/${slug}`;
-  const title = `PoE Scarab Prices by Atlas Keystone (${name})`;
+  const title = `PoE Scarab Nodes: Atlas Passive Values (${name})`;
   const description = `The Atlas passives that switch a mechanic off, and the nine that make a family of scarabs drop more often, ranked by what those scarabs sell for in ${name}.`;
 
   return {
@@ -61,15 +61,15 @@ export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
     <PageFrame
       header={
         <PageHeader
-          title="Scarab Exclusion"
-          description="What each Atlas passive is worth, in the scarabs it takes away or finds."
+          title="Scarab Nodes"
+          description="Economy of Scarab Nodes"
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />
       }
     >
       <JsonLd
         data={webAppLd({
-          name: "PoE scarab prices by Atlas passive",
+          name: "PoE scarab nodes priced by Atlas passive",
           path: `/scarabs/${leagueSlug(league)}`,
           description:
             "Ranks the Atlas passives that disable a mechanic or find its scarabs by what those scarabs are worth.",
@@ -78,7 +78,7 @@ export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
       <JsonLd
         data={breadcrumbLd([
           { name: "Path of Exile tools", path: "/" },
-          { name: "Scarab exclusion", path: `/scarabs/${leagueSlug(league)}` },
+          { name: "Scarab nodes", path: `/scarabs/${leagueSlug(league)}` },
         ])}
       />
 

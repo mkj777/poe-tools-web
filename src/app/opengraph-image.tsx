@@ -70,7 +70,7 @@ export default function Image() {
       <div style={{ display: "flex", gap: 16, fontSize: 24, color: muted }}>
         {[
           "Bestiary prices",
-          "Scarab exclusion",
+          "Scarab nodes",
           "Leveling overlay",
           "12 more tools",
         ].map((item) => (

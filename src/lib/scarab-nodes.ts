@@ -1,4 +1,5 @@
 import type { ExchangeItem } from "./ninja.ts";
+import { SCARAB_TIERS, type ScarabTier } from "./scarab-tiers.ts";
 
 /**
  * The Atlas passives that have something to do with one family of scarabs, and
@@ -54,10 +55,7 @@ export const EXCLUSIONS: readonly ScarabNode[] = [
     id: "loved-by-the-sun",
     notable: "Loved by the Sun",
     effect: "No chance to contain Abysses.",
-    // The 3.29 notes rename one of these to "Abyssal Scarab of the Consort"
-    // while the live item list still says "Abyss". Both prefixes are claimed,
-    // because whichever is right, the family should not quietly go missing.
-    prefixes: ["Abyss", "Abyssal"],
+    prefixes: ["Abyss"],
   },
   {
     id: "fungal-remission",
@@ -208,8 +206,52 @@ export const BOOSTS: readonly ScarabNode[] = [
   },
 ];
 
-/** One scarab, with the part of its name that tells it from its siblings. */
-export type PricedScarab = ExchangeItem & { short: string };
+/**
+ * How often one tier is seen against another.
+ *
+ * GGG publishes the five tiers and says they are what decides a scarab's drop
+ * rate. It publishes no numbers for them: not in a patch note, not in the item
+ * data, not anywhere the wiki or poedb could find. These five are the medians
+ * of the only measurement there is, thirty three thousand vendor recipes a
+ * player collected at 3.27 and the wiki links to from its Scarab article, a
+ * recipe being a roll on the same weights a drop is.
+ *
+ *   https://www.poewiki.net/wiki/Scarab
+ *   Spreadsheet by Lextra, adapted from a reddit post by /u/VTSAX_
+ *
+ * The tiers sit tight around their medians: 479 to 674 over twenty six commons,
+ * 365 to 439 over twenty one uncommons. Extreme is three scarabs and lands on
+ * top of mythic, so this sample does not really tell those two apart. It is a
+ * league old and it is not GGG's, which is why the page says as much rather
+ * than quoting it as a drop rate.
+ */
+const TIER_WEIGHT: Readonly<Record<ScarabTier, number>> = {
+  common: 616,
+  uncommon: 414,
+  rare: 210,
+  mythic: 24,
+  extreme: 22,
+};
+
+/** How often a scarab drops against its siblings, nought for one we cannot say. */
+const weightOf = (name: string) => {
+  const tier = SCARAB_TIERS[name];
+  return tier ? TIER_WEIGHT[tier] : 0;
+};
+
+/** One scarab of a family, under the name the game gives it in full. */
+export type PricedScarab = ExchangeItem & {
+  /** Absent for a scarab the tier table has not been regenerated for. */
+  tier?: ScarabTier;
+  /**
+   * How much of the family's drops are this one scarab, nought to one.
+   *
+   * The row draws it as a bar behind itself, which is the whole argument of
+   * the page in one glance: the dearest scarab of a family is usually the
+   * thinnest bar in it.
+   */
+  share: number;
+};
 
 export type PricedNode = ScarabNode & {
   scarabs: PricedScarab[];
@@ -219,26 +261,42 @@ export type PricedNode = ScarabNode & {
   average: number;
   /** The dearest single scarab, which is the one anybody sets out to farm. */
   top: number;
+  /**
+   * Chaos the next scarab of this family is worth, each one counting for as
+   * often as its tier says it drops.
+   *
+   * The other three count a scarab nobody ever sees for as much as one that
+   * drops every other map, which is how a family holding a single dear and
+   * rare scarab comes to look like the one to farm. Ultimatum holds the most
+   * expensive scarab in the game and is worth about seven chaos a drop.
+   */
+  expected: number;
 };
 
 /**
- * What is left of a scarab's name once the family has been said above it.
+ * What one scarab of a family is worth, over the family's own drop weights.
  *
- * "Ambush Scarab of Potency" reads as "of Potency" under a heading that already
- * says Ambush, and the plain one is left as "Scarab". The suffix is the part
- * that tells one from another, and it is also the part an ellipsis would eat.
+ * A scarab no tier is known for weighs nothing and so says nothing, rather than
+ * being counted as common and dragging the answer to a price nobody sees. When
+ * no scarab of the family has a tier there is nothing to weight with, and the
+ * flat mean stands in, which is what the Average button says anyway.
  */
-function shorten(name: string, prefix: string) {
-  const rest = name
-    .slice(prefix.length)
-    .replace(/^\s*Scarab\s*/, "")
-    .trim();
-  return rest || "Scarab";
+function expectedValue(scarabs: readonly PricedScarab[]) {
+  let weight = 0;
+  let chaos = 0;
+  for (const s of scarabs) {
+    const w = weightOf(s.name);
+    weight += w;
+    chaos += w * s.chaosValue;
+  }
+  if (weight > 0) return chaos / weight;
+  const flat = scarabs.reduce((sum, s) => sum + s.chaosValue, 0);
+  return scarabs.length ? flat / scarabs.length : 0;
 }
 
 /** Whether a scarab belongs to a family, by the name the game gave it. */
 function belongsTo(name: string, prefixes: readonly string[]) {
-  return prefixes.find((prefix) => name.startsWith(`${prefix} `));
+  return prefixes.some((prefix) => name.startsWith(`${prefix} `));
 }
 
 /**
@@ -256,12 +314,15 @@ export function priceNodes(
   nodes: readonly ScarabNode[],
 ): PricedNode[] {
   return nodes.flatMap((node) => {
-    const mine: PricedScarab[] = [];
-    for (const scarab of scarabs) {
-      const prefix = belongsTo(scarab.name, node.prefixes);
-      if (prefix) mine.push({ ...scarab, short: shorten(scarab.name, prefix) });
-    }
-    if (mine.length === 0 && !node.scarabless) return [];
+    const found = scarabs.filter((s) => belongsTo(s.name, node.prefixes));
+    if (found.length === 0 && !node.scarabless) return [];
+
+    const pool = found.reduce((sum, s) => sum + weightOf(s.name), 0);
+    const mine: PricedScarab[] = found.map((s) => ({
+      ...s,
+      tier: SCARAB_TIERS[s.name],
+      share: pool > 0 ? weightOf(s.name) / pool : 0,
+    }));
 
     mine.sort((a, b) => b.chaosValue - a.chaosValue);
     const total = mine.reduce((sum, s) => sum + s.chaosValue, 0);
@@ -273,6 +334,7 @@ export function priceNodes(
         total,
         average: mine.length ? total / mine.length : 0,
         top: mine[0]?.chaosValue ?? 0,
+        expected: expectedValue(mine),
       },
     ];
   });

@@ -85,6 +85,16 @@ export const MAPS_FAQ: readonly Faq[] = [
 
 export const SCARABS_FAQ: readonly Faq[] = [
   {
+    question: "Does the family worth the most chaos earn the most?",
+    answer:
+      "No. A family is worth what its next drop is worth, and the dearest scarab of a family is usually its rarest. Ultimatum holds the most expensive scarab in the game and still sits low on this page, because that scarab is one of only three the game marks at its rarest tier.",
+  },
+  {
+    question: "How is the per drop number worked out?",
+    answer:
+      "Every scarab belongs to one of five rarity tiers the game keeps, and a family's prices are averaged over how often those tiers drop. GGG has never published what the tiers are worth against each other, so the ratios come from a player collected sample the wiki links to.",
+  },
+  {
     question: "Which Atlas content is cheapest to disable?",
     answer:
       "Straight and Narrow. Smuggler's Caches are the one mechanic of the twelve with no scarabs of their own, so nothing on the currency exchange is given up by switching Heist off. Every other answer moves with the league, which is what the prices on this page are for.",
@@ -102,7 +112,7 @@ export const SCARABS_FAQ: readonly Faq[] = [
   {
     question: "Are they Atlas keystones or notables?",
     answer:
-      "Notables. Everybody calls them keystones, this page included, but not one of the twelve carries the keystone flag in the Atlas tree data the game itself serves, and not one of them sits in a keystone socket. The only Atlas keystone that touches scarabs at all is Unwavering Vision.",
+      "Notables. Everybody calls them keystones, but not one of the twenty one carries the keystone flag in the Atlas tree data the game itself serves. The one real keystone here is Unwavering Vision, which stops scarabs being found in your maps at all and hands back twenty passive points.",
   },
   {
     question: "Do the scarabs still drop if I take the passive?",
