@@ -31,8 +31,8 @@ const SORTS: Record<
   { label: string; says: string; of: (m: PricedNode) => number }
 > = {
   expected: {
-    label: "Per drop",
-    says: "What one scarab of the family is worth, each of them counting for as often as its rarity tier drops",
+    label: "Drop chance",
+    says: "What the next scarab of the family is worth, each of them counting for as often as it drops",
     of: (m) => m.expected,
   },
   total: {
@@ -52,9 +52,13 @@ const SORTS: Record<
   },
 };
 
-// Per drop first and by default: the other three count a scarab nobody sees
-// for as much as one that drops every other map.
+// Drop chance first and by default: the other three count a scarab nobody
+// sees for as much as one that drops every other map.
 const ORDER = ["expected", "total", "average", "top"] as const;
+
+/** A share, read to a tenth only while it is small enough to need one. */
+const pct = (share: number) =>
+  `${(share * 100).toFixed(share < 0.1 ? 1 : 0)}%`;
 
 function Scarabs({ node }: { node: PricedNode }) {
   if (node.scarabs.length === 0) {
@@ -87,9 +91,24 @@ function Scarabs({ node }: { node: PricedNode }) {
             height={28}
             className="size-6 shrink-0 object-contain"
           />
-          <span className="min-w-0 flex-1 truncate" title={scarab.name}>
+          <span
+            className="min-w-0 flex-1 truncate"
+            title={
+              scarab.tier
+                ? `${scarab.name} · ${scarab.tier}, ${pct(scarab.share)} of the family's scarabs`
+                : scarab.name
+            }
+          >
             {scarab.name}
           </span>
+          {/* The bar says it at a glance and this says it to a tenth, because
+              the whole question the page answers is how much of a family one
+              scarab of it actually is. */}
+          {scarab.tier && (
+            <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+              {pct(scarab.share)}
+            </span>
+          )}
           <Price value={scarab.chaosValue} size={15} />
         </li>
       ))}
@@ -226,8 +245,8 @@ export function ScarabNodes({
           in a paragraph nobody reaches. */}
       {sort === "expected" && (
         <p className="text-muted-foreground -mt-6 mb-8 text-xs">
-          Weighted by each scarab&rsquo;s rarity tier, measured by players
-          rather than published by GGG.
+          Weighted by drop chance: the game&rsquo;s five rarity tiers, in ratios
+          measured by players rather than published by GGG.
         </p>
       )}
 

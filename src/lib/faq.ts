@@ -90,9 +90,19 @@ export const SCARABS_FAQ: readonly Faq[] = [
       "No. A family is worth what its next drop is worth, and the dearest scarab of a family is usually its rarest. Ultimatum holds the most expensive scarab in the game and still sits low on this page, because that scarab is one of only three the game marks at its rarest tier.",
   },
   {
-    question: "How is the per drop number worked out?",
+    question: "Does rarity tier mean drop chance?",
     answer:
-      "Every scarab belongs to one of five rarity tiers the game keeps, and a family's prices are averaged over how often those tiers drop. GGG has never published what the tiers are worth against each other, so the ratios come from a player collected sample the wiki links to.",
+      "It is the drop chance. The wiki puts it plainly: a scarab's drop rate is decided by one of five internal rarity tiers, common, uncommon, rare, mythic and extreme. What the tier does not say is how often a scarab drops at all, which is a separate number nobody has published.",
+  },
+  {
+    question: "How often does each tier drop?",
+    answer:
+      "Any single common scarab is about one in sixty of the scarabs you find, an uncommon one in ninety, a rare one in a hundred and seventy, a mythic one in fifteen hundred. Half of everything you pick up is common and under two percent of it is mythic or rarer.",
+  },
+  {
+    question: "Where do those drop chances come from?",
+    answer:
+      "Not from GGG, which has published the five tiers and never a number for them. The ratios here are medians of the one measurement there is, thirty three thousand vendor recipes collected by a player in 3.27 and linked from the wiki, a recipe rolling on the same weights a drop does.",
   },
   {
     question: "Which Atlas content is cheapest to disable?",
