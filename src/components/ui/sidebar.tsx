@@ -5,6 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { createStorageStore } from "@/lib/storage-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +25,6 @@ import {
 } from "@/components/ui/tooltip";
 import { PanelLeftIcon } from "lucide-react";
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
@@ -42,6 +41,22 @@ type SidebarContextProps = {
 };
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null);
+
+/**
+ * Whether the column was open when it was last toggled, so a reload keeps it
+ * the way it was left. shadcn stores this in a cookie and reads it back with
+ * `cookies()` in the layout, which would make every page of this site render
+ * per request; the pages are static and revalidated, and are worth more that
+ * way. So it is localStorage, read on the way in: the server renders the
+ * column open, and a reader who had folded it sees it fold on hydration.
+ * `null` is "never toggled", which is what `defaultOpen` is for.
+ */
+const openStore = createStorageStore<boolean | null>(
+  "sidebar:open",
+  (raw) => raw === "true",
+  null,
+  String,
+);
 
 function useSidebar() {
   const context = React.useContext(SidebarContext);
@@ -70,19 +85,20 @@ function SidebarProvider({
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen);
-  const open = openProp ?? _open;
+  const stored = React.useSyncExternalStore(
+    openStore.subscribe,
+    openStore.read,
+    openStore.server,
+  );
+  const open = openProp ?? stored ?? defaultOpen;
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === "function" ? value(open) : value;
       if (setOpenProp) {
         setOpenProp(openState);
       } else {
-        _setOpen(openState);
+        openStore.write(openState);
       }
-
-      // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
     [setOpenProp, open],
   );
