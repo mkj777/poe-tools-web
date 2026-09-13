@@ -121,11 +121,6 @@ export type SidebarEntry =
 export type SidebarGroup = {
   id: string;
   label: string;
-  /**
-   * Rolled up until it is asked for. Fifteen entries at once is a wall, and
-   * only the first few are ones you reach for every session.
-   */
-  folded?: boolean;
   entries: readonly SidebarEntry[];
 };
 
@@ -145,7 +140,7 @@ const link = (name: string): SidebarEntry => ({
  * The order the sidebar reads in, which is not the order either list is
  * declared in. First is what a session is spent in: the trade site, then the
  * three that run beside the client. Then the pages built here. Everything else
- * is folded away behind one heading and unfolds on it.
+ * follows under one heading of its own, open like the two above it.
  */
 export const SIDEBAR: readonly SidebarGroup[] = [
   {
@@ -166,10 +161,9 @@ export const SIDEBAR: readonly SidebarGroup[] = [
   },
   {
     // Everything else, under one heading rather than sorted into three that
-    // each held two or three entries. A folded group is a line either way.
+    // each held two or three entries.
     id: "more",
     label: "More tools",
-    folded: true,
     entries: [
       link("poe.ninja"),
       link("Wealthy Exile"),

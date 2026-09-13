@@ -179,19 +179,14 @@ test("the map regex is built, reachable and offered to nobody", () => {
   assert.ok(!names.includes("maps"));
 });
 
-test("what you reach for is open, the rest is one folded heading", () => {
+test("three headings, all of them open", () => {
   assert.deepEqual(
-    SIDEBAR.map((g) => [g.id, Boolean(g.folded)]),
-    [
-      ["essentials", false],
-      ["site", false],
-      ["more", true],
-    ],
+    SIDEBAR.map((g) => g.id),
+    ["essentials", "site", "more"],
   );
 
-  // Eight entries on arrival rather than fifteen.
-  const open = SIDEBAR.filter((g) => !g.folded).flatMap((g) => g.entries);
-  assert.equal(open.length, 8);
+  // Nothing is behind a click: every entry the sidebar carries is on arrival.
+  assert.equal(SIDEBAR_ENTRIES.length, 15);
 });
 
 test("the rest is one list, in the order it is declared", () => {

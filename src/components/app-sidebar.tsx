@@ -2,14 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowUpRight, ChevronRight } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { ArrowUpRight } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -160,54 +154,30 @@ function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
 }
 
 /**
- * One heading and what hangs under it. The lower groups start rolled up, so the
- * column opens on the seven entries a session begins with rather than on all
- * fifteen at once.
- *
- * Down to its icons a folded group would be unreachable, because the heading
- * that unfolds it is the thing that is hidden. So there, everything is open.
+ * One heading and what hangs under it. Every group stands open: a heading that
+ * has to be clicked before it says anything is a list you have to be told
+ * about, and the column is short enough to be read instead.
  */
 function NavGroup({
   group,
   ...rest
 }: { group: Group } & Omit<EntryProps, "entry">) {
-  const { state, isMobile } = useSidebar();
-  const [open, setOpen] = useState(!group.folded);
-  const icons = state === "collapsed" && !isMobile;
-
   return (
-    <Collapsible
-      open={open || icons}
-      onOpenChange={setOpen}
-      className="group/fold"
-    >
-      <SidebarGroup className="py-1">
-        <SidebarGroupLabel asChild>
-          <CollapsibleTrigger className="hover:text-foreground w-full cursor-pointer">
-            {group.label}
-            {group.folded && (
-              <ChevronRight className="ml-auto size-3.5 transition-transform duration-200 group-data-open/fold:rotate-90" />
-            )}
-          </CollapsibleTrigger>
-        </SidebarGroupLabel>
+    <SidebarGroup className="py-1">
+      <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
 
-        <CollapsibleContent className="overflow-hidden data-closed:animate-collapsible-up data-open:animate-collapsible-down">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {group.entries.map((entry) => (
-                <Entry
-                  key={
-                    entry.kind === "page" ? entry.page.slug : entry.link.name
-                  }
-                  entry={entry}
-                  {...rest}
-                />
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </CollapsibleContent>
-      </SidebarGroup>
-    </Collapsible>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {group.entries.map((entry) => (
+            <Entry
+              key={entry.kind === "page" ? entry.page.slug : entry.link.name}
+              entry={entry}
+              {...rest}
+            />
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }
 
