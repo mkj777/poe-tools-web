@@ -3,8 +3,16 @@ import * as React from "react";
 const MOBILE_BREAKPOINT = 1024;
 const QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
 
+/**
+ * One list for the module rather than one per call: every part of the sidebar
+ * asks on every render, and `matchMedia` allocates a fresh list each time it is
+ * called. Created on first use, because there is no window on the server.
+ */
+let list: MediaQueryList | null = null;
+const mediaQuery = () => (list ??= window.matchMedia(QUERY));
+
 function subscribe(onChange: () => void) {
-  const query = window.matchMedia(QUERY);
+  const query = mediaQuery();
   query.addEventListener("change", onChange);
   return () => query.removeEventListener("change", onChange);
 }
@@ -24,7 +32,7 @@ function subscribe(onChange: () => void) {
 export function useIsMobile() {
   return React.useSyncExternalStore(
     subscribe,
-    () => window.matchMedia(QUERY).matches,
+    () => mediaQuery().matches,
     () => false,
   );
 }
