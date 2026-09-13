@@ -42,3 +42,6 @@ next-env.d.ts
 
 # browser tooling
 /.playwright-mcp/
+
+# web-audit output
+/.audit/
