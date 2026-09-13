@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { swapLeague } from "@/lib/nav";
+import { activeTool, swapLeague, toolBySlug, toolPrefetch } from "@/lib/nav";
 import { leagueSlug, type League } from "@/lib/ninja";
 
 /**
@@ -34,6 +34,7 @@ export function LeagueSelect({
 }) {
   const pathname = usePathname() ?? "";
   const current = leagues.find((l) => l.id === league)?.name ?? league;
+  const prefetch = toolPrefetch(toolBySlug(activeTool(pathname)));
 
   return (
     <DropdownMenu>
@@ -52,6 +53,7 @@ export function LeagueSelect({
           <DropdownMenuItem key={l.id} asChild>
             <Link
               href={swapLeague(pathname, leagueSlug(l.id))}
+              prefetch={prefetch}
               aria-current={l.id === league ? "page" : undefined}
               className="flex cursor-pointer items-center gap-2"
             >

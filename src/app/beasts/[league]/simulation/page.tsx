@@ -3,7 +3,8 @@ import { hasListing, loadBeasts } from "@/lib/beasts";
 import { leagueParams, resolveLeague } from "@/lib/league";
 import { BestiarySimulator } from "@/components/bestiary-simulator";
 import { LeagueSelect } from "@/components/league-select";
-import { PageFrame, PageHeader } from "@/components/page-frame";
+import { PageFrame } from "@/components/page-frame";
+import { SimulationHeader } from "./header";
 
 export const metadata = {
   title: "Bestiary Sim",
@@ -32,8 +33,7 @@ export default async function Page({
   return (
     <PageFrame
       header={
-        <PageHeader
-          title="Bestiary Sim"
+        <SimulationHeader
           description={`${beasts.length} beasts with a listing in ${league}, searched the way the game does, and priced, which the game will not do. An empty search shows all of them, as in game.`}
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />

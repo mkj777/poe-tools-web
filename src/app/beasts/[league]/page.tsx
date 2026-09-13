@@ -17,8 +17,9 @@ import { BeastTable } from "@/components/beast-table";
 import { FaqSection } from "@/components/faq-section";
 import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
-import { PageFrame, PageHeader } from "@/components/page-frame";
+import { PageFrame } from "@/components/page-frame";
 import { ScarabPrices } from "@/components/scarab-prices";
+import { BeastsHeader } from "./header";
 
 /**
  * The name in the sidebar is Beast Regex, which is what the page is called once
@@ -76,9 +77,7 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
     <PageFrame
       asideFirst
       header={
-        <PageHeader
-          title="Beast Regex"
-          description="Every beast on the market, and the Bestiary search for the ones worth catching."
+        <BeastsHeader
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />
       }

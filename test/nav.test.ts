@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import test from "node:test";
 import {
   HOME,
@@ -12,6 +12,7 @@ import {
   swapLeague,
   toolBySlug,
   toolHref,
+  toolPrefetch,
   unlistedPages,
   unlistedTools,
 } from "../src/lib/nav.ts";
@@ -242,4 +243,34 @@ test("the simulation exists and is deliberately not in the sidebar", () => {
     e.kind === "page" ? e.page.slug : e.link.name,
   );
   for (const slug of UNLISTED) assert.ok(!names.includes(slug), slug);
+});
+
+test("every own page has a loading state, so a click answers before the page does", () => {
+  const app = new URL("../src/app/", import.meta.url);
+  const segments = [
+    ...SITE_TOOLS.map((tool) =>
+      tool.league ? `${tool.slug}/[league]` : tool.slug,
+    ),
+    "(home)",
+    "beasts/[league]/simulation",
+  ];
+  for (const segment of segments) {
+    assert.ok(
+      existsSync(new URL(`${segment}/loading.tsx`, app)),
+      `src/app/${segment}/loading.tsx is missing`,
+    );
+  }
+});
+
+test("only the page rendered per visit leaves its link on the default prefetch", () => {
+  // The rest are built ahead and ask for the whole route, which is what
+  // keeps them arriving at once now that each has a loading state.
+  assert.deepEqual(
+    SITE_TOOLS.filter((t) => t.live).map((t) => t.slug),
+    ["beasts"],
+  );
+  assert.equal(toolPrefetch(beasts), undefined);
+  assert.equal(toolPrefetch(maps), true);
+  assert.equal(toolPrefetch(leveling), true);
+  assert.equal(toolPrefetch(undefined), true);
 });

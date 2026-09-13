@@ -16,7 +16,8 @@ import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
 import { MapSearch } from "@/components/map-search";
 import { MapSetup } from "@/components/map-setup";
-import { PageFrame, PageHeader } from "@/components/page-frame";
+import { PageFrame } from "@/components/page-frame";
+import { MapsHeader } from "./header";
 
 /**
  * The modifiers are the same in every league, so every one of these pages says
@@ -68,12 +69,7 @@ export default async function Page({ params }: PageProps<"/maps/[league]">) {
   return (
     <PageFrame
       header={
-        /* The page is one field and the controls that fill it, so the heading
-           says what the field is for rather than naming the page again over
-           the sidebar entry that already names it. */
-        <PageHeader
-          title="Highlight all the Maps you want to run with this Regex"
-          titleClassName="text-lg font-normal"
+        <MapsHeader
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />
       }

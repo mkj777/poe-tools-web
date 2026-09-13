@@ -26,6 +26,18 @@ export type SiteTool = {
   /** Reads prices, so its URL carries the league they were read for. */
   league?: boolean;
   /**
+   * Rendered per visit rather than built ahead, so a link to it can only
+   * fetch its loading state in advance, not the page.
+   *
+   * The distinction decides how a link prefetches. Next fetches a route with
+   * a loading state only down to that state unless the link asks for the
+   * whole route, and it does so even when the route is static, so the built
+   * pages ask for the whole route to stay as immediate as they were. A page
+   * rendered per visit must not: the whole route would be rendered for every
+   * sidebar in every viewport and thrown away, since it goes stale at once.
+   */
+  live?: boolean;
+  /**
    * Answers at its URL and appears in no menu, no directory and no card.
    *
    * Not the same as gone: the page is built, linked to from outside and listed
@@ -44,6 +56,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
       "Every beast on the market for the league you picked, with its chaos value, its seven day change and how many are listed. Set a threshold and it writes the Bestiary search that lights up the ones worth the trip.",
     icon: { src: "/Imprinted_Bestiary_Orb_inventory_icon.png" },
     league: true,
+    live: true,
   },
   {
     slug: "maps",
@@ -90,6 +103,15 @@ export function toolBySlug(slug: string) {
  */
 export function toolHref(tool: SiteTool, league?: string) {
   return tool.league && league ? `/${tool.slug}/${league}` : `/${tool.slug}`;
+}
+
+/**
+ * What a link to the tool should fetch ahead, as next/link's `prefetch`
+ * takes it: the whole route for a built page, the default (its loading state)
+ * for one rendered per visit. See `live`.
+ */
+export function toolPrefetch(tool: SiteTool | undefined) {
+  return tool?.live ? undefined : true;
 }
 
 /** Which tool a path belongs to. Empty for a path that is none of them. */

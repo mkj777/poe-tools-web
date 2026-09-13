@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { FaqSection } from "@/components/faq-section";
 import { JsonLd } from "@/components/json-ld";
-import { PageFrame, PageHeader } from "@/components/page-frame";
+import { PageFrame } from "@/components/page-frame";
 import { Reveal } from "@/components/reveal";
 import { ToolIcon } from "@/components/tool-icon";
 import { HOME_FAQ } from "@/lib/faq";
@@ -11,6 +11,7 @@ import { SIDEBAR, toolHref, type SidebarEntry } from "@/lib/nav";
 import { getLeagues, leagueSlug } from "@/lib/ninja";
 import { toolListLd } from "@/lib/seo";
 import { OG_IMAGE, SITE_DESCRIPTION, canonical } from "@/lib/site";
+import { HomeHeader } from "./header";
 
 export const metadata: Metadata = {
   // Absolute, because the template would append the name of the site to a
@@ -155,12 +156,7 @@ export default async function Page() {
 
   return (
     <PageFrame
-      header={
-        <PageHeader
-          title="Path of Exile tools"
-          description="Every Path of Exile tool worth having, in one list. Three of them are built here."
-        />
-      }
+      header={<HomeHeader />}
     >
       <JsonLd data={toolListLd()} />
 

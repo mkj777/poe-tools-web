@@ -9,7 +9,8 @@ import { OG_IMAGE, canonical } from "@/lib/site";
 import { FaqSection } from "@/components/faq-section";
 import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
-import { PageFrame, PageHeader } from "@/components/page-frame";
+import { PageFrame } from "@/components/page-frame";
+import { ScarabsHeader } from "./header";
 import { ScarabNodes } from "@/components/scarab-nodes";
 
 export async function generateMetadata({
@@ -60,9 +61,7 @@ export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
   return (
     <PageFrame
       header={
-        <PageHeader
-          title="Scarab Nodes"
-          description="Economy of Scarab Nodes"
+        <ScarabsHeader
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />
       }
