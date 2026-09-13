@@ -28,25 +28,33 @@ export function PageFrame({
   /** Puts the rail over the content on a narrow window instead of under it. */
   asideFirst?: boolean;
 }) {
+  // The rail goes into the HTML in the order it is seen, and the wide layout
+  // is the one that reorders it with CSS, not the narrow one. A page streams:
+  // the beast table is 200 rows of HTML, and a phone on a slow connection had
+  // painted it before the rail's markup arrived, at which point the rail
+  // landed over it and pushed the whole table down. In the order it is seen,
+  // whatever has arrived is already where it will stay.
+  const rail = aside && (
+    <aside
+      className={cn(
+        // Sticky, so the numbers stay beside a table that is longer than the
+        // window, and scrolling inside itself when the panel is the long one,
+        // so its own bottom never becomes unreachable.
+        "w-full shrink-0 rail:sticky rail:top-6 rail:max-h-[calc(100dvh-3rem)] rail:w-64 rail:overflow-y-auto",
+        asideFirst && "rail:order-last",
+      )}
+    >
+      {aside}
+    </aside>
+  );
+
   return (
     <div className="mx-auto w-full max-w-[88rem] px-4 py-6 sm:px-6 lg:px-8">
       {header}
       <div className="flex flex-col gap-6 rail:flex-row rail:items-start rail:gap-8">
+        {asideFirst && rail}
         <div className="min-w-0 flex-1">{children}</div>
-
-        {aside && (
-          <aside
-            className={cn(
-              // Sticky, so the numbers stay beside a table that is longer than
-              // the window, and scrolling inside itself when the panel is the
-              // long one, so its own bottom never becomes unreachable.
-              "w-full shrink-0 rail:sticky rail:top-6 rail:order-none rail:max-h-[calc(100dvh-3rem)] rail:w-64 rail:overflow-y-auto",
-              asideFirst && "order-first",
-            )}
-          >
-            {aside}
-          </aside>
-        )}
+        {!asideFirst && rail}
       </div>
     </div>
   );
