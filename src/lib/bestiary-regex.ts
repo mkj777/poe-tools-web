@@ -57,8 +57,15 @@ const SAFE_FRAGMENT = /^[a-z][a-z ]*[a-z]$|^[a-z]+$/;
 
 const COMBINING_MARKS = new RegExp("[\\u0300-\\u036f]", "g");
 
-const normalize = (name: string) =>
+/**
+ * A line the way the search engine sees it: lower case, accents off. Exported
+ * for pattern-risk.ts, which tests one compiled pattern against tens of
+ * thousands of lines and has to prepare them the same way this file does.
+ */
+export const normalizeBestiaryLine = (name: string) =>
   name.toLowerCase().normalize("NFD").replace(COMBINING_MARKS, "");
+
+const normalize = normalizeBestiaryLine;
 
 export type BeastEntry = {
   name: string;
@@ -252,13 +259,15 @@ const fragmentRegExp = ({ body, anchored, terminated }: Fragment) =>
  * A space is not a plain character in the field, so it travels as a wildcard.
  * An unfinished pattern (`^craicic(`) simply matches nothing.
  */
-function compile(pattern: string) {
+export function compileBestiaryPattern(pattern: string) {
   try {
     return new RegExp(pattern.split(" ").join("."), "i");
   } catch {
     return null;
   }
 }
+
+const compile = compileBestiaryPattern;
 
 /** Does a finished pattern hit this beast? Used by the UI and the tests. */
 export function matchesBestiaryPattern(
