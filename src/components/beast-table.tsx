@@ -18,11 +18,9 @@ import {
 import { leagueSlug, type Beast } from "@/lib/ninja";
 import { CurrencyIcon, Price } from "@/components/currency";
 import { PriceClock } from "@/components/price-clock";
-import {
-  MAX_PATTERN_LENGTH,
-  type BeastEntry,
-  type BestiaryStep,
-} from "@/lib/bestiary-regex";
+import { MAX_PATTERN_LENGTH } from "@/lib/bestiary-limits";
+// Types only: the solver itself runs in the worker and must not ride along.
+import type { BeastEntry, BestiaryStep } from "@/lib/bestiary-regex";
 import {
   useBestiaryPattern,
   type PatternState,

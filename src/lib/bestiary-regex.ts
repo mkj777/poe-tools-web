@@ -35,6 +35,11 @@ import {
   MONSTER_NAME_SUFFIXES,
   MONSTER_NAME_TITLES,
 } from "./monster-words.ts";
+import { MAX_PATTERN_LENGTH } from "./bestiary-limits.ts";
+
+// Re-exported for the worker and the tests, which want the solver anyway. A
+// page that only prints the number imports it from bestiary-limits.ts.
+export { MAX_PATTERN_LENGTH };
 
 /**
  * An anchored fragment only has to clear the handful of strings a line can
@@ -49,9 +54,6 @@ const MAX_FRAGMENT = 14;
 
 /** Letters, and word breaks that leave as a `.` wildcard. */
 const SAFE_FRAGMENT = /^[a-z][a-z ]*[a-z]$|^[a-z]+$/;
-
-/** Characters the Bestiary search accepts before it cuts the input off. */
-export const MAX_PATTERN_LENGTH = 249;
 
 const COMBINING_MARKS = new RegExp("[\\u0300-\\u036f]", "g");
 
