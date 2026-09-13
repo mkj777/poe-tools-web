@@ -243,8 +243,10 @@ export function AppSidebar({
   const close = () => setOpenMobile(false);
 
   // Where the travelling bar goes: the active entry, measured against the
-  // column it scrolls in. Measured again when the column folds to its icons,
-  // because every row changes height then.
+  // column it scrolls in. Measured again whenever the entry changes size,
+  // because the rows shrink when the column folds to its icons, and they do
+  // it on a transition: the height at the moment of the fold is still the old
+  // one, and only the observer sees it arrive.
   const column = useRef<HTMLDivElement>(null);
   const [bar, setBar] = useState<BarPlace | null>(null);
   useLayoutEffect(() => {
@@ -254,14 +256,21 @@ export function AppSidebar({
       setBar(null);
       return;
     }
-    const from = host.getBoundingClientRect();
-    const to = item.getBoundingClientRect();
-    setBar((prev) => ({
-      x: to.left - from.left - 4,
-      y: to.top - from.top + host.scrollTop + BAR_INSET,
-      height: Math.max(0, to.height - 2 * BAR_INSET),
-      settled: prev !== null,
-    }));
+    const measure = () => {
+      const from = host.getBoundingClientRect();
+      const to = item.getBoundingClientRect();
+      setBar((prev) => ({
+        x: to.left - from.left - 4,
+        y: to.top - from.top + host.scrollTop + BAR_INSET,
+        height: Math.max(0, to.height - 2 * BAR_INSET),
+        settled: prev !== null,
+      }));
+    };
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(item);
+    watch.observe(host);
+    return () => watch.disconnect();
   }, [active, state, isMobile]);
 
   return (
