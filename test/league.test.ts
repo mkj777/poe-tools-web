@@ -18,7 +18,8 @@ function fakeResponse(body: unknown) {
 
 /**
  * Installs a stub `fetch` for one test and restores the real one after.
- * `getLeagues` carries no cache of its own, verified by counting calls
+ * `getLeagues` is wrapped in React's `cache`, which shares one answer within a
+ * server render and does nothing outside one, verified by counting calls
  * below, so each test gets a fresh answer rather than a stale one from a
  * previous test's stub.
  */
@@ -38,7 +39,7 @@ const TWO_LEAGUES = [
   { id: "Hardcore Allflame", name: "Hardcore Allflame" },
 ];
 
-test("getLeagues is asked fresh each call, nothing here memoises it", async (t) => {
+test("getLeagues is asked fresh each call outside a render, React's cache only holds within one", async (t) => {
   let calls = 0;
   stubFetch(t, () => {
     calls++;

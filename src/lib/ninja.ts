@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { BeastRarity } from "./beast-rarity";
 
 const BASE = "https://poe.ninja/poe1/api/economy";
@@ -43,9 +44,13 @@ async function ninja<T>(path: string): Promise<T> {
   return res.json();
 }
 
-export function getLeagues() {
-  return ninja<League[]>("/leagues");
-}
+/**
+ * Asked three times per request, by the layout, the page's metadata and the
+ * page, and answered once: `cache` shares the promise for the length of the
+ * render, so a miss in the data cache is one upstream request rather than
+ * three racing for it, and the JSON is parsed once.
+ */
+export const getLeagues = cache(() => ninja<League[]>("/leagues"));
 
 /**
  * The league as poe.ninja spells it in a URL. Not the API id: the site drops

@@ -61,17 +61,16 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
   const { leagues, league } = await resolveLeague((await params).league);
   if (!league) notFound();
 
-  const [beasts, scarabs, currency] = await Promise.all([
+  const [beasts, scarabs, currency, fetchedAt] = await Promise.all([
     loadBeasts(league),
     getScarabPrices(league).catch(() => []),
     getCurrencyPrices(league).catch((): CurrencyPrices => ({})),
+    pricesFetchedAt(league),
   ]);
 
   // A mirror is quoted in divines, never in chaos: nobody counts that high.
   const { divine, mirror } = currency;
   const mirrorInDivine = divine && mirror ? mirror / divine : undefined;
-
-  const fetchedAt = await pricesFetchedAt(league);
 
   return (
     <PageFrame
