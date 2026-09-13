@@ -1,8 +1,14 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
-import { useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { ArrowUpRight } from "lucide-react";
 import {
   Sidebar,
@@ -25,11 +31,13 @@ import {
   activeTool,
   leagueFromPath,
   toolHref,
+  toolPrefetch,
   type SidebarEntry,
   type SidebarGroup as Group,
 } from "@/lib/nav";
 import { leagueSlug, type League } from "@/lib/ninja";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 /**
  * Label over blurb. Both are gone once the sidebar is down to its icons.
@@ -100,6 +108,37 @@ function Mark() {
 const BAR_INSET = 6;
 
 /**
+ * The inside of a page entry, and what it does while the click is still on
+ * its way. A page that was fetched ahead arrives at once and nothing here
+ * happens. One that was not, on a slow connection, is pending until its
+ * loading state lands, and then the row dims after a moment (the CSS waits
+ * 100ms, so a fast arrival never flickers) and tells the column, so the bar
+ * and the highlight move to it without waiting for the address to change.
+ */
+function Pending({
+  slug,
+  onPending,
+  children,
+}: {
+  slug: string;
+  onPending: (slug: string | null) => void;
+  children: ReactNode;
+}) {
+  const { pending } = useLinkStatus();
+  useEffect(() => {
+    onPending(pending ? slug : null);
+  }, [pending, slug, onPending]);
+  return (
+    <span
+      data-pending={pending || undefined}
+      className="nav-pending flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:justify-center"
+    >
+      {children}
+    </span>
+  );
+}
+
+/**
  * A row tall enough for a wrapped blurb, and a square once the column is down
  * to its icons.
  *
@@ -125,6 +164,8 @@ type EntryProps = {
   /** Whether the active entry draws its own mark, see ActiveBar. */
   marked: boolean;
   onNavigate: () => void;
+  /** Which page entry is waiting for its page, if any. See Pending. */
+  onPending: (slug: string | null) => void;
 };
 
 function Entry({
@@ -134,6 +175,7 @@ function Entry({
   active,
   marked,
   onNavigate,
+  onPending,
 }: EntryProps) {
   if (entry.kind === "page") {
     const tool = entry.page;
@@ -148,9 +190,15 @@ function Entry({
           tooltip={tool.label}
           className={ROW}
         >
-          <Link href={toolHref(tool, slug)} onClick={onNavigate}>
-            <ToolIcon icon={tool.icon} />
-            <Label label={tool.label} blurb={tool.blurb} />
+          <Link
+            href={toolHref(tool, slug)}
+            prefetch={toolPrefetch(tool)}
+            onClick={onNavigate}
+          >
+            <Pending slug={tool.slug} onPending={onPending}>
+              <ToolIcon icon={tool.icon} />
+              <Label label={tool.label} blurb={tool.blurb} />
+            </Pending>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -229,7 +277,21 @@ export function AppSidebar({
 }) {
   const pathname = usePathname() ?? "";
   const { state, isMobile, setOpenMobile } = useSidebar();
-  const active = activeTool(pathname);
+
+  // The page you are on, or the one you have clicked and are still waiting
+  // for. A click on a page that was fetched ahead changes the address at once
+  // and the wait never registers; on one that was not, the column marks the
+  // entry from the click on, and the address catches up. The wait remembers
+  // the address it began at, so it counts for nothing once that has changed.
+  const [pending, setPending] = useState<{ tool: string; at: string } | null>(
+    null,
+  );
+  const onPending = useCallback(
+    (tool: string | null) => setPending(tool ? { tool, at: pathname } : null),
+    [pathname],
+  );
+  const active =
+    pending && pending.at === pathname ? pending.tool : activeTool(pathname);
 
   // The chrome has no league of its own: it follows the page, and falls back to
   // the one a bare visit lands on. The picking happens on the pages that read
@@ -302,6 +364,7 @@ export function AppSidebar({
             active={active}
             marked={bar === null}
             onNavigate={close}
+            onPending={onPending}
           />
         ))}
         {bar && <ActiveBar place={bar} />}

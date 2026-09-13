@@ -157,3 +157,27 @@
     font-size: 17px;
   }
 }
+
+/*
+ * A sidebar entry whose page is still on its way, see Pending in
+ * app-sidebar.tsx. Nothing for the first 100ms, so a page that arrives at
+ * once never flickers; after that the row breathes until the page lands. A
+ * reader who asked for less motion gets a steady dim instead.
+ */
+@keyframes nav-pending {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.nav-pending[data-pending] {
+  animation: nav-pending 1s ease-in-out 100ms infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-pending[data-pending] {
+    animation: none;
+    opacity: 0.6;
+    transition: opacity 0s 100ms;
+  }
+}
