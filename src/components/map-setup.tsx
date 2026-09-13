@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Price } from "@/components/currency";
 import type { ExchangeItem } from "@/lib/ninja";
+import { createStorageStore } from "@/lib/storage-store";
 import { num } from "@/lib/utils";
 
 /**
@@ -37,55 +38,29 @@ const EMPTY: Setup = { counts: {}, astrolabe: null };
 /** What "no astrolabe" is called inside the select, which cannot take "". */
 const NONE = "none";
 
-function load(): Setup {
-  try {
-    const raw = localStorage.getItem(SAVED);
-    if (!raw) return EMPTY;
-    const parsed = JSON.parse(raw) as {
-      counts?: Record<string, string | number>;
-      astrolabe?: string | null;
-    };
-    // A setup saved before counts became text still reads back.
-    const counts = Object.fromEntries(
-      Object.entries(parsed.counts ?? {}).map(([id, n]) => [id, String(n)]),
-    );
-    return { counts, astrolabe: parsed.astrolabe ?? null };
-  } catch {
-    return EMPTY;
-  }
-}
+/** What was stored, in the shape it is stored in. */
+type Stored = {
+  counts?: Record<string, string | number>;
+  astrolabe?: string | null;
+};
 
 /**
  * The setup lives in a tiny store rather than in state, the way the beast
  * table's mode does. The server renders an empty one, the browser corrects it
  * on hydration, and neither has to read storage during a render.
- *
- * `read` has to hand back the same object every time until something changes,
- * or React re-renders forever, so it caches.
  */
-const setupStore = {
-  listeners: new Set<() => void>(),
-  cached: null as Setup | null,
-  read(): Setup {
-    setupStore.cached ??= load();
-    return setupStore.cached;
+const setupStore = createStorageStore<Setup>(
+  SAVED,
+  (raw) => {
+    const parsed = JSON.parse(raw) as Stored;
+    // A setup saved before counts became text still reads back.
+    const counts = Object.fromEntries(
+      Object.entries(parsed.counts ?? {}).map(([id, n]) => [id, String(n)]),
+    );
+    return { counts, astrolabe: parsed.astrolabe ?? null };
   },
-  write(next: Setup) {
-    setupStore.cached = next;
-    try {
-      localStorage.setItem(SAVED, JSON.stringify(next));
-    } catch {
-      // A browser refusing storage costs the saved setup and nothing else.
-    }
-    for (const listener of setupStore.listeners) listener();
-  },
-  subscribe(listener: () => void) {
-    setupStore.listeners.add(listener);
-    return () => {
-      setupStore.listeners.delete(listener);
-    };
-  },
-};
+  EMPTY,
+);
 
 export function MapSetup({
   scarabs,
@@ -100,7 +75,7 @@ export function MapSetup({
   const setup = useSyncExternalStore(
     setupStore.subscribe,
     setupStore.read,
-    () => EMPTY,
+    setupStore.server,
   );
   const [query, setQuery] = useState("");
 

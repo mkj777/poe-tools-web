@@ -26,6 +26,7 @@ import {
   type PatternState,
 } from "@/lib/use-bestiary-pattern";
 import { BAND_MIN, PRESET_THRESHOLDS, inBand } from "@/lib/presets";
+import { createStorageStore } from "@/lib/storage-store";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { num } from "@/lib/utils";
@@ -89,24 +90,12 @@ const PRESETS = [0, ...PRESET_THRESHOLDS];
  * rather than in state, so the server can render its own answer ("sell") and
  * the browser can correct it on hydration without a mismatch.
  */
-const MODE_KEY = "beast-prices:mode";
-
-const modeStore = {
-  listeners: new Set<() => void>(),
-  read(): Mode {
-    return localStorage.getItem(MODE_KEY) === "trash" ? "trash" : "sell";
-  },
-  write(next: Mode) {
-    localStorage.setItem(MODE_KEY, next);
-    for (const listener of modeStore.listeners) listener();
-  },
-  subscribe(listener: () => void) {
-    modeStore.listeners.add(listener);
-    return () => {
-      modeStore.listeners.delete(listener);
-    };
-  },
-};
+const modeStore = createStorageStore<Mode>(
+  "beast-prices:mode",
+  (raw) => (raw === "trash" ? "trash" : "sell"),
+  "sell",
+  String,
+);
 
 /** Warning line: the sentence and the beast names get their own colours. */
 function Notice({
@@ -599,7 +588,7 @@ export function BeastTable({
   const mode = useSyncExternalStore(
     modeStore.subscribe,
     modeStore.read,
-    () => "sell" as Mode,
+    modeStore.server,
   );
 
   const threshold = Number(minChaos) || 0;
