@@ -1,33 +1,28 @@
-"use client";
-
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Check, Copy } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /**
  * The glyph on a copy button, and the one moment that button has anything to
  * say. The tick does not replace the sheets, it takes over from them, which is
  * the difference between a button that answered and a button that redrew.
+ *
+ * Both glyphs are always in the markup, stacked, and the one that is not
+ * current is faded out and shrunk. That is what lets it be a CSS transition
+ * rather than a scripted one: the server and the browser agree on the markup
+ * whatever the reader's motion setting, and the setting is honoured by the
+ * media query, not by a branch that hydration would have to be told about.
  */
 export function CopyGlyph({ copied }: { copied: boolean }) {
-  const still = useReducedMotion();
-  const Glyph = copied ? Check : Copy;
-
-  if (still) return <Glyph className="size-4" />;
+  const glyph = (on: boolean) =>
+    cn(
+      "absolute inset-0 size-4 transition-[opacity,scale] duration-150 ease-out motion-reduce:transition-none",
+      on ? "scale-100 opacity-100" : "scale-50 opacity-0",
+    );
 
   return (
     <span className="relative grid size-4 shrink-0 place-items-center">
-      <AnimatePresence initial={false} mode="popLayout">
-        <motion.span
-          key={copied ? "copied" : "copy"}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
-          className="absolute inset-0 grid place-items-center"
-        >
-          <Glyph className="size-4" />
-        </motion.span>
-      </AnimatePresence>
+      <Copy className={glyph(!copied)} />
+      <Check className={glyph(copied)} />
     </span>
   );
 }
