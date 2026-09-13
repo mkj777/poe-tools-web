@@ -657,12 +657,12 @@ export function BeastTable({
       <div className="flex flex-wrap items-center gap-3">
         {/* Which way the pattern reads: the beasts worth selling, or the ones
             worth leaving behind. One of the two, so it names itself and hides
-            the other rather than spending a row on both. */}
+            the other rather than spending a row on both. The explanation is a
+            prefix to the visible word rather than a label in its place, so
+            "click Sell" still finds it and a screen reader hears both. */}
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label="Which beasts the pattern is for"
-            className="bg-secondary/60 hover:bg-secondary text-foreground data-[state=open]:bg-secondary flex h-9 items-center gap-1.5 rounded-full pr-3 pl-4 text-sm transition-colors outline-none"
-          >
+          <DropdownMenuTrigger className="bg-secondary/60 hover:bg-secondary text-foreground data-[state=open]:bg-secondary flex h-9 items-center gap-1.5 rounded-full pr-3 pl-4 text-sm transition-colors outline-none">
+            <span className="sr-only">Which beasts the pattern is for: </span>
             {MODE_LABELS[mode]}
             <ChevronDown className="size-3.5 opacity-70" />
           </DropdownMenuTrigger>
