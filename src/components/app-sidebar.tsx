@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, useReducedMotion } from "motion/react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import {
   Sidebar,
@@ -49,26 +49,55 @@ function Label({ label, blurb }: { label: string; blurb: string }) {
   );
 }
 
+/** Where the bar sits, and whether it has somewhere to travel from. */
+type BarPlace = { x: number; y: number; height: number; settled: boolean };
+
 /**
  * The bar beside the page you are on. It travels from one entry to the next
  * rather than blinking out and in, which is the one animation in the sidebar
  * that carries something: where you just came from.
+ *
+ * One bar for the whole column, laid over it and moved with a transform, so
+ * the travel is a CSS transition and no animation library has to ride along
+ * on every page for a two pixel line. It measures the active entry after each
+ * change of page and slides to it; the first placing is not animated, or the
+ * bar would arrive from the top on every load. A reader who has asked their
+ * system for less motion gets the bar in its new place at once.
+ *
+ * Until it has measured, and wherever it cannot (the sheet on a phone mounts
+ * its content only while open), the entry draws a mark of its own in the same
+ * place, so the server's HTML already carries the bar and nothing waits for
+ * the script.
  */
-function ActiveMark() {
-  const still = useReducedMotion();
+function ActiveBar({ place }: { place: BarPlace }) {
   return (
-    <motion.span
+    <span
       aria-hidden
-      layoutId="sidebar-active"
-      transition={
-        still
-          ? { duration: 0 }
-          : { type: "spring", stiffness: 500, damping: 40 }
-      }
+      className={cn(
+        "bg-primary pointer-events-none absolute top-0 left-0 w-0.5 rounded-full",
+        place.settled &&
+          "transition-[transform,height] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+      )}
+      style={{
+        height: place.height,
+        transform: `translate(${place.x}px, ${place.y}px)`,
+      }}
+    />
+  );
+}
+
+/** The mark an entry draws for itself while there is no travelling bar. */
+function Mark() {
+  return (
+    <span
+      aria-hidden
       className="bg-primary absolute inset-y-1.5 -left-1 w-0.5 rounded-full"
     />
   );
 }
+
+/** How far the travelling bar stays in from the top and bottom of its row. */
+const BAR_INSET = 6;
 
 /**
  * A row tall enough for a wrapped blurb, and a square once the column is down
@@ -93,16 +122,25 @@ type EntryProps = {
   slug: string;
   /** The slug of the tool the current page belongs to. */
   active: string;
+  /** Whether the active entry draws its own mark, see ActiveBar. */
+  marked: boolean;
   onNavigate: () => void;
 };
 
-function Entry({ entry, league, slug, active, onNavigate }: EntryProps) {
+function Entry({
+  entry,
+  league,
+  slug,
+  active,
+  marked,
+  onNavigate,
+}: EntryProps) {
   if (entry.kind === "page") {
     const tool = entry.page;
     const on = tool.slug === active;
     return (
-      <SidebarMenuItem>
-        {on && <ActiveMark />}
+      <SidebarMenuItem data-tool={tool.slug}>
+        {on && marked && <Mark />}
         <SidebarMenuButton
           asChild
           size="lg"
@@ -190,7 +228,8 @@ export function AppSidebar({
   fallback: string;
 }) {
   const pathname = usePathname() ?? "";
-  const { setOpenMobile } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
+  const active = activeTool(pathname);
 
   // The chrome has no league of its own: it follows the page, and falls back to
   // the one a bare visit lands on. The picking happens on the pages that read
@@ -202,6 +241,28 @@ export function AppSidebar({
   // The sheet covers the whole screen on a phone, so a link that left it open
   // would hide the page it just opened.
   const close = () => setOpenMobile(false);
+
+  // Where the travelling bar goes: the active entry, measured against the
+  // column it scrolls in. Measured again when the column folds to its icons,
+  // because every row changes height then.
+  const column = useRef<HTMLDivElement>(null);
+  const [bar, setBar] = useState<BarPlace | null>(null);
+  useLayoutEffect(() => {
+    const host = column.current;
+    const item = host?.querySelector<HTMLElement>(`[data-tool="${active}"]`);
+    if (!host || !item) {
+      setBar(null);
+      return;
+    }
+    const from = host.getBoundingClientRect();
+    const to = item.getBoundingClientRect();
+    setBar((prev) => ({
+      x: to.left - from.left - 4,
+      y: to.top - from.top + host.scrollTop + BAR_INSET,
+      height: Math.max(0, to.height - 2 * BAR_INSET),
+      settled: prev !== null,
+    }));
+  }, [active, state, isMobile]);
 
   return (
     <Sidebar collapsible="icon">
@@ -219,17 +280,22 @@ export function AppSidebar({
         <SidebarTrigger className="text-muted-foreground hover:text-foreground hidden size-8 lg:flex" />
       </SidebarHeader>
 
-      <SidebarContent className="gap-0 pb-[env(safe-area-inset-bottom)]">
+      <SidebarContent
+        ref={column}
+        className="relative gap-0 pb-[env(safe-area-inset-bottom)]"
+      >
         {SIDEBAR.map((group) => (
           <NavGroup
             key={group.id}
             group={group}
             league={league}
             slug={slug}
-            active={activeTool(pathname)}
+            active={active}
+            marked={bar === null}
             onNavigate={close}
           />
         ))}
+        {bar && <ActiveBar place={bar} />}
       </SidebarContent>
 
       <SidebarRail />
