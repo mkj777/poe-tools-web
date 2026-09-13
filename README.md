@@ -22,6 +22,27 @@ has one. A test reads `public/` and fails on an icon naming a file which is not
 there, or is there under another capitalisation, which the machine this is
 written on would not notice and the one that serves it would.
 
+## The search
+
+Every tool, every question and every Atlas passive of the site sit behind one
+field: the one at the top of the sidebar, the glass in the bar a phone gets, or
+Ctrl+K (⌘K on a Mac) from anywhere. It is a command palette on shadcn's
+`Command`, and it is a chunk of its own that arrives once somebody reaches for
+it, so a page nobody searches on pays nothing for it.
+
+What makes it worth having is that it answers to what a tool is about, not only
+to what it is called. Each entry in `src/lib/nav.ts` and `src/lib/tools.ts`
+declares its subjects out of `src/lib/topics.ts`, and each subject carries the
+words a player actually types for it, so "skill tree" brings up Path of
+Building, the two jewel calculators, the Atlas passives and poe.ninja, and each
+row says which subject brought it there. The ranking in `src/lib/search.ts` is
+a pure function with no dependency, and `test/search.test.ts` pins the queries
+it is measured against. A typo is forgiven only for a word that found nothing
+as typed.
+
+An unlisted page is searchable and not browsed: nothing typed shows the sidebar
+again, and "map regex" finds the map regex.
+
 ## The URLs
 
 Every URL used to begin with a league, back when the site was one tool with a

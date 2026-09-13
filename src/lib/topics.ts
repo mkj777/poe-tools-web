@@ -1,0 +1,441 @@
+import { SITE_TOOLS } from "./nav.ts";
+import { EXTERNAL_TOOLS } from "./tools.ts";
+
+/**
+ * What a tool is about, as distinct from what it is called.
+ *
+ * The search over the catalogue has to answer "skill tree" with the build
+ * planner, the two jewel calculators, the Atlas passives and poe.ninja, and
+ * not one of those five has the words in its name or its blurb. A name says
+ * what a tool is called and a blurb what you go there to do; neither says what
+ * it has to do with. So every tool declares the subjects it touches, and each
+ * subject carries the words a player actually types for it: "passive tree",
+ * "pob", "lab", "price check". A query that lands on one of those words finds
+ * every tool under the subject, and the palette says which subject it was.
+ *
+ * Aliases are written the way the search normalises text, lowercase and
+ * without punctuation, so a lookup is a plain comparison; a test holds them to
+ * it. A word may belong to more than one subject, "notable" to both trees and
+ * "sell" to both prices and trade, because the player who types it means
+ * whichever, and both are the right answer.
+ */
+export const TOPICS = [
+  {
+    id: "skill-tree",
+    label: "Skill tree",
+    aliases: [
+      "skill tree",
+      "passive tree",
+      "passive skill tree",
+      "tree",
+      "passives",
+      "passive",
+      "passive points",
+      "keystone",
+      "keystones",
+      "notable",
+      "notables",
+      "respec",
+      "allocate",
+    ],
+  },
+  {
+    id: "atlas",
+    label: "Atlas tree",
+    aliases: [
+      "atlas",
+      "atlas tree",
+      "atlas passive tree",
+      "atlas skill tree",
+      "atlas passives",
+      "atlas passive",
+      "atlas notable",
+      "atlas notables",
+      "atlas keystone",
+      "atlas keystones",
+      "notable",
+      "notables",
+      "keystone",
+      "keystones",
+    ],
+  },
+  {
+    id: "builds",
+    label: "Builds",
+    aliases: [
+      "build",
+      "builds",
+      "build guide",
+      "build planner",
+      "planner",
+      "character",
+      "characters",
+      "dps",
+      "damage",
+      "defence",
+      "defense",
+      "ehp",
+      "ladder",
+      "meta",
+      "league start",
+      "league starter",
+      "starter",
+    ],
+  },
+  {
+    id: "jewels",
+    label: "Jewels",
+    aliases: [
+      "jewel",
+      "jewels",
+      "jewel socket",
+      "socket",
+      "sockets",
+      "unique jewel",
+      "unique jewels",
+    ],
+  },
+  {
+    id: "prices",
+    label: "Prices",
+    aliases: [
+      "price",
+      "prices",
+      "price check",
+      "pricing",
+      "worth",
+      "value",
+      "values",
+      "chaos",
+      "chaos orb",
+      "divine",
+      "divine orb",
+      "economy",
+      "market",
+      "cost",
+      "cheap",
+      "expensive",
+      "sell",
+      "selling",
+    ],
+  },
+  {
+    id: "trade",
+    label: "Trade",
+    aliases: [
+      "trade",
+      "trading",
+      "trade site",
+      "buy",
+      "buying",
+      "sell",
+      "selling",
+      "whisper",
+      "whispers",
+      "listing",
+      "listings",
+      "market",
+      "bulk",
+      "bulk exchange",
+      "exchange",
+    ],
+  },
+  {
+    id: "currency",
+    label: "Currency",
+    aliases: [
+      "currency",
+      "currencies",
+      "orb",
+      "orbs",
+      "chaos",
+      "divine",
+      "exalt",
+      "exalted",
+      "mirror",
+      "shards",
+      "currency exchange",
+      "exchange rate",
+      "rates",
+      "ratio",
+      "ratios",
+    ],
+  },
+  {
+    id: "history",
+    label: "Price history",
+    aliases: [
+      "history",
+      "historical",
+      "past leagues",
+      "previous league",
+      "last league",
+      "archive",
+      "chart",
+      "charts",
+      "graph",
+      "graphs",
+      "trend",
+      "trends",
+      "over time",
+    ],
+  },
+  {
+    id: "stash",
+    label: "Stash",
+    aliases: [
+      "stash",
+      "stash tab",
+      "stash tabs",
+      "stash search",
+      "tab",
+      "tabs",
+      "inventory",
+      "net worth",
+      "networth",
+      "wealth",
+    ],
+  },
+  {
+    id: "regex",
+    label: "Regex",
+    aliases: [
+      "regex",
+      "regexp",
+      "regular expression",
+      "search string",
+      "search strings",
+      "search",
+      "pattern",
+      "patterns",
+      "highlight",
+      "highlighting",
+    ],
+  },
+  {
+    id: "maps",
+    label: "Maps",
+    aliases: [
+      "map",
+      "maps",
+      "mapping",
+      "map mods",
+      "map modifiers",
+      "mods",
+      "modifiers",
+      "affixes",
+      "rolling maps",
+      "juice",
+      "juicing",
+      "tier",
+      "t16",
+      "map tier",
+    ],
+  },
+  {
+    id: "loot-filter",
+    label: "Loot filter",
+    aliases: [
+      "loot filter",
+      "loot filters",
+      "filter",
+      "filters",
+      "item filter",
+      "neversink",
+      "loot",
+      "drops",
+      "strictness",
+      "hide items",
+    ],
+  },
+  {
+    id: "leveling",
+    label: "Leveling",
+    aliases: [
+      "leveling",
+      "levelling",
+      "level",
+      "levels",
+      "leveling guide",
+      "levelling guide",
+      "acts",
+      "act",
+      "quest",
+      "quests",
+      "speedrun",
+      "league start",
+      "league starter",
+      "new character",
+    ],
+  },
+  {
+    id: "campaign",
+    label: "Campaign",
+    aliases: [
+      "campaign",
+      "story",
+      "zone",
+      "zones",
+      "waypoint",
+      "waypoints",
+      "kitava",
+      "act 1",
+      "act 10",
+      "acts",
+    ],
+  },
+  {
+    id: "overlay",
+    label: "Overlay",
+    aliases: [
+      "overlay",
+      "in game",
+      "ingame",
+      "hotkey",
+      "hotkeys",
+      "shortcut",
+      "shortcuts",
+      "companion",
+      "second monitor",
+      "alt tab",
+    ],
+  },
+  {
+    id: "desktop",
+    label: "Desktop app",
+    aliases: [
+      "app",
+      "apps",
+      "desktop",
+      "desktop app",
+      "download",
+      "install",
+      "installer",
+      "windows",
+      "program",
+      "software",
+      "exe",
+      "portable",
+    ],
+  },
+  {
+    id: "labyrinth",
+    label: "Labyrinth",
+    aliases: [
+      "lab",
+      "labyrinth",
+      "uber lab",
+      "izaro",
+      "trial",
+      "trials",
+      "ascendancy",
+      "ascend",
+      "lab layout",
+      "layout",
+      "daily lab",
+      "offering",
+    ],
+  },
+  {
+    id: "crafting",
+    label: "Crafting",
+    aliases: [
+      "craft",
+      "crafting",
+      "roll",
+      "rolling",
+      "reroll",
+      "chaos spam",
+      "alt spam",
+      "affix",
+      "affixes",
+      "prefix",
+      "suffix",
+      "item level",
+      "ilvl",
+      "base",
+      "bases",
+      "weights",
+    ],
+  },
+  {
+    id: "bestiary",
+    label: "Bestiary",
+    aliases: [
+      "bestiary",
+      "beast",
+      "beasts",
+      "beastcraft",
+      "beastcrafting",
+      "einhar",
+      "capture",
+      "captures",
+      "red beast",
+      "red beasts",
+      "menagerie",
+      "blood altar",
+      "aspect",
+      "aspects",
+    ],
+  },
+  {
+    id: "scarabs",
+    label: "Scarabs",
+    aliases: [
+      "scarab",
+      "scarabs",
+      "scarab prices",
+      "scarab drop",
+      "carapace",
+      "carapaces",
+      "map device",
+      "farming",
+      "farm",
+      "atlas content",
+      "mechanic",
+      "mechanics",
+    ],
+  },
+  {
+    id: "vendor",
+    label: "Vendor",
+    aliases: [
+      "vendor",
+      "vendoring",
+      "disenchant",
+      "disenchanting",
+      "shards",
+      "unique",
+      "uniques",
+      "recipe",
+      "vendor recipe",
+      "scour",
+    ],
+  },
+] as const satisfies readonly {
+  id: string;
+  label: string;
+  aliases: readonly string[];
+}[];
+
+export type Topic = (typeof TOPICS)[number];
+export type TopicId = Topic["id"];
+
+export function topicById(id: TopicId): Topic {
+  const topic = TOPICS.find((t) => t.id === id);
+  if (!topic) throw new Error(`No topic ${id}`);
+  return topic;
+}
+
+/**
+ * The names of every tool under a subject, this site's pages first and then
+ * the catalogue, each in the order it is declared. What the tests read to say
+ * that "overlay" means the leveling guide and Awakened PoE Trade and nothing
+ * else.
+ */
+export function toolsWithTopic(id: TopicId): string[] {
+  return [
+    ...SITE_TOOLS.filter((t) => t.topics.includes(id)).map((t) => t.label),
+    ...EXTERNAL_TOOLS.filter((t) => t.topics.includes(id)).map((t) => t.name),
+  ];
+}

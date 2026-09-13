@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SearchButton } from "@/components/search/search-button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Wordmark } from "@/components/wordmark";
 
@@ -18,6 +19,7 @@ export function MobileBar() {
       >
         <Wordmark />
       </Link>
+      <SearchButton />
     </header>
   );
 }

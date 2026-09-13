@@ -4,6 +4,7 @@ import {
   type ExternalTool,
   type ToolIcon,
 } from "./tools.ts";
+import type { TopicId } from "./topics.ts";
 
 /**
  * What the sidebar lists of this site's own pages, and how their URLs are
@@ -23,6 +24,14 @@ export type SiteTool = {
   /** The same thing said properly, for the directory on the home page. */
   about: string;
   icon: ToolIcon;
+  /** The subjects it has to do with, which the search reads. See topics.ts. */
+  topics: readonly TopicId[];
+  /**
+   * What a player types for it that the name does not say: the abbreviation,
+   * the author, the thing it is known for. Spelled the way they would be shown,
+   * because the palette names the one that matched.
+   */
+  aliases?: readonly string[];
   /** Reads prices, so its URL carries the league they were read for. */
   league?: boolean;
   /**
@@ -55,6 +64,8 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     about:
       "Every beast on the market for the league you picked, with its chaos value, its seven day change and how many are listed. Set a threshold and it writes the Bestiary search that lights up the ones worth the trip.",
     icon: { src: "/Imprinted_Bestiary_Orb_inventory_icon.png" },
+    topics: ["bestiary", "regex", "prices"],
+    aliases: ["Beasts", "Bestiary regex", "Bestiary search", "Beast prices"],
     league: true,
     live: true,
   },
@@ -67,6 +78,8 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     about:
       "Tick the map modifiers your build cannot survive and get back the stash search that dims every map carrying one of them, short enough to paste into the field in one go.",
     icon: { src: "/Nightmare_Map_(Curse_of_the_Allflame)_inventory_icon.png" },
+    topics: ["maps", "regex", "stash"],
+    aliases: ["Map mods", "Map search", "Stash regex", "Map stash search"],
     league: true,
   },
   {
@@ -76,6 +89,14 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     about:
       "The twelve Atlas passives that take a mechanic out of your maps and the nine that make a family drop more often, each priced by what its scarabs are selling for, so the decision is made on numbers.",
     icon: { src: "/Kalguuran_Scarab_inventory_icon.png" },
+    topics: ["scarabs", "atlas", "prices"],
+    aliases: [
+      "Scarab prices",
+      "Atlas passives",
+      "Atlas keystones",
+      "Carapaces",
+      "Scarab farming",
+    ],
     league: true,
   },
   {
@@ -85,6 +106,13 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     about:
       "A Windows overlay that keeps the next campaign step in the game window and turns its own page when you change zone, so a leveling guide stops being a second monitor.",
     icon: { src: "/poe_leveling_guide_icon.png", rounded: true },
+    topics: ["leveling", "campaign", "overlay", "desktop"],
+    aliases: [
+      "PoE Leveling Guide",
+      "Leveling overlay",
+      "Path of Levelling",
+      "Campaign guide",
+    ],
   },
 ] as const;
 

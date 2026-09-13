@@ -34,6 +34,12 @@ export type ScarabNode = {
   /** What the names of the family's scarabs begin with. */
   prefixes: readonly string[];
   /**
+   * What a player calls the content when the notable and the family do not:
+   * the shrines behind Domination, the strongboxes behind Ambush. Read by the
+   * search and shown as the reason a node came up.
+   */
+  aliases?: readonly string[];
+  /**
    * The content has no scarabs of its own, so nothing is at stake here. A real
    * zero, and not the same thing as a family the exchange failed to price.
    */
@@ -88,6 +94,7 @@ export const EXCLUSIONS: readonly ScarabNode[] = [
     // Named after Trarthus, not after the mercenaries it removes. New in 3.29,
     // which is why every list of these written before it counts eleven.
     prefixes: ["Trarthan"],
+    aliases: ["Mercenaries", "Mercs"],
   },
   {
     id: "ominous-silence",
@@ -101,6 +108,7 @@ export const EXCLUSIONS: readonly ScarabNode[] = [
     effect: "No chance to contain Ore Deposits.",
     // The Kalguur dig for them, and the scarabs are named after the Kalguur.
     prefixes: ["Kalguuran"],
+    aliases: ["Settlers", "Kalguur"],
   },
   {
     id: "secular-focus",
@@ -120,6 +128,7 @@ export const EXCLUSIONS: readonly ScarabNode[] = [
     notable: "Straight and Narrow",
     effect: "No chance to contain Smuggler's Caches.",
     prefixes: [],
+    aliases: ["Heist"],
     scarabless: true,
   },
   {
@@ -150,6 +159,7 @@ export const BOOSTS: readonly ScarabNode[] = [
     notable: "Crystalline Carapaces",
     effect: "100% increased chance to be Essence Scarabs.",
     prefixes: ["Essence"],
+    aliases: ["Essences"],
   },
   {
     id: "devoted-carapaces",
@@ -157,6 +167,7 @@ export const BOOSTS: readonly ScarabNode[] = [
     effect: "100% increased chance to be Domination Scarabs.",
     // Domination is the shrines. Nothing in the name says so.
     prefixes: ["Domination"],
+    aliases: ["Shrines", "Shrine"],
   },
   {
     id: "explorative-carapaces",
@@ -169,6 +180,7 @@ export const BOOSTS: readonly ScarabNode[] = [
     notable: "Harrowing Carapaces",
     effect: "100% increased chance to be Divination Scarabs.",
     prefixes: ["Divination"],
+    aliases: ["Divination cards", "Div cards"],
   },
   {
     id: "outcasted-carapaces",
@@ -176,12 +188,14 @@ export const BOOSTS: readonly ScarabNode[] = [
     effect: "100% increased chance to be Anarchy Scarabs.",
     // The rogue exiles. "Outcasted" is the game's spelling, not a typo here.
     prefixes: ["Anarchy"],
+    aliases: ["Rogue Exiles", "Exiles"],
   },
   {
     id: "possessed-carapaces",
     notable: "Possessed Carapaces",
     effect: "100% increased chance to be Torment Scarabs.",
     prefixes: ["Torment"],
+    aliases: ["Tormented Spirits"],
   },
   {
     id: "tainted-carapaces",
@@ -203,6 +217,7 @@ export const BOOSTS: readonly ScarabNode[] = [
     // line says "found in your Maps" where the other eight say "dropped in",
     // which is in the game data and not a slip here.
     prefixes: ["Ambush"],
+    aliases: ["Strongboxes", "Strongbox"],
   },
 ];
 

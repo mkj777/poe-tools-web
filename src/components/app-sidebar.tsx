@@ -1,7 +1,6 @@
 "use client";
 
 import Link, { useLinkStatus } from "next/link";
-import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -24,18 +23,19 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { SearchTrigger } from "@/components/search/search-trigger";
 import { ToolIcon } from "@/components/tool-icon";
 import { Wordmark } from "@/components/wordmark";
+import { useLeague } from "@/hooks/use-league";
 import {
   SIDEBAR,
   activeTool,
-  leagueFromPath,
   toolHref,
   toolPrefetch,
   type SidebarEntry,
   type SidebarGroup as Group,
 } from "@/lib/nav";
-import { leagueSlug, type League } from "@/lib/ninja";
+import type { League } from "@/lib/ninja";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -275,7 +275,7 @@ export function AppSidebar({
   /** The league the links fall back to, for a page that carries none. */
   fallback: string;
 }) {
-  const pathname = usePathname() ?? "";
+  const { pathname, slug, league } = useLeague(leagues, fallback);
   const { state, isMobile, setOpenMobile } = useSidebar();
 
   // The page you are on, or the one you have clicked and are still waiting
@@ -292,13 +292,6 @@ export function AppSidebar({
   );
   const active =
     pending && pending.at === pathname ? pending.tool : activeTool(pathname);
-
-  // The chrome has no league of its own: it follows the page, and falls back to
-  // the one a bare visit lands on. The picking happens on the pages that read
-  // prices, beside the prices they read.
-  const slug = leagueFromPath(pathname) || fallback;
-  const league =
-    leagues.find((l) => leagueSlug(l.id) === slug)?.id ?? leagues[0]?.id ?? "";
 
   // The sheet covers the whole screen on a phone, so a link that left it open
   // would hide the page it just opened.
@@ -350,6 +343,10 @@ export function AppSidebar({
         </Link>
         <SidebarTrigger className="text-muted-foreground hover:text-foreground hidden size-8 lg:flex" />
       </SidebarHeader>
+
+      {/* Above the column rather than in it, so it stays put while the
+          column scrolls. */}
+      <SearchTrigger />
 
       <SidebarContent
         ref={column}

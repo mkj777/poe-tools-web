@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { JsonLd } from "@/components/json-ld";
 import { MobileBar } from "@/components/mobile-bar";
+import { SearchMount } from "@/components/search/search-mount";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getLeagues, leagueSlug } from "@/lib/ninja";
@@ -90,6 +91,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <TooltipProvider>
           <SidebarProvider>
             <AppSidebar leagues={leagues} fallback={fallback} />
+            {/* The palette, once, where a hit can reach the sidebar it may
+                have been opened from. */}
+            <SearchMount leagues={leagues} fallback={fallback} />
             <SidebarInset className="min-w-0">
               <MobileBar />
               {children}

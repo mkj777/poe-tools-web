@@ -85,9 +85,17 @@ function Scarabs({ node }: { node: PricedNode }) {
   );
 }
 
+/**
+ * One passive. Its id is the anchor the palette sends a reader to, so the
+ * card scrolls in under the bar a phone keeps at the top and wears a ring
+ * while it is the one that was asked for.
+ */
 function Card({ node, rank }: { node: PricedNode; rank: number }) {
   return (
-    <li className="bg-card/40 border-border/60 flex flex-col rounded-xl border">
+    <li
+      id={node.id}
+      className="bg-card/40 border-border/60 flex scroll-mt-20 flex-col rounded-xl border target:ring-1 target:ring-ring"
+    >
       <div className="flex items-start gap-3 p-3">
         <span className="text-muted-foreground w-4 shrink-0 pt-1.5 text-sm tabular-nums">
           {rank}

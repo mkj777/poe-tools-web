@@ -10,6 +10,10 @@ import { faqLd, type Faq } from "@/lib/seo";
  * question themselves: both want the wording of the question and a short answer
  * they can take whole, and neither can use text that is hidden behind a click,
  * so nothing here collapses.
+ *
+ * Each question is an anchor, numbered in the order it is asked, which is
+ * where the palette sends a reader who searched for one. The offset clears
+ * the bar a phone keeps at the top, and the one that was asked for is lit.
  */
 export function FaqSection({
   faqs,
@@ -30,8 +34,12 @@ export function FaqSection({
         {heading}
       </h2>
       <dl className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
-        {faqs.map((faq) => (
-          <div key={faq.question} className="min-w-0">
+        {faqs.map((faq, i) => (
+          <div
+            key={faq.question}
+            id={`faq-${i + 1}`}
+            className="min-w-0 scroll-mt-20 rounded-md transition-colors target:bg-accent/40 target:-mx-2 target:px-2 motion-reduce:transition-none"
+          >
             <dt className="text-sm font-medium text-pretty">{faq.question}</dt>
             <dd className="text-muted-foreground mt-1.5 text-sm text-pretty">
               {faq.answer}
