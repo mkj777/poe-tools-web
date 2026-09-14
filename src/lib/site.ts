@@ -27,12 +27,13 @@ export const SITE_NAME = "Path of Tools";
  * the description of the home page, the Open Graph card, the directory listing
  * a search engine writes for itself when it disagrees with the description.
  *
- * It names the game in full and in short, because both are searched for, and it
- * says what the site *is* in the first four words, because that is the part an
- * answer engine quotes.
+ * It names the game in full, because that is what is searched for, and it says
+ * what the site *is* in the first few words, because that is the part an
+ * answer engine quotes. The second sentence says which of the tools are ours,
+ * in the voice the cards on the home page use.
  */
 export const SITE_DESCRIPTION =
-  "A directory of every Path of Exile tool worth using, with live Bestiary beast prices and Atlas scarab node values built in. Free, no account, no ads.";
+  "Every Path of Exile tool in one place, to search and learn from. Beast Regex, Scarab Nodes and the Leveling Guide are my own projects.";
 
 /**
  * Terms a page may be found by. Google has ignored the keywords meta since

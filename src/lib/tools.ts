@@ -54,7 +54,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Path of Building",
     blurb: "Crunch the numbers",
     about:
-      "The offline build planner: import a character, try a change, see the numbers.",
+      "THE build planner. Opens and edits the PoB link every guide comes as, and imports your character from the game.",
     icon: { src: "/pathofbuilding_logo.png", rounded: true },
     topics: ["builds", "skill-tree", "desktop"],
     aliases: [
@@ -70,7 +70,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "FilterBlade",
     blurb: "Loot Filters",
     about:
-      "NeverSink's loot filter, edited in the browser and pushed into the game.",
+      "A must have. Customise and adjust the in game loot filter, very accessible and well made.",
     icon: { src: "/FilterBlade_logo.png", rounded: true },
     topics: ["loot-filter"],
     aliases: ["NeverSink", "NeverSink filter", "Loot filter", "Item filter"],
@@ -80,7 +80,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Awakened PoE Trade",
     blurb: "Price check in game",
     about:
-      "An in game overlay that price checks the item under your cursor.",
+      "Hotkey price check in game, no alt tab to the trade site. Essential, pricing drops would take forever without it.",
     icon: { src: "/awakened_poe_trade_logo.png", rounded: true },
     topics: ["prices", "trade", "overlay", "desktop"],
     aliases: ["APT", "Awakened Trade", "Price check", "Price checker"],
@@ -90,7 +90,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "poe.ninja",
     blurb: "Builds and economy",
     about:
-      "What the league is playing and what everything sells for.",
+      "The best place to see the current meta, what players build for a mechanic, and the economy behind it.",
     icon: { src: "/ninja-logo.webp", rounded: true },
     topics: ["builds", "prices", "currency", "skill-tree", "history"],
     aliases: [
@@ -108,7 +108,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Trade",
     blurb: "Official trading market",
     about:
-      "The official market: every public stash tab, and the whisper that buys from it.",
+      "The official market, also accessible in game. The website is worth using for specific searches.",
     icon: { src: "/poe_trade_icon.svg" },
     topics: ["trade", "prices", "currency"],
     aliases: [
@@ -125,7 +125,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Wealthy Exile",
     blurb: "What your stash is worth",
     about:
-      "Totals your stash tabs at current prices.",
+      "Totals your stash at current prices and tracks your net worth. Some items come out overvalued, still very useful.",
     icon: { src: "/wealthexile_ico.ico", rounded: true },
     topics: ["stash", "prices"],
     aliases: ["Net worth", "Stash value", "Stash worth", "Wealth"],
@@ -135,7 +135,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "PoE Antiquary",
     blurb: "Prices of past leagues",
     about:
-      "Price history from leagues that have already ended.",
+      "Price history from past leagues. Useful for guessing what an item will be worth a week from now.",
     // The .ico it arrived as carries an empty 256px frame beside the real
     // 32px one, and a browser reaches for the larger. This is the 32.
     icon: { src: "/antiquary.png", rounded: true },
@@ -147,7 +147,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Disenchanting",
     blurb: "Vendor or disenchant",
     about:
-      "Whether a unique is worth more sold, vendored or turned into shards.",
+      "Useful for getting dust: the best chaos to dust ratios, and which uniques are worth more sold.",
     icon: { src: "/Disenchant.png" },
     topics: ["vendor", "prices", "currency"],
     aliases: [
@@ -164,7 +164,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Timeless Jewels",
     blurb: "Seeds by passive socket",
     about:
-      "Every timeless jewel seed, searched by what it does to a passive.",
+      "Which timeless jewel seed does what to the passives around your socket, searchable by what you need.",
     icon: { src: "/Timeless_Jewel_inventory_icon.png" },
     topics: ["jewels", "skill-tree"],
     aliases: [
@@ -185,7 +185,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Cluster Jewels",
     blurb: "Roll the notables you want",
     about:
-      "Which base and item level can roll the notables you want, and the odds.",
+      "Which cluster jewel base and item level can roll the notables you want, and the odds.",
     icon: { src: "/Medium_Cluster_Jewel_inventory_icon.png" },
     topics: ["jewels", "skill-tree", "crafting"],
     aliases: [
@@ -203,7 +203,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "PoE Regex",
     blurb: "Regex for everything",
     about:
-      "Search strings for vendors, stash tabs, heist, the Atlas and the rest.",
+      "Regexes for every use case. Saves a lot of time buying, selling and searching, no more hovering over every item.",
     icon: { src: "/poere.ico", rounded: true },
     topics: ["regex", "stash", "vendor"],
     aliases: [
@@ -223,7 +223,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "PoELab",
     blurb: "Today's labyrinth layout",
     about:
-      "Today's labyrinth layout, with the trap rooms and the argus marked.",
+      "Today's labyrinth layouts, the same for everyone and new every day. Good if you hate finding the way yourself.",
     icon: { src: "/Labyrinth.webp" },
     topics: ["labyrinth"],
     aliases: [
@@ -240,7 +240,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Maxroll",
     blurb: "Builds and game guides",
     about:
-      "Build guides, and guides to the game itself: leagues, mechanics, crafting, bosses.",
+      "The best written build guides, plus guides to leagues, mechanics, crafting and bosses.",
     icon: { src: "/maxroll_logo.svg" },
     topics: ["builds", "guides"],
     aliases: [
@@ -256,7 +256,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Exile Leveling",
     blurb: "Act by act leveling route",
     about:
-      "A quest by quest route through the acts, so a new character reaches maps with every passive point.",
+      "The source of the Leveling Guide's route, if you would rather have the steps open in a browser.",
     icon: { src: "/exile_leveling_icon.png", rounded: true },
     topics: ["leveling", "campaign"],
     aliases: [

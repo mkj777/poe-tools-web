@@ -292,11 +292,12 @@ test("every answer is the length an engine will quote whole", () => {
   }
 });
 
-test("every tool says more about itself than four words, in one sentence", () => {
+test("every tool says more about itself than four words, and not a paragraph", () => {
+  // The ceiling is three lines on a card at three columns.
   for (const tool of [...SITE_TOOLS, ...EXTERNAL_TOOLS]) {
     const name = "name" in tool ? tool.name : tool.label;
     assert.ok(tool.about.length >= 40, `${name}: ${tool.about.length} chars`);
-    assert.ok(tool.about.length <= 110, `${name}: ${tool.about.length} chars`);
+    assert.ok(tool.about.length <= 120, `${name}: ${tool.about.length} chars`);
     assert.ok(tool.about.endsWith("."), name);
     assert.notEqual(tool.about, tool.blurb);
   }

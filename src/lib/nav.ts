@@ -62,7 +62,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     label: "Beast Regex",
     blurb: "Sell Beasts efficiently",
     about:
-      "Every beast priced for your league, and the Bestiary search for the ones worth selling.",
+      "Built to sell beasts faster. The Bestiary search is complicated, and clearing it takes a newbie a long time.",
     icon: { src: "/Imprinted_Bestiary_Orb_inventory_icon.png" },
     topics: ["bestiary", "regex", "prices"],
     aliases: ["Beasts", "Bestiary regex", "Bestiary search", "Beast prices"],
@@ -87,7 +87,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     label: "Scarab Nodes",
     blurb: "Economy of Scarab Nodes",
     about:
-      "Each scarab Atlas passive priced by what its scarabs sell for.",
+      "Roughly which scarab nodes are best and which to exclude, for the spare points on your Atlas tree.",
     icon: { src: "/Kalguuran_Scarab_inventory_icon.png" },
     topics: ["scarabs", "atlas", "prices"],
     aliases: [
@@ -104,7 +104,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     label: "Leveling Guide",
     blurb: "Overlay for the campaign",
     about:
-      "A Windows overlay that keeps the next campaign step in the game window.",
+      "Campaign overlay: the next step shows in game and advances on its own. Great for speedrunning after a league start.",
     icon: { src: "/poe_leveling_guide_icon.png", rounded: true },
     topics: ["leveling", "campaign", "overlay", "desktop"],
     aliases: [
@@ -191,11 +191,14 @@ const link = (name: string): SidebarEntry => ({
  * declared in, and the order the home page reads in too: both draw from this
  * one list, so they cannot disagree.
  *
- * Two headings, both open. First is what a session is spent in: the trade
- * site, the three that run beside the client, and the regex generator.
- * Everything else follows under one heading, sorted by subject rather than by
- * who built it. The pages of this site sit among the rest, where the subject
- * puts them, and wear a small tag saying they are built here.
+ * Three headings, all open. Essentials is what a session is spent in: the
+ * trade site, the three that run beside the client, and the regex generator.
+ * General is what every character reaches for at some point, whatever it
+ * farms: the economy, the guides, what the stash is worth, the campaign.
+ * Specific is one tool for one mechanic. Within a heading the order is by
+ * subject rather than by who built it. The pages of this site sit among the
+ * rest, where the subject puts them, and wear a small tag saying they are
+ * built here.
  */
 export const SIDEBAR: readonly SidebarGroup[] = [
   {
@@ -210,20 +213,26 @@ export const SIDEBAR: readonly SidebarGroup[] = [
     ],
   },
   {
-    id: "more",
-    label: "More tools",
+    id: "general",
+    label: "General",
     entries: [
       link("poe.ninja"),
       link("Maxroll"),
+      link("Wealthy Exile"),
+      page("leveling"),
+      link("Exile Leveling"),
+    ],
+  },
+  {
+    id: "specific",
+    label: "Specific",
+    entries: [
       page("beasts"),
       page("scarabs"),
-      link("Wealthy Exile"),
       link("PoE Antiquary"),
       link("Disenchanting"),
       link("Timeless Jewels"),
       link("Cluster Jewels"),
-      page("leveling"),
-      link("Exile Leveling"),
       link("PoELab"),
     ],
   },

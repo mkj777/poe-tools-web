@@ -160,10 +160,14 @@ test("the sidebar opens on what a session is spent in", () => {
 
 test("the pages built here sit among the rest, not under a heading of their own", () => {
   assert.ok(!SIDEBAR.some((g) => g.id === "site"));
-  const more = SIDEBAR.find((g) => g.id === "more")!;
-  const pages = SIDEBAR_ENTRIES.filter((e) => e.kind === "page");
-  assert.equal(pages.length, 3);
-  for (const entry of pages) assert.ok(more.entries.includes(entry));
+  const general = SIDEBAR.find((g) => g.id === "general")!;
+  const specific = SIDEBAR.find((g) => g.id === "specific")!;
+  const under = (group: typeof general) =>
+    group.entries.flatMap((e) => (e.kind === "page" ? [e.page.slug] : []));
+  // Where the subject puts them: the campaign is for everyone, the Bestiary
+  // and the scarab nodes are each one mechanic.
+  assert.deepEqual(under(general), ["leveling"]);
+  assert.deepEqual(under(specific), ["beasts", "scarabs"]);
 });
 
 test("the map regex is built, reachable and offered to nobody", () => {
@@ -179,35 +183,44 @@ test("the map regex is built, reachable and offered to nobody", () => {
   assert.ok(!names.includes("maps"));
 });
 
-test("two headings, both of them open", () => {
+test("three headings, all of them open", () => {
   assert.deepEqual(
     SIDEBAR.map((g) => g.id),
-    ["essentials", "more"],
+    ["essentials", "general", "specific"],
   );
 
   // Nothing is behind a click: every entry the sidebar carries is on arrival.
   assert.equal(SIDEBAR_ENTRIES.length, 17);
 });
 
-test("the rest is one list, sorted by subject, with the pages of this site in it", () => {
-  const more = SIDEBAR.find((g) => g.id === "more");
-  assert.deepEqual(
-    more?.entries.map((e) => (e.kind === "link" ? e.link.name : e.page.slug)),
-    [
-      "poe.ninja",
-      "Maxroll",
-      "beasts",
-      "scarabs",
-      "Wealthy Exile",
-      "PoE Antiquary",
-      "Disenchanting",
-      "Timeless Jewels",
-      "Cluster Jewels",
-      "leveling",
-      "Exile Leveling",
-      "PoELab",
-    ],
+const names = (id: string) =>
+  SIDEBAR.find((g) => g.id === id)?.entries.map((e) =>
+    e.kind === "link" ? e.link.name : e.page.slug,
   );
+
+test("general is what every character reaches for, sorted by subject", () => {
+  // The economy, the guides, what the stash is worth, the campaign. Maxroll
+  // stays here rather than among the essentials: a build comes from YouTube
+  // just as well.
+  assert.deepEqual(names("general"), [
+    "poe.ninja",
+    "Maxroll",
+    "Wealthy Exile",
+    "leveling",
+    "Exile Leveling",
+  ]);
+});
+
+test("specific is one tool per mechanic, sorted by subject", () => {
+  assert.deepEqual(names("specific"), [
+    "beasts",
+    "scarabs",
+    "PoE Antiquary",
+    "Disenchanting",
+    "Timeless Jewels",
+    "Cluster Jewels",
+    "PoELab",
+  ]);
 });
 
 test("every group has a heading and something under it", () => {

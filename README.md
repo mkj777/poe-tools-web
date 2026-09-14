@@ -7,10 +7,12 @@ than copied.
 ## The sidebar
 
 The sidebar is the point of the site now, so it is a directory rather than a
-menu. Two headings, both open. What opens first is what a session is spent in,
+menu. Three headings, all open. Essentials is what a session is spent in,
 whoever hosts it: the trade site, the three that run beside the client, and the
-regex generator. Everything else follows under the second heading, sorted by
-subject rather than by who built it, and the pages built here sit among the
+regex generator. General is what every character reaches for at some point,
+whatever it farms: the economy, the guides, what the stash is worth, the
+campaign. Specific is one tool for one mechanic. Within a heading the order is
+by subject rather than by who built it, and the pages built here sit among the
 rest with a small "Built here" tag beside the name instead of a heading of
 their own. Every entry carries a few words saying what it is, because a name
 alone is only useful once you already know it. The home page draws the same
