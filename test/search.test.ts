@@ -27,7 +27,7 @@ const reason = (query: string, title: string) =>
     .find((h) => h.entry.title === title)?.reason;
 
 test("the index holds every tool, question and passive, once", () => {
-  assert.equal(SEARCH_INDEX.entries.length, 16 + 23 + 21);
+  assert.equal(SEARCH_INDEX.entries.length, 18 + 23 + 21);
   const ids = SEARCH_INDEX.entries.map((e) => e.id);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(SEARCH_INDEX.byId.size, ids.length);
@@ -134,6 +134,12 @@ test("overlay and lab are the tools that are one", () => {
     new Set(["Awakened PoE Trade", "Leveling Guide"]),
   );
   assert.deepEqual(titles("lab"), ["PoELab"]);
+});
+
+test("leveling is both the overlay and the route", () => {
+  const found = titles("leveling");
+  assert.ok(found.includes("Leveling Guide"));
+  assert.ok(found.includes("Exile Leveling"));
 });
 
 test("an abbreviation lands on the tool and says so", () => {

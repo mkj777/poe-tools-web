@@ -18,7 +18,7 @@ export const HOME_FAQ: readonly Faq[] = [
   {
     question: "What tools do you need for Path of Exile?",
     answer:
-      "Four cover almost everything. Path of Building plans the build, a FilterBlade loot filter decides what you see on the ground, Awakened PoE Trade price checks an item from inside the game, and poe.ninja shows what other people are playing and what things sell for. The official trade site does the buying.",
+      "Five cover almost everything. The official trade site does the buying and selling, a FilterBlade loot filter decides what you see on the ground, Awakened PoE Trade price checks an item from inside the game, Path of Building plans the build, and PoE Regex writes the search strings the vendor, the stash and the Atlas keep asking for.",
   },
   {
     question: "Are these Path of Exile tools free?",

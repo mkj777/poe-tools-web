@@ -7,12 +7,14 @@ than copied.
 ## The sidebar
 
 The sidebar is the point of the site now, so it is a directory rather than a
-menu. What opens first is what a session is spent in, whoever hosts it: the
-trade site, then the three that run beside the client, then the regex tools. The
-pages built here come under their own heading, and everything else is folded
-away behind one, so the column arrives at eight entries rather than fifteen.
-Every entry carries a few words saying what it is, because a name alone is only
-useful once you already know it.
+menu. Two headings, both open. What opens first is what a session is spent in,
+whoever hosts it: the trade site, the three that run beside the client, and the
+regex generator. Everything else follows under the second heading, sorted by
+subject rather than by who built it, and the pages built here sit among the
+rest with a small "Built here" tag beside the name instead of a heading of
+their own. Every entry carries a few words saying what it is, because a name
+alone is only useful once you already know it. The home page draws the same
+list in the same order, so the two cannot disagree.
 
 Trade and the disenchanting calculator are handed the league you are looking at,
 so the link lands where you already are.

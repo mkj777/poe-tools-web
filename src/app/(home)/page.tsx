@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { BuiltHere } from "@/components/built-here";
 import { FaqSection } from "@/components/faq-section";
 import { JsonLd } from "@/components/json-ld";
 import { PageFrame } from "@/components/page-frame";
@@ -11,7 +12,6 @@ import { SIDEBAR, toolHref, type SidebarEntry } from "@/lib/nav";
 import { getLeagues, leagueSlug } from "@/lib/ninja";
 import { toolListLd } from "@/lib/seo";
 import { OG_IMAGE, SITE_DESCRIPTION, canonical } from "@/lib/site";
-import { HomeHeader } from "./header";
 
 export const metadata: Metadata = {
   // Absolute, because the template would append the name of the site to a
@@ -29,12 +29,6 @@ export const metadata: Metadata = {
 
 /** The league in the links out is whichever one poe.ninja lists first. */
 export const revalidate = 900;
-
-const group = (id: string) => {
-  const found = SIDEBAR.find((g) => g.id === id);
-  if (!found) throw new Error(`No sidebar group ${id}`);
-  return found;
-};
 
 /**
  * One tool, said properly.
@@ -65,10 +59,12 @@ function ToolCard({
     <>
       <ToolIcon icon={tool.icon} className="mt-0.5 size-8" />
       <span className="min-w-0">
-        <span className="flex items-center gap-1 font-medium">
+        <span className="flex items-center gap-1.5 font-medium">
           {name}
-          {external && (
+          {external ? (
             <ArrowUpRight className="text-muted-foreground size-3.5 -translate-x-0.5 opacity-0 transition-all duration-150 group-hover:translate-x-0 group-hover:opacity-100 pointer-coarse:translate-x-0 pointer-coarse:opacity-70" />
+          ) : (
+            <BuiltHere />
           )}
         </span>
         <span className="text-muted-foreground mt-1 block text-sm text-pretty">
@@ -143,8 +139,10 @@ function Section({
  * This used to redirect to the beasts, which cost the site the one URL every
  * link to it points at and left nothing at all to be found by anybody typing
  * "path of exile tools" into a search box. So the sidebar is now also a page:
- * every tool with a sentence saying what it is for, the ones built here first,
- * and the questions that bring people here answered underneath.
+ * the same groups in the same order, every tool with a sentence saying what it
+ * is for, and the questions that bring people here answered underneath. It
+ * opens on the tools themselves; the heading is there for a screen reader and
+ * a crawler, and for nobody else.
  */
 export default async function Page() {
   // The links out that take a league want it spelled the way the game does,
@@ -155,39 +153,23 @@ export default async function Page() {
   const slug = leagueSlug(league);
 
   return (
-    <PageFrame
-      header={<HomeHeader />}
-    >
+    <PageFrame>
       <JsonLd data={toolListLd()} />
+      <h1 className="sr-only">Path of Exile tools</h1>
 
-      <Section
-        id="built-here"
-        title="Built here"
-        entries={group("site").entries}
-        league={league}
-        slug={slug}
-        delay={0}
-      />
+      {SIDEBAR.map((group, i) => (
+        <Section
+          key={group.id}
+          id={group.id}
+          title={group.label}
+          entries={group.entries}
+          league={league}
+          slug={slug}
+          delay={i * 0.05}
+        />
+      ))}
 
-      <Section
-        id="essentials"
-        title="The essentials"
-        entries={group("essentials").entries}
-        league={league}
-        slug={slug}
-        delay={0.05}
-      />
-
-      <Section
-        id="more-tools"
-        title="Worth knowing about"
-        entries={group("more").entries}
-        league={league}
-        slug={slug}
-        delay={0.1}
-      />
-
-      <Reveal delay={0.15}>
+      <Reveal delay={SIDEBAR.length * 0.05}>
         <FaqSection
           faqs={HOME_FAQ}
           heading="Common questions"

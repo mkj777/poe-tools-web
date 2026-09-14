@@ -62,7 +62,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     label: "Beast Regex",
     blurb: "Sell Beasts efficiently",
     about:
-      "Every beast on the market for the league you picked, with its chaos value, its seven day change and how many are listed. Set a threshold and it writes the Bestiary search that lights up the ones worth the trip.",
+      "Every beast priced for your league, and the Bestiary search for the ones worth selling.",
     icon: { src: "/Imprinted_Bestiary_Orb_inventory_icon.png" },
     topics: ["bestiary", "regex", "prices"],
     aliases: ["Beasts", "Bestiary regex", "Bestiary search", "Beast prices"],
@@ -76,7 +76,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     // Reachable at /maps/<league> and from nowhere on the site.
     unlisted: true,
     about:
-      "Tick the map modifiers your build cannot survive and get back the stash search that dims every map carrying one of them, short enough to paste into the field in one go.",
+      "Tick the map mods your build cannot run and get the stash search that dims them.",
     icon: { src: "/Nightmare_Map_(Curse_of_the_Allflame)_inventory_icon.png" },
     topics: ["maps", "regex", "stash"],
     aliases: ["Map mods", "Map search", "Stash regex", "Map stash search"],
@@ -87,7 +87,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     label: "Scarab Nodes",
     blurb: "Economy of Scarab Nodes",
     about:
-      "The twelve Atlas passives that take a mechanic out of your maps and the nine that make a family drop more often, each priced by what its scarabs are selling for, so the decision is made on numbers.",
+      "Each scarab Atlas passive priced by what its scarabs sell for.",
     icon: { src: "/Kalguuran_Scarab_inventory_icon.png" },
     topics: ["scarabs", "atlas", "prices"],
     aliases: [
@@ -104,7 +104,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     label: "Leveling Guide",
     blurb: "Overlay for the campaign",
     about:
-      "A Windows overlay that keeps the next campaign step in the game window and turns its own page when you change zone, so a leveling guide stops being a second monitor.",
+      "A Windows overlay that keeps the next campaign step in the game window.",
     icon: { src: "/poe_leveling_guide_icon.png", rounded: true },
     topics: ["leveling", "campaign", "overlay", "desktop"],
     aliases: [
@@ -188,9 +188,14 @@ const link = (name: string): SidebarEntry => ({
 
 /**
  * The order the sidebar reads in, which is not the order either list is
- * declared in. First is what a session is spent in: the trade site, then the
- * three that run beside the client. Then the pages built here. Everything else
- * follows under one heading of its own, open like the two above it.
+ * declared in, and the order the home page reads in too: both draw from this
+ * one list, so they cannot disagree.
+ *
+ * Two headings, both open. First is what a session is spent in: the trade
+ * site, the three that run beside the client, and the regex generator.
+ * Everything else follows under one heading, sorted by subject rather than by
+ * who built it. The pages of this site sit among the rest, where the subject
+ * puts them, and wear a small tag saying they are built here.
  */
 export const SIDEBAR: readonly SidebarGroup[] = [
   {
@@ -198,29 +203,27 @@ export const SIDEBAR: readonly SidebarGroup[] = [
     label: "Essentials",
     entries: [
       link("Trade"),
-      link("Path of Building"),
       link("FilterBlade"),
       link("Awakened PoE Trade"),
+      link("Path of Building"),
       link("PoE Regex"),
     ],
   },
   {
-    id: "site",
-    label: "This site",
-    entries: [page("beasts"), page("scarabs"), page("leveling")],
-  },
-  {
-    // Everything else, under one heading rather than sorted into three that
-    // each held two or three entries.
     id: "more",
     label: "More tools",
     entries: [
       link("poe.ninja"),
+      link("Maxroll"),
+      page("beasts"),
+      page("scarabs"),
       link("Wealthy Exile"),
       link("PoE Antiquary"),
       link("Disenchanting"),
       link("Timeless Jewels"),
       link("Cluster Jewels"),
+      page("leveling"),
+      link("Exile Leveling"),
       link("PoELab"),
     ],
   },

@@ -40,7 +40,7 @@ test("aliases are written the way the search reads them", () => {
 });
 
 test("every tool is about something, and something that exists", () => {
-  assert.equal(tools.length, 16);
+  assert.equal(tools.length, 18);
   for (const tool of tools) {
     assert.ok(tool.topics.length > 0, tool.name);
     assert.equal(new Set(tool.topics).size, tool.topics.length, tool.name);
@@ -78,6 +78,8 @@ test("the subjects the search is measured against", () => {
   assert.deepEqual(under("regex"), ["Beast Regex", "Map Regex", "PoE Regex"]);
   assert.deepEqual(under("labyrinth"), ["PoELab"]);
   assert.deepEqual(under("atlas"), ["Scarab Nodes"]);
+  assert.deepEqual(under("guides"), ["Maxroll"]);
+  assert.deepEqual(under("leveling"), ["Leveling Guide", "Exile Leveling"]);
 });
 
 test("asking for a subject that is not one is a mistake, not undefined", () => {

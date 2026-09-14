@@ -3,7 +3,7 @@ import test from "node:test";
 import { EXTERNAL_TOOLS, toolByName } from "../src/lib/tools.ts";
 
 test("every tool has a name, a blurb and an https link", () => {
-  assert.ok(EXTERNAL_TOOLS.length >= 12);
+  assert.ok(EXTERNAL_TOOLS.length >= 14);
   for (const tool of EXTERNAL_TOOLS) {
     assert.ok(tool.name.length > 0, tool.name);
     assert.ok(tool.blurb.length > 0, tool.name);
@@ -39,6 +39,7 @@ test("every entry wears an icon of its own, and a square one is rounded off", ()
       "Wealthy Exile",
       "PoE Antiquary",
       "PoE Regex",
+      "Exile Leveling",
     ],
   );
 });
@@ -87,6 +88,8 @@ test("the tools that know no league ignore the one they are handed", () => {
     "Awakened PoE Trade",
     "PoE Regex",
     "PoELab",
+    "Maxroll",
+    "Exile Leveling",
   ]) {
     const tool = toolByName(name);
     assert.equal(tool.href("Allflame"), tool.href("Standard"), name);
@@ -110,6 +113,8 @@ test("the links point where they are supposed to", () => {
     ],
     ["PoE Regex", "https://poe.re"],
     ["PoELab", "https://www.poelab.com/"],
+    ["Maxroll", "https://maxroll.gg/poe"],
+    ["Exile Leveling", "https://heartofphos.github.io/exile-leveling/"],
   ];
   for (const [name, url] of expected) {
     assert.equal(toolByName(name).href("Allflame"), url, name);

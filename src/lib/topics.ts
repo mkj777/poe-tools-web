@@ -83,6 +83,22 @@ export const TOPICS = [
     ],
   },
   {
+    id: "guides",
+    label: "Guides",
+    aliases: [
+      "guide",
+      "guides",
+      "game guide",
+      "game guides",
+      "mechanics guide",
+      "wiki",
+      "boss",
+      "bosses",
+      "league mechanic",
+      "league mechanics",
+    ],
+  },
+  {
     id: "jewels",
     label: "Jewels",
     aliases: [

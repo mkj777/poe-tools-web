@@ -150,21 +150,20 @@ test("the sidebar opens on what a session is spent in", () => {
     first.entries.map((e) => (e.kind === "page" ? e.page.label : e.link.name)),
     [
       "Trade",
-      "Path of Building",
       "FilterBlade",
       "Awakened PoE Trade",
+      "Path of Building",
       "PoE Regex",
     ],
   );
 });
 
-test("the pages built here come next, under their own heading", () => {
-  const site = SIDEBAR[1];
-  assert.equal(site.id, "site");
-  assert.deepEqual(
-    site.entries.map((e) => (e.kind === "page" ? e.page.slug : e.link.name)),
-    ["beasts", "scarabs", "leveling"],
-  );
+test("the pages built here sit among the rest, not under a heading of their own", () => {
+  assert.ok(!SIDEBAR.some((g) => g.id === "site"));
+  const more = SIDEBAR.find((g) => g.id === "more")!;
+  const pages = SIDEBAR_ENTRIES.filter((e) => e.kind === "page");
+  assert.equal(pages.length, 3);
+  for (const entry of pages) assert.ok(more.entries.includes(entry));
 });
 
 test("the map regex is built, reachable and offered to nobody", () => {
@@ -180,27 +179,32 @@ test("the map regex is built, reachable and offered to nobody", () => {
   assert.ok(!names.includes("maps"));
 });
 
-test("three headings, all of them open", () => {
+test("two headings, both of them open", () => {
   assert.deepEqual(
     SIDEBAR.map((g) => g.id),
-    ["essentials", "site", "more"],
+    ["essentials", "more"],
   );
 
   // Nothing is behind a click: every entry the sidebar carries is on arrival.
-  assert.equal(SIDEBAR_ENTRIES.length, 15);
+  assert.equal(SIDEBAR_ENTRIES.length, 17);
 });
 
-test("the rest is one list, in the order it is declared", () => {
+test("the rest is one list, sorted by subject, with the pages of this site in it", () => {
   const more = SIDEBAR.find((g) => g.id === "more");
   assert.deepEqual(
     more?.entries.map((e) => (e.kind === "link" ? e.link.name : e.page.slug)),
     [
       "poe.ninja",
+      "Maxroll",
+      "beasts",
+      "scarabs",
       "Wealthy Exile",
       "PoE Antiquary",
       "Disenchanting",
       "Timeless Jewels",
       "Cluster Jewels",
+      "leveling",
+      "Exile Leveling",
       "PoELab",
     ],
   );

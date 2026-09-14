@@ -54,7 +54,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Path of Building",
     blurb: "Crunch the numbers",
     about:
-      "The offline build planner nearly every guide is written in. Import your character, try a change, and see what it does to your damage and your survivability before you spend a single orb on it.",
+      "The offline build planner: import a character, try a change, see the numbers.",
     icon: { src: "/pathofbuilding_logo.png", rounded: true },
     topics: ["builds", "skill-tree", "desktop"],
     aliases: [
@@ -70,7 +70,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "FilterBlade",
     blurb: "Loot Filters",
     about:
-      "NeverSink's loot filter, edited in the browser. Decide what is worth showing on the ground at your level of currency, then push the filter into the game and stop reading drops you were never going to pick up.",
+      "NeverSink's loot filter, edited in the browser and pushed into the game.",
     icon: { src: "/FilterBlade_logo.png", rounded: true },
     topics: ["loot-filter"],
     aliases: ["NeverSink", "NeverSink filter", "Loot filter", "Item filter"],
@@ -80,7 +80,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Awakened PoE Trade",
     blurb: "Price check in game",
     about:
-      "An overlay that prices whatever is under your cursor. One shortcut on an item and it searches the trade site for the same thing, so a price check costs a second rather than a trip out of the game.",
+      "An in game overlay that price checks the item under your cursor.",
     icon: { src: "/awakened_poe_trade_logo.png", rounded: true },
     topics: ["prices", "trade", "overlay", "desktop"],
     aliases: ["APT", "Awakened Trade", "Price check", "Price checker"],
@@ -90,7 +90,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "poe.ninja",
     blurb: "Builds and economy",
     about:
-      "What the league is actually doing. Which builds people are playing and how far they have taken them, what every item is selling for, and what a currency was worth a week ago.",
+      "What the league is playing and what everything sells for.",
     icon: { src: "/ninja-logo.webp", rounded: true },
     topics: ["builds", "prices", "currency", "skill-tree", "history"],
     aliases: [
@@ -108,7 +108,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Trade",
     blurb: "Official trading market",
     about:
-      "The official market, and the only one. Every listing is an item sitting in a stash tab somebody has made public, and the whisper it hands you is what buys it.",
+      "The official market: every public stash tab, and the whisper that buys from it.",
     icon: { src: "/poe_trade_icon.svg" },
     topics: ["trade", "prices", "currency"],
     aliases: [
@@ -125,7 +125,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Wealthy Exile",
     blurb: "What your stash is worth",
     about:
-      "Reads your stash tabs and totals them at current prices, so you know what you are sitting on instead of guessing at it tab by tab.",
+      "Totals your stash tabs at current prices.",
     icon: { src: "/wealthexile_ico.ico", rounded: true },
     topics: ["stash", "prices"],
     aliases: ["Net worth", "Stash value", "Stash worth", "Wealth"],
@@ -135,7 +135,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "PoE Antiquary",
     blurb: "Prices of past leagues",
     about:
-      "Price history from leagues that have already ended. The one place to check whether a strategy actually paid the last time it was in the game, rather than whether it feels like it should.",
+      "Price history from leagues that have already ended.",
     // The .ico it arrived as carries an empty 256px frame beside the real
     // 32px one, and a browser reaches for the larger. This is the 32.
     icon: { src: "/antiquary.png", rounded: true },
@@ -147,7 +147,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Disenchanting",
     blurb: "Vendor or disenchant",
     about:
-      "Answers the question every unique drop asks: is it worth more sold as it is, vendored, or turned into shards. Reads the current prices for the league you are in.",
+      "Whether a unique is worth more sold, vendored or turned into shards.",
     icon: { src: "/Disenchant.png" },
     topics: ["vendor", "prices", "currency"],
     aliases: [
@@ -164,7 +164,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Timeless Jewels",
     blurb: "Seeds by passive socket",
     about:
-      "Searches every timeless jewel seed for what it would turn a given passive socket into, which is the only way to find the one jewel that makes a build work.",
+      "Every timeless jewel seed, searched by what it does to a passive.",
     icon: { src: "/Timeless_Jewel_inventory_icon.png" },
     topics: ["jewels", "skill-tree"],
     aliases: [
@@ -185,7 +185,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "Cluster Jewels",
     blurb: "Roll the notables you want",
     about:
-      "Works out which base, item level and passive count can roll the notables you are after, and how likely each attempt is to land them.",
+      "Which base and item level can roll the notables you want, and the odds.",
     icon: { src: "/Medium_Cluster_Jewel_inventory_icon.png" },
     topics: ["jewels", "skill-tree", "crafting"],
     aliases: [
@@ -203,7 +203,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "PoE Regex",
     blurb: "Regex for everything",
     about:
-      "A generator for the search strings the game keeps asking for: vendor windows, the currency exchange, heist, the atlas tree, and everything else with a field in it.",
+      "Search strings for vendors, stash tabs, heist, the Atlas and the rest.",
     icon: { src: "/poere.ico", rounded: true },
     topics: ["regex", "stash", "vendor"],
     aliases: [
@@ -223,7 +223,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "PoELab",
     blurb: "Today's labyrinth layout",
     about:
-      "Today's labyrinth, traced and drawn, with the trap rooms and the argus marked. A run becomes a map you follow rather than one you have to explore.",
+      "Today's labyrinth layout, with the trap rooms and the argus marked.",
     icon: { src: "/Labyrinth.webp" },
     topics: ["labyrinth"],
     aliases: [
@@ -235,6 +235,38 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
       "Lab notes",
     ],
     href: fixed("https://www.poelab.com/"),
+  },
+  {
+    name: "Maxroll",
+    blurb: "Builds and game guides",
+    about:
+      "Build guides, and guides to the game itself: leagues, mechanics, crafting, bosses.",
+    icon: { src: "/maxroll_logo.svg" },
+    topics: ["builds", "guides"],
+    aliases: [
+      "Maxroll PoE",
+      "Build guides",
+      "Game guides",
+      "Mechanics guides",
+      "League starters",
+    ],
+    href: fixed("https://maxroll.gg/poe"),
+  },
+  {
+    name: "Exile Leveling",
+    blurb: "Act by act leveling route",
+    about:
+      "A quest by quest route through the acts, so a new character reaches maps with every passive point.",
+    icon: { src: "/exile_leveling_icon.png", rounded: true },
+    topics: ["leveling", "campaign"],
+    aliases: [
+      "heartofphos",
+      "Leveling route",
+      "Act guide",
+      "Campaign route",
+      "Passive points",
+    ],
+    href: fixed("https://heartofphos.github.io/exile-leveling/"),
   },
 ];
 

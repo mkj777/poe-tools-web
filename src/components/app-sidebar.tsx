@@ -23,6 +23,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { BuiltHere } from "@/components/built-here";
 import { SearchTrigger } from "@/components/search/search-trigger";
 import { ToolIcon } from "@/components/tool-icon";
 import { Wordmark } from "@/components/wordmark";
@@ -40,16 +41,29 @@ import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 /**
- * Label over blurb. Both are gone once the sidebar is down to its icons.
+ * Label over blurb, and the tag beside the label for a page of this site. All
+ * of it is gone once the sidebar is down to its icons.
  *
  * The blurb takes a second line rather than an ellipsis: a sentence cut short
  * says less than the name above it already does, and a column of names is not
  * so tidy that it is worth a lost word.
  */
-function Label({ label, blurb }: { label: string; blurb: string }) {
+function Label({
+  label,
+  blurb,
+  built = false,
+}: {
+  label: string;
+  blurb: string;
+  /** Whether the entry is a page of this site, which wears the tag. */
+  built?: boolean;
+}) {
   return (
     <span className="grid min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
-      <span className="truncate font-medium">{label}</span>
+      <span className="flex items-center gap-1.5">
+        <span className="truncate font-medium">{label}</span>
+        {built && <BuiltHere />}
+      </span>
       <span className="text-muted-foreground line-clamp-2 text-xs font-normal">
         {blurb}
       </span>
@@ -197,7 +211,7 @@ function Entry({
           >
             <Pending slug={tool.slug} onPending={onPending}>
               <ToolIcon icon={tool.icon} />
-              <Label label={tool.label} blurb={tool.blurb} />
+              <Label label={tool.label} blurb={tool.blurb} built />
             </Pending>
           </Link>
         </SidebarMenuButton>

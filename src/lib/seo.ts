@@ -1,5 +1,5 @@
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, canonical } from "./site.ts";
-import { SITE_TOOLS } from "./nav.ts";
+import { SIDEBAR_ENTRIES, SITE_TOOLS } from "./nav.ts";
 import { EXTERNAL_TOOLS } from "./tools.ts";
 
 /**
@@ -292,20 +292,22 @@ export function faqLd(faqs: readonly Faq[]): Ld {
 
 /** The directory itself: what the home page lists, in the order it lists it. */
 export function toolListLd(): Ld {
-  const listed = [
-    // The unlisted ones are on no card of the home page, and structured data
-    // that describes a page has to describe the page that is there.
-    ...SITE_TOOLS.filter((tool) => !tool.unlisted).map((tool) => ({
-      name: tool.label,
-      url: canonical(`/${tool.slug}`),
-      description: tool.blurb,
-    })),
-    ...EXTERNAL_TOOLS.map((tool) => ({
-      name: tool.name,
-      url: tool.href("Standard"),
-      description: tool.blurb,
-    })),
-  ];
+  // The home page is the sidebar laid out as cards, so the sidebar's entries
+  // are the list. An unlisted page is on no card, and structured data that
+  // describes a page has to describe the page that is there.
+  const listed = SIDEBAR_ENTRIES.map((entry) =>
+    entry.kind === "page"
+      ? {
+          name: entry.page.label,
+          url: canonical(`/${entry.page.slug}`),
+          description: entry.page.blurb,
+        }
+      : {
+          name: entry.link.name,
+          url: entry.link.href("Standard"),
+          description: entry.link.blurb,
+        },
+  );
 
   return {
     "@context": "https://schema.org",
