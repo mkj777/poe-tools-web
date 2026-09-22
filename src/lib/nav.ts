@@ -104,7 +104,7 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     label: "Leveling Guide",
     blurb: "Overlay for the campaign",
     about:
-      "Campaign overlay: the next step shows in game and advances on its own. Great for speedrunning after a league start.",
+      "Campaign overlay: the next step shows in game and advances on its own. Great for speedrunning.",
     icon: { src: "/poe_leveling_guide_icon.png", rounded: true },
     topics: ["leveling", "campaign", "overlay", "desktop"],
     aliases: [

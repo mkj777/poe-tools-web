@@ -203,7 +203,7 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     name: "PoE Regex",
     blurb: "Regex for everything",
     about:
-      "Regexes for every use case. Saves a lot of time buying, selling and searching, no more hovering over every item.",
+      "Regexes for every use case. No more hovering over every item when buying, selling or searching.",
     icon: { src: "/poere.ico", rounded: true },
     topics: ["regex", "stash", "vendor"],
     aliases: [
