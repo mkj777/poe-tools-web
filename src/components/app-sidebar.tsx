@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { useReducedMotion } from "motion/react";
 import {
   Sidebar,
   SidebarContent,
@@ -25,12 +24,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { BuiltHere } from "@/components/built-here";
-import { MotionSpan } from "@/components/motion";
 import { SearchTrigger } from "@/components/search/search-trigger";
 import { ToolIcon } from "@/components/tool-icon";
 import { Wordmark } from "@/components/wordmark";
 import { useLeague } from "@/hooks/use-league";
-import { SPRING } from "@/lib/motion";
 import {
   SIDEBAR,
   activeTool,
@@ -82,13 +79,12 @@ type BarPlace = { x: number; y: number; height: number; settled: boolean };
  * rather than blinking out and in, which is the one animation in the sidebar
  * that carries something: where you just came from.
  *
- * One bar for the whole column, laid over it and moved with a transform. It
- * measures the active entry after each change of page and springs to it; the
- * first placing is not animated, or the bar would arrive from the top on
- * every load. A reader who has asked their system for less motion gets the
- * bar in its new place at once, all of it: the motion config on its own
- * would still let the height grow while the position jumps, so the whole
- * travel is switched off together.
+ * One bar for the whole column, laid over it and moved with a transform, so
+ * the travel is a CSS transition and no animation library has to ride along
+ * on every page for a two pixel line. It measures the active entry after each
+ * change of page and slides to it; the first placing is not animated, or the
+ * bar would arrive from the top on every load. A reader who has asked their
+ * system for less motion gets the bar in its new place at once.
  *
  * Until it has measured, and wherever it cannot (the sheet on a phone mounts
  * its content only while open), the entry draws a mark of its own in the same
@@ -96,14 +92,18 @@ type BarPlace = { x: number; y: number; height: number; settled: boolean };
  * the script.
  */
 function ActiveBar({ place }: { place: BarPlace }) {
-  const reduce = useReducedMotion();
   return (
-    <MotionSpan
+    <span
       aria-hidden
-      className="bg-primary pointer-events-none absolute top-0 left-0 w-0.5 rounded-full"
-      initial={false}
-      animate={{ x: place.x, y: place.y, height: place.height }}
-      transition={place.settled && !reduce ? SPRING : { duration: 0 }}
+      className={cn(
+        "bg-primary pointer-events-none absolute top-0 left-0 w-0.5 rounded-full",
+        place.settled &&
+          "transition-[transform,height] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+      )}
+      style={{
+        height: place.height,
+        transform: `translate(${place.x}px, ${place.y}px)`,
+      }}
     />
   );
 }

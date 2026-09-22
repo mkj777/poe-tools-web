@@ -402,14 +402,10 @@ Next.js 16 (App Router), React 19, Tailwind v4, shadcn/ui, lucide, motion,
 TypeScript.
 
 Every control on the page is a shadcn component, so the theme reaches all of
-them at once. Motion is used where an animation carries something: the bar
-beside the sidebar entry you are on springs to the entry you pick, a page
-arrives when you switch tools, the beast plan opens, folds and crosses from
-one block to the next, its counts roll, the search fades its hits in and the
-copy button pops its tick. What is on screen with the HTML is never hidden
-behind a script (the first page of a visit, the home page's sections), and a
-reader who has asked their system for less motion gets each thing in its
-place at once.
+them at once. Motion is used where an animation carries something and nowhere
+else: the bar beside the sidebar entry you are on travels to the entry you pick,
+and the leveling page arrives top to bottom. Both stop dead for a reader who has
+asked their system for less motion.
 
 The palette is "Ash & Marble" out of the Claude Design mockup: four steps of one
 cold grey, with the lightest of them as the accent, so nothing on the page

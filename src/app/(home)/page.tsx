@@ -4,12 +4,10 @@ import { ArrowUpRight } from "lucide-react";
 import { BuiltHere } from "@/components/built-here";
 import { FaqSection } from "@/components/faq-section";
 import { JsonLd } from "@/components/json-ld";
-import { MotionLi } from "@/components/motion";
 import { PageFrame } from "@/components/page-frame";
 import { Reveal } from "@/components/reveal";
 import { ToolIcon } from "@/components/tool-icon";
 import { HOME_FAQ } from "@/lib/faq";
-import { GESTURE_SPRING } from "@/lib/motion";
 import { SIDEBAR, toolHref, type SidebarEntry } from "@/lib/nav";
 import { getLeagues, leagueSlug } from "@/lib/ninja";
 import { toolListLd } from "@/lib/seo";
@@ -79,15 +77,8 @@ function ToolCard({
   const className =
     "group border-border/60 bg-card/40 hover:border-border hover:bg-card focus-visible:ring-ring flex h-full items-start gap-3 rounded-xl border p-4 transition-colors outline-none focus-visible:ring-2";
 
-  // The card answers the pointer: a lift under the hover, a press under the
-  // tap, both on a spring. Nothing to animate on arrival, so the server
-  // renders a plain list item and the script only adds the gestures.
   return (
-    <MotionLi
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      transition={GESTURE_SPRING}
-    >
+    <li>
       {external ? (
         <a
           href={href}
@@ -102,7 +93,7 @@ function ToolCard({
           {inside}
         </Link>
       )}
-    </MotionLi>
+    </li>
   );
 }
 

@@ -1,21 +1,7 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-  type Ref,
-} from "react";
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
-import {
-  AnimatePresence,
-  LayoutGroup,
-  useReducedMotion,
-  useSpring,
-  useTransform,
-} from "motion/react";
 import {
   ArrowDown,
   ArrowUp,
@@ -45,9 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { num } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { CopyGlyph, CopyLabel } from "@/components/copy-glyph";
-import { MotionDiv, MotionSection, MotionSpan } from "@/components/motion";
-import { EASE, SPRING } from "@/lib/motion";
+import { CopyGlyph } from "@/components/copy-glyph";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -145,18 +129,6 @@ function Notice({
 }
 
 /** One search of the plan: copyable and numbered. */
-/**
- * How a search or its placeholder arrives: out of nothing, in a moment. New
- * patterns after a change of threshold fade in where the old ones stood; the
- * old ones simply go, so the field beside the button never has to be lifted
- * out of the flow to say goodbye.
- */
-const FADE_IN = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  transition: { duration: 0.15 },
-} as const;
-
 function StepRow({
   index,
   total,
@@ -180,7 +152,7 @@ function StepRow({
   }
 
   return (
-    <MotionDiv className="flex gap-2" {...FADE_IN}>
+    <div className="flex gap-2">
       <Input
         readOnly
         value={step.pattern}
@@ -190,9 +162,9 @@ function StepRow({
       />
       <Button variant="secondary" onClick={copy} className="shrink-0">
         <CopyGlyph copied={copied} />
-        <CopyLabel copied={copied} />
+        {copied ? "Copied" : "Copy"}
       </Button>
-    </MotionDiv>
+    </div>
   );
 }
 
@@ -210,50 +182,21 @@ function BeastCount({
   className?: string;
 }) {
   return (
-    <Rolling
-      value={value}
+    <span
       title={value === 1 ? "beast" : "beasts"}
       className={`inline-flex items-center gap-1 align-baseline tabular-nums whitespace-nowrap ${className ?? ""}`}
-    />
-  );
-}
-
-/**
- * A figure that rolls to a new value rather than being swapped for it, on a
- * spring that starts where the value is: the server prints the same number
- * the browser first does, and later values go straight to the text without
- * a render. A reader who asked for less motion gets the jump.
- */
-function Rolling({
-  value,
-  title,
-  className,
-}: {
-  value: number;
-  title?: string;
-  className?: string;
-}) {
-  const reduce = useReducedMotion();
-  const spring = useSpring(value, { stiffness: 200, damping: 30 });
-  const text = useTransform(spring, (v) => num(Math.round(v)));
-  useEffect(() => {
-    if (reduce) spring.jump(value);
-    else spring.set(value);
-  }, [spring, value, reduce]);
-
-  return (
-    <MotionSpan title={title} className={className}>
-      {text}
-    </MotionSpan>
+    >
+      {num(value)}
+    </span>
   );
 }
 
 /** Loading shape of one search, so the card does not jump when a plan lands. */
 const StepSkeleton = () => (
-  <MotionDiv className="flex gap-2" {...FADE_IN}>
+  <div className="flex gap-2">
     <Skeleton className="h-11 flex-1" />
     <Skeleton className="h-11 w-24 shrink-0" />
-  </MotionDiv>
+  </div>
 );
 
 /**
@@ -281,18 +224,8 @@ const TONES = {
   },
 } as const;
 
-/**
- * One plan: its searches, and what the plan could not do cleanly.
- *
- * A block arrives 6px up and out of nothing, and fades when its turn is
- * over: switch Sell to Trash and the one crosses into the other instead of
- * the page redrawing. The presence around them takes a leaving block out of
- * the flow, which is why it has to reach the section by `ref`, and the
- * blocks only move as a whole, never stretch: a search field in the middle
- * of a stretch would be a search field you cannot read.
- */
+/** One plan: its searches, and what the plan could not do cleanly. */
 function PlanBlock({
-  ref,
   tone,
   step,
   title,
@@ -300,7 +233,6 @@ function PlanBlock({
   plan,
   handled,
 }: {
-  ref?: Ref<HTMLElement>;
   tone: keyof typeof TONES;
   /** "Step 2:", when the run has more than one. */
   step?: string;
@@ -323,15 +255,7 @@ function PlanBlock({
   const covered = steps.reduce((sum, s) => sum + s.covers.length, 0);
 
   return (
-    <MotionSection
-      ref={ref}
-      layout="position"
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.18, ease: EASE }}
-      className={`space-y-3 rounded-lg border-l-4 p-4 ${frame}`}
-    >
+    <section className={`space-y-3 rounded-lg border-l-4 p-4 ${frame}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <h3 className="font-medium">
           {step && <span className={label}>{step} </span>}
@@ -378,7 +302,7 @@ function PlanBlock({
           )}
         </>
       )}
-    </MotionSection>
+    </section>
   );
 }
 
@@ -508,91 +432,62 @@ function BestiaryRegex({
   const floor = <Price value={banded ? threshold + 1 : threshold} size={15} />;
 
   // Nothing to plan at a threshold of nothing, and the buttons above say so
-  // better than a sentence in the empty space would. The plan opens from
-  // nothing when a threshold is picked and folds away when it is cleared,
-  // rather than the table jumping up and down the page.
-  //
-  // The gap under the plan is its own padding, not the margin the column
-  // gives its children: a margin would stay at full size while the block
-  // folded to nothing and then vanish in one step.
-  //
-  // The blocks inside are keyed by what they do (clear, sell, trash, band),
-  // not by their colour: the clear step and the trash plan share a tone and
-  // would otherwise be taken for the same block, changing its words, instead
-  // of one giving way to the other.
+  // better than a sentence in the empty space would.
+  if (idle) return null;
+
   return (
-    <AnimatePresence initial={false}>
-      {!idle && (
-        <MotionDiv
-          key="plan"
-          className="mb-0 overflow-hidden"
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.25, ease: EASE }}
-        >
-          <div className="relative space-y-4 pb-5">
-            <AnimatePresence mode="popLayout" initial={false}>
-              {/* No extras, no first step: the sell search is already clean. */}
-              {selling && hasClear && (
-                <PlanBlock
-                  key="clear"
-                  tone="trash"
-                  step="Step 1:"
-                  title={
-                    <>
-                      release the {dragged.length} cheap beast
-                      {dragged.length === 1 ? "" : "s"} in the way
-                    </>
-                  }
-                  empty="These cannot be singled out, so leave them and ignore them below."
-                  plan={clearPlan}
-                />
-              )}
-              {selling ? (
-                <PlanBlock
-                  key="sell"
-                  tone="sell"
-                  step={steps > 1 ? `Step ${hasClear ? 2 : 1}:` : undefined}
-                  title={
-                    steps > 1 ? (
-                      <>sell {floor} and up</>
-                    ) : (
-                      <>Sell {floor} and up</>
-                    )
-                  }
-                  empty="Nothing to sell at this threshold."
-                  plan={sellPlan}
-                  handled={handled}
-                />
-              ) : (
-                <PlanBlock
-                  key="trash"
-                  tone="trash"
-                  title={<>Trash everything under {price}</>}
-                  empty="Nothing to trash at this threshold."
-                  plan={trashPlan}
-                />
-              )}
-              {bulk && (
-                <PlanBlock
-                  key="band"
-                  tone="band"
-                  step={`Step ${steps}:`}
-                  title={
-                    <>
-                      bulk sell the {band.length} worth exactly {price}
-                    </>
-                  }
-                  empty="No beast is worth exactly this much right now."
-                  plan={bandPlan}
-                />
-              )}
-            </AnimatePresence>
-          </div>
-        </MotionDiv>
+    <div className="space-y-4">
+      {selling ? (
+        <>
+          {/* No extras, no first step: the sell search is already clean. */}
+          {hasClear && (
+            <PlanBlock
+              tone="trash"
+              step="Step 1:"
+              title={
+                <>
+                  release the {dragged.length} cheap beast
+                  {dragged.length === 1 ? "" : "s"} in the way
+                </>
+              }
+              empty="These cannot be singled out, so leave them and ignore them below."
+              plan={clearPlan}
+            />
+          )}
+          <PlanBlock
+            tone="sell"
+            step={steps > 1 ? `Step ${hasClear ? 2 : 1}:` : undefined}
+            title={
+              steps > 1 ? <>sell {floor} and up</> : <>Sell {floor} and up</>
+            }
+            empty="Nothing to sell at this threshold."
+            plan={sellPlan}
+            handled={handled}
+          />
+        </>
+      ) : (
+        <PlanBlock
+          tone="trash"
+          title={<>Trash everything under {price}</>}
+          empty="Nothing to trash at this threshold."
+          plan={trashPlan}
+        />
       )}
-    </AnimatePresence>
+
+      {bulk && (
+        <PlanBlock
+          tone="band"
+          step={`Step ${steps}:`}
+          title={
+            <>
+              bulk sell the {band.length} worth exactly {price}
+            </>
+          }
+          empty="No beast is worth exactly this much right now."
+          plan={bandPlan}
+        />
+      )}
+    </div>
   );
 }
 
@@ -747,257 +642,231 @@ export function BeastTable({
     // looks like a form to them, which here is this div, and they do it before
     // React hydrates. The extra attribute is theirs to keep, so this element is
     // exempt from the attribute check that would otherwise report it.
-    //
-    // The layout group is for the table: whenever the plan above it changes
-    // height (a block gives way to another, a skeleton becomes a search and
-    // its notices), the group has the table measure itself again, and it
-    // slides to where it now belongs instead of jumping there.
-    <LayoutGroup>
-      <div className="space-y-5" suppressHydrationWarning>
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Which way the pattern reads: the beasts worth selling, or the ones
+    <div className="space-y-5" suppressHydrationWarning>
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Which way the pattern reads: the beasts worth selling, or the ones
             worth leaving behind. One of the two, so it names itself and hides
             the other rather than spending a row on both. The explanation is a
             prefix to the visible word rather than a label in its place, so
             "click Sell" still finds it and a screen reader hears both. */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="bg-secondary/60 hover:bg-secondary text-foreground data-[state=open]:bg-secondary flex h-9 items-center gap-1.5 rounded-full pr-3 pl-4 text-sm transition-colors outline-none">
-              <span className="sr-only">Which beasts the pattern is for: </span>
-              {MODE_LABELS[mode]}
-              <ChevronDown className="size-3.5 opacity-70" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-32">
-              {(["sell", "trash"] as Mode[]).map((option) => (
-                <DropdownMenuItem
-                  key={option}
-                  onSelect={() => modeStore.write(option)}
-                  className="flex cursor-pointer items-center gap-2"
-                >
-                  <span className="flex-1">{MODE_LABELS[option]}</span>
-                  {mode === option && (
-                    <Check className="text-muted-foreground size-3.5" />
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="bg-secondary/60 hover:bg-secondary text-foreground data-[state=open]:bg-secondary flex h-9 items-center gap-1.5 rounded-full pr-3 pl-4 text-sm transition-colors outline-none">
+            <span className="sr-only">Which beasts the pattern is for: </span>
+            {MODE_LABELS[mode]}
+            <ChevronDown className="size-3.5 opacity-70" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-32">
+            {(["sell", "trash"] as Mode[]).map((option) => (
+              <DropdownMenuItem
+                key={option}
+                onSelect={() => modeStore.write(option)}
+                className="flex cursor-pointer items-center gap-2"
+              >
+                <span className="flex-1">{MODE_LABELS[option]}</span>
+                {mode === option && (
+                  <Check className="text-muted-foreground size-3.5" />
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <label
-              htmlFor="min-chaos"
-              className="text-muted-foreground flex items-center gap-1.5"
-            >
-              Min
-              <CurrencyIcon currency="chaos" size={20} />
-            </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <label
+            htmlFor="min-chaos"
+            className="text-muted-foreground flex items-center gap-1.5"
+          >
+            Min
+            <CurrencyIcon currency="chaos" size={20} />
+          </label>
 
-            {/* The thresholds worth farming at, plus anything else, in one
-              control, the free field is the last segment of the same pill.
-              The lit segment is one element that travels to whichever preset
-              is on, on a spring; the free field lights itself. */}
-            <div className="bg-secondary/60 flex items-center rounded-full p-1">
-              {PRESETS.map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => {
-                    setMinChaos(String(preset));
-                    setTyped("");
-                  }}
-                  aria-pressed={threshold === preset}
-                  className={`relative w-9 rounded-full py-2.5 text-sm tabular-nums transition-colors max-[359px]:w-8 sm:w-8 sm:py-1.5 ${
-                    threshold === preset
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {threshold === preset && (
-                    <MotionSpan
-                      aria-hidden
-                      layoutId="threshold"
-                      initial={false}
-                      transition={SPRING}
-                      className="bg-background absolute inset-0 rounded-full shadow-sm"
-                    />
-                  )}
-                  <span className="relative">{preset}</span>
-                </button>
-              ))}
-
-              <span className="bg-border mx-1 h-5 w-px shrink-0" />
-
-              <input
-                id="min-chaos"
-                type="number"
-                min={0}
-                step={1}
-                inputMode="numeric"
-                value={typed}
-                onChange={(e) => {
-                  setTyped(e.target.value);
-                  setMinChaos(e.target.value);
+          {/* The thresholds worth farming at, plus anything else, in one
+              control — the free field is the last segment of the same pill. */}
+          <div className="bg-secondary/60 flex items-center rounded-full p-1">
+            {PRESETS.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => {
+                  setMinChaos(String(preset));
+                  setTyped("");
                 }}
-                placeholder="Other"
-                aria-label="Any other minimum"
-                // No spinner: the arrows are useless at these ranges and steal room.
-                className={`placeholder:text-muted-foreground/70 w-16 rounded-full border py-1.5 text-center text-base tabular-nums max-[359px]:w-14 transition-colors outline-none [appearance:textfield] focus:border-transparent sm:text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
-                  custom
-                    ? "bg-background text-foreground border-transparent shadow-sm"
-                    : "text-foreground border-border/80 hover:border-foreground/40 focus:bg-background border-dashed bg-transparent focus:shadow-sm"
+                aria-pressed={threshold === preset}
+                className={`w-9 rounded-full py-2.5 text-sm tabular-nums transition-colors max-[359px]:w-8 sm:w-8 sm:py-1.5 ${
+                  threshold === preset
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
-              />
-            </div>
-          </div>
+              >
+                {preset}
+              </button>
+            ))}
 
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search beast, genus or habitat…"
-            className="h-9 w-32 max-w-xs min-w-32 flex-1"
-          />
+            <span className="bg-border mx-1 h-5 w-px shrink-0" />
 
-          {/* Two notes about the row rather than controls of it: how fresh the
-            prices are, and what all of this is for. Both at the far end. */}
-          <div className="ml-auto flex items-center gap-3">
-            <PriceClock fetchedAt={fetchedAt} />
-            <HelpTip beasts={found} />
+            <input
+              id="min-chaos"
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              value={typed}
+              onChange={(e) => {
+                setTyped(e.target.value);
+                setMinChaos(e.target.value);
+              }}
+              placeholder="Other"
+              aria-label="Any other minimum"
+              // No spinner: the arrows are useless at these ranges and steal room.
+              className={`placeholder:text-muted-foreground/70 w-16 rounded-full border py-1.5 text-center text-base tabular-nums max-[359px]:w-14 transition-colors outline-none [appearance:textfield] focus:border-transparent sm:text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+                custom
+                  ? "bg-background text-foreground border-transparent shadow-sm"
+                  : "text-foreground border-border/80 hover:border-foreground/40 focus:bg-background border-dashed bg-transparent focus:shadow-sm"
+              }`}
+            />
           </div>
         </div>
 
-        <BestiaryRegex beasts={found} threshold={threshold} mode={mode} />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search beast, genus or habitat…"
+          className="h-9 w-32 max-w-xs min-w-32 flex-1"
+        />
 
-        <MotionDiv
-          layout="position"
-          transition={{ duration: 0.25, ease: EASE }}
-          className="overflow-hidden rounded-xl border"
-        >
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                {COLUMNS.map((col) => {
-                  const active = sort === col.key;
-                  const Icon = !active
-                    ? ChevronsUpDown
-                    : desc
-                      ? ArrowDown
-                      : ArrowUp;
-                  return (
-                    <TableHead
-                      key={col.key}
-                      className={col.numeric ? "text-right" : undefined}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggle(col.key)}
-                        aria-label={`Sort by ${col.name}`}
-                        className={`inline-flex items-center gap-1 py-2 hover:text-foreground ${
-                          active ? "text-foreground font-medium" : ""
-                        } ${col.numeric ? "flex-row-reverse" : ""}`}
-                      >
-                        <Icon className="size-4 opacity-70" />
-                        {col.label}
-                      </button>
+        {/* Two notes about the row rather than controls of it: how fresh the
+            prices are, and what all of this is for. Both at the far end. */}
+        <div className="ml-auto flex items-center gap-3">
+          <PriceClock fetchedAt={fetchedAt} />
+          <HelpTip beasts={found} />
+        </div>
+      </div>
 
-                      {/* How much of the table the filters are letting through,
-                        beside the name of what is being counted. */}
-                      {col.key === "name" && (
-                        <span className="text-muted-foreground ml-3 font-normal tabular-nums">
-                          <Rolling value={rows.length} /> of{" "}
-                          <BeastCount value={found.length} />
-                        </span>
-                      )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((beast) => {
-                const change = beast.sparkLine?.totalChange ?? 0;
-                const traits = (beast.baseType ?? "")
-                  .split("|")
-                  .filter(Boolean);
+      <BestiaryRegex beasts={found} threshold={threshold} mode={mode} />
+
+      <div className="overflow-hidden rounded-xl border">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              {COLUMNS.map((col) => {
+                const active = sort === col.key;
+                const Icon = !active
+                  ? ChevronsUpDown
+                  : desc
+                    ? ArrowDown
+                    : ArrowUp;
                 return (
-                  <TableRow key={beast.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        {/* The minimap marker, not the item icon — every beast
-                          shares the same orb, but red versus yellow is the
-                          thing worth seeing at a glance. */}
-                        <Image
-                          src={
-                            beast.rarity === "red"
-                              ? "/BestiaryLegendaryBeast.webp"
-                              : "/BestiaryRareMonster.webp"
-                          }
-                          alt={
-                            beast.rarity === "red"
-                              ? "Red beast"
-                              : "Yellow beast"
-                          }
-                          title={
-                            beast.rarity === "red"
-                              ? "Red beast, two mods, cannot spawn normally"
-                              : "Yellow beast"
-                          }
-                          width={26}
-                          height={26}
-                          className="shrink-0"
-                        />
-                        <div className="min-w-0">
-                          {beast.detailsId ? (
-                            <a
-                              href={`https://poe.ninja/poe1/economy/${leagueSlug(league)}/beasts/${beast.detailsId}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="-my-2 inline-block py-2 font-medium hover:underline"
-                            >
-                              {beast.name}
-                            </a>
-                          ) : (
-                            <span className="font-medium">{beast.name}</span>
-                          )}
-                          <div className="text-muted-foreground truncate text-sm">
-                            {traits.join(" · ") ||
-                              (isNotFound(beast)
-                                ? "not found"
-                                : "priced from the trade site")}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {beast.chaosValue === undefined ? (
-                        <span className="tabular-nums">–</span>
-                      ) : (
-                        <Price value={beast.chaosValue} size={17} />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      <Badge
-                        variant="secondary"
-                        className={`text-sm ${
-                          change > 0
-                            ? "text-emerald-500"
-                            : change < 0
-                              ? "text-red-500"
-                              : "text-muted-foreground"
-                        }`}
-                      >
-                        {change > 0 ? "+" : ""}
-                        {num(change, 1)}%
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-right tabular-nums">
-                      {num(beast.listingCount)}
-                    </TableCell>
-                  </TableRow>
+                  <TableHead
+                    key={col.key}
+                    className={col.numeric ? "text-right" : undefined}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggle(col.key)}
+                      aria-label={`Sort by ${col.name}`}
+                      className={`inline-flex items-center gap-1 py-2 hover:text-foreground ${
+                        active ? "text-foreground font-medium" : ""
+                      } ${col.numeric ? "flex-row-reverse" : ""}`}
+                    >
+                      <Icon className="size-4 opacity-70" />
+                      {col.label}
+                    </button>
+
+                    {/* How much of the table the filters are letting through,
+                        beside the name of what is being counted. */}
+                    {col.key === "name" && (
+                      <span className="text-muted-foreground ml-3 font-normal tabular-nums">
+                        {num(rows.length)} of{" "}
+                        <BeastCount value={found.length} />
+                      </span>
+                    )}
+                  </TableHead>
                 );
               })}
-            </TableBody>
-          </Table>
-        </MotionDiv>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((beast) => {
+              const change = beast.sparkLine?.totalChange ?? 0;
+              const traits = (beast.baseType ?? "").split("|").filter(Boolean);
+              return (
+                <TableRow key={beast.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      {/* The minimap marker, not the item icon — every beast
+                          shares the same orb, but red versus yellow is the
+                          thing worth seeing at a glance. */}
+                      <Image
+                        src={
+                          beast.rarity === "red"
+                            ? "/BestiaryLegendaryBeast.webp"
+                            : "/BestiaryRareMonster.webp"
+                        }
+                        alt={
+                          beast.rarity === "red" ? "Red beast" : "Yellow beast"
+                        }
+                        title={
+                          beast.rarity === "red"
+                            ? "Red beast, two mods, cannot spawn normally"
+                            : "Yellow beast"
+                        }
+                        width={26}
+                        height={26}
+                        className="shrink-0"
+                      />
+                      <div className="min-w-0">
+                        {beast.detailsId ? (
+                          <a
+                            href={`https://poe.ninja/poe1/economy/${leagueSlug(league)}/beasts/${beast.detailsId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="-my-2 inline-block py-2 font-medium hover:underline"
+                          >
+                            {beast.name}
+                          </a>
+                        ) : (
+                          <span className="font-medium">{beast.name}</span>
+                        )}
+                        <div className="text-muted-foreground truncate text-sm">
+                          {traits.join(" · ") ||
+                            (isNotFound(beast)
+                              ? "not found"
+                              : "priced from the trade site")}
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {beast.chaosValue === undefined ? (
+                      <span className="tabular-nums">–</span>
+                    ) : (
+                      <Price value={beast.chaosValue} size={17} />
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    <Badge
+                      variant="secondary"
+                      className={`text-sm ${
+                        change > 0
+                          ? "text-emerald-500"
+                          : change < 0
+                            ? "text-red-500"
+                            : "text-muted-foreground"
+                      }`}
+                    >
+                      {change > 0 ? "+" : ""}
+                      {num(change, 1)}%
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-right tabular-nums">
+                    {num(beast.listingCount)}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
-    </LayoutGroup>
+    </div>
   );
 }
