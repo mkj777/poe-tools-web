@@ -237,7 +237,7 @@ function SearchBody({
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder="Search tools, questions, atlas passives"
+        placeholder="Search tools, questions, passives"
       />
       <CommandList className="max-h-none min-h-0 flex-1 sm:max-h-[min(60svh,26rem)]">
         <CommandEmpty>Nothing matches &quot;{query.trim()}&quot;.</CommandEmpty>

@@ -158,7 +158,7 @@ function StepRow({
         value={step.pattern}
         onFocus={(e) => e.currentTarget.select()}
         title={`Search ${index + 1} of ${total}, ${step.covers.length} beasts, ${step.pattern.length}/${MAX_PATTERN_LENGTH} characters`}
-        className="h-11 font-mono text-sm"
+        className="h-11 font-mono sm:text-sm"
       />
       <Button variant="secondary" onClick={copy} className="shrink-0">
         <CopyGlyph copied={copied} />
