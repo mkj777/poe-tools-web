@@ -1,23 +1,26 @@
 import { cn } from "@/lib/utils";
 
 /**
- * The mark: a socket with a jewel in it, drawn in the same language as the
- * lucide icons it sits above — 24 unit box, 1.75 stroke, round joins — so the
- * sidebar reads as one set rather than as a logo with icons under it.
+ * The mark: a socket with a jewel in it, the very drawing that is the
+ * favicon (`src/app/icon.svg`, without its tile), scaled from that 32 unit
+ * box to the 24 of the icons it sits above. One picture in the tab and in
+ * the bar, so the site is recognised by the same shape in both places. A
+ * filled shape rather than a stroke, because that is what still reads at
+ * 16px in a tab.
  */
 export function Mark({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinejoin="round"
       aria-hidden
       className={cn("size-6 shrink-0", className)}
     >
-      <path d="M12 2.6 21.4 12 12 21.4 2.6 12Z" />
-      <path d="M12 8.2 15.8 12 12 15.8 8.2 12Z" fill="currentColor" />
+      <path
+        fill="currentColor"
+        fillRule="evenodd"
+        d="M12 2.25 21.75 12 12 21.75 2.25 12Z M12 6.75 17.25 12 12 17.25 6.75 12Z"
+      />
+      <path fill="currentColor" d="M12 9.375 14.625 12 12 14.625 9.375 12Z" />
     </svg>
   );
 }

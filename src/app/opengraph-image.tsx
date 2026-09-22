@@ -35,14 +35,14 @@ export default function Image() {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+        {/* The same mark as the favicon and the bar, see wordmark.tsx. */}
+        <svg width="56" height="56" viewBox="0 0 24 24">
           <path
-            d="M12 2.6 21.4 12 12 21.4 2.6 12Z"
-            stroke={marble}
-            strokeWidth={1.75}
-            strokeLinejoin="round"
+            fill={marble}
+            fillRule="evenodd"
+            d="M12 2.25 21.75 12 12 21.75 2.25 12Z M12 6.75 17.25 12 12 17.25 6.75 12Z"
           />
-          <path d="M12 8.2 15.8 12 12 15.8 8.2 12Z" fill={marble} />
+          <path fill={marble} d="M12 9.375 14.625 12 12 14.625 9.375 12Z" />
         </svg>
         <div style={{ fontSize: 34, color: marble, letterSpacing: -0.5 }}>
           Path of Tools
