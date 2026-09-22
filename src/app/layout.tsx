@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { JsonLd } from "@/components/json-ld";
@@ -103,6 +104,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             </SidebarProvider>
           </TooltipProvider>
         </MotionProvider>
+        {/* Page views for the Vercel dashboard. Renders nothing itself; the
+            script joins after the page is up, and in development it only
+            logs what it would have sent. */}
+        <Analytics />
       </body>
     </html>
   );
