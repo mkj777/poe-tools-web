@@ -27,7 +27,7 @@ const reason = (query: string, title: string) =>
     .find((h) => h.entry.title === title)?.reason;
 
 test("the index holds every tool, question and passive, once", () => {
-  assert.equal(SEARCH_INDEX.entries.length, 18 + 23 + 21);
+  assert.equal(SEARCH_INDEX.entries.length, 22 + 23 + 21);
   const ids = SEARCH_INDEX.entries.map((e) => e.id);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(SEARCH_INDEX.byId.size, ids.length);
@@ -90,6 +90,7 @@ test("skill tree finds everything that has to do with one", () => {
         "poe.ninja",
         "Timeless Jewels",
         "Cluster Jewels",
+        "PoE Planner",
         "Scarab Nodes",
       ]),
       query,
@@ -122,6 +123,7 @@ test("price is every tool that reads one", () => {
       "Wealthy Exile",
       "PoE Antiquary",
       "Disenchanting",
+      "Exilence",
       "Beast Regex",
       "Scarab Nodes",
     ]),
@@ -149,6 +151,23 @@ test("an abbreviation lands on the tool and says so", () => {
   assert.equal(titles("ninja")[0], "poe.ninja");
   assert.equal(titles("poe.ninja")[0], "poe.ninja");
   assert.equal(titles("Path of Building")[0], "Path of Building");
+  assert.equal(titles("coe")[0], "Craft of Exile");
+  assert.equal(reason("coe", "Craft of Exile"), "CoE");
+  assert.equal(titles("exilence")[0], "Exilence");
+  assert.equal(titles("poeplanner")[0], "PoE Planner");
+});
+
+test("the four newest are found by what they are, not only by name", () => {
+  // Each one answers a question its name does not spell.
+  assert.equal(titles("wiki")[0], "PoEDB");
+  assert.equal(reason("wiki", "PoEDB"), "Wiki");
+  assert.ok(titles("mod weights").includes("PoEDB"));
+  assert.ok(titles("mod weights").includes("Craft of Exile"));
+  assert.ok(titles("crafting simulator").includes("Craft of Exile"));
+  assert.ok(titles("net worth").includes("Exilence"));
+  assert.ok(titles("net worth").includes("Wealthy Exile"));
+  assert.ok(titles("atlas tree").includes("PoE Planner"));
+  assert.ok(titles("atlas tree").includes("Scarab Nodes"));
 });
 
 test("a page the sidebar does not list is still found by a query", () => {

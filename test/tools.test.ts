@@ -40,6 +40,9 @@ test("every entry wears an icon of its own, and a square one is rounded off", ()
       "PoE Antiquary",
       "PoE Regex",
       "Exile Leveling",
+      "Exilence",
+      "Craft of Exile",
+      "PoEDB",
     ],
   );
 });
@@ -90,6 +93,10 @@ test("the tools that know no league ignore the one they are handed", () => {
     "PoELab",
     "Maxroll",
     "Exile Leveling",
+    "Exilence",
+    "PoE Planner",
+    "Craft of Exile",
+    "PoEDB",
   ]) {
     const tool = toolByName(name);
     assert.equal(tool.href("Allflame"), tool.href("Standard"), name);
@@ -115,6 +122,10 @@ test("the links point where they are supposed to", () => {
     ["PoELab", "https://www.poelab.com/"],
     ["Maxroll", "https://maxroll.gg/poe"],
     ["Exile Leveling", "https://heartofphos.github.io/exile-leveling/"],
+    ["Exilence", "https://github.com/exilence-ce/exilence-ce/releases"],
+    ["PoE Planner", "https://poeplanner.com/atlas-tree"],
+    ["Craft of Exile", "https://www.craftofexile.com/"],
+    ["PoEDB", "https://poedb.tw/us/"],
   ];
   for (const [name, url] of expected) {
     assert.equal(toolByName(name).href("Allflame"), url, name);

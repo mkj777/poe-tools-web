@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { SITE_TOOLS } from "../src/lib/nav.ts";
-import { normalize } from "../src/lib/search.ts";
+import { GROUP_CAPS, normalize } from "../src/lib/search.ts";
 import { EXTERNAL_TOOLS } from "../src/lib/tools.ts";
 import {
   TOPICS,
@@ -40,7 +40,7 @@ test("aliases are written the way the search reads them", () => {
 });
 
 test("every tool is about something, and something that exists", () => {
-  assert.equal(tools.length, 18);
+  assert.equal(tools.length, 22);
   for (const tool of tools) {
     assert.ok(tool.topics.length > 0, tool.name);
     assert.equal(new Set(tool.topics).size, tool.topics.length, tool.name);
@@ -73,13 +73,37 @@ test("the subjects the search is measured against", () => {
     "poe.ninja",
     "Timeless Jewels",
     "Cluster Jewels",
+    "PoE Planner",
   ]);
   assert.deepEqual(under("overlay"), ["Leveling Guide", "Awakened PoE Trade"]);
   assert.deepEqual(under("regex"), ["Beast Regex", "Map Regex", "PoE Regex"]);
   assert.deepEqual(under("labyrinth"), ["PoELab"]);
-  assert.deepEqual(under("atlas"), ["Scarab Nodes"]);
+  assert.deepEqual(under("atlas"), ["Scarab Nodes", "PoE Planner"]);
   assert.deepEqual(under("guides"), ["Maxroll"]);
+  assert.deepEqual(under("wiki"), ["PoEDB"]);
+  assert.deepEqual(under("crafting"), [
+    "Cluster Jewels",
+    "Craft of Exile",
+    "PoEDB",
+  ]);
+  assert.deepEqual(under("desktop"), [
+    "Leveling Guide",
+    "Path of Building",
+    "Awakened PoE Trade",
+    "Exilence",
+  ]);
   assert.deepEqual(under("leveling"), ["Leveling Guide", "Exile Leveling"]);
+});
+
+test("a subject holds no more tools than a query for it shows", () => {
+  // The palette names the subject a record matched on, so a subject that
+  // outgrows the group would name one and then leave a tool out of it.
+  for (const topic of TOPICS) {
+    assert.ok(
+      toolsWithTopic(topic.id).length <= GROUP_CAPS.tools,
+      `${topic.id} holds ${toolsWithTopic(topic.id).length}`,
+    );
+  }
 });
 
 test("asking for a subject that is not one is a mistake, not undefined", () => {

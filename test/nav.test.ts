@@ -190,7 +190,7 @@ test("three headings, all of them open", () => {
   );
 
   // Nothing is behind a click: every entry the sidebar carries is on arrival.
-  assert.equal(SIDEBAR_ENTRIES.length, 17);
+  assert.equal(SIDEBAR_ENTRIES.length, 21);
 });
 
 const names = (id: string) =>
@@ -199,15 +199,18 @@ const names = (id: string) =>
   );
 
 test("general is what every character reaches for, sorted by subject", () => {
-  // The economy, the guides, what the stash is worth, the campaign. Maxroll
-  // stays here rather than among the essentials: a build comes from YouTube
-  // just as well.
+  // The economy, the guides, the game's own data, what the stash is worth,
+  // the campaign, the Atlas tree. Maxroll stays here rather than among the
+  // essentials: a build comes from YouTube just as well.
   assert.deepEqual(names("general"), [
     "poe.ninja",
     "Maxroll",
+    "PoEDB",
     "Wealthy Exile",
+    "Exilence",
     "leveling",
     "Exile Leveling",
+    "PoE Planner",
   ]);
 });
 
@@ -219,6 +222,7 @@ test("specific is one tool per mechanic, sorted by subject", () => {
     "Disenchanting",
     "Timeless Jewels",
     "Cluster Jewels",
+    "Craft of Exile",
     "PoELab",
   ]);
 });

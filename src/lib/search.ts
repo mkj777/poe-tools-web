@@ -79,8 +79,15 @@ export type Hit = {
 export type SearchGroupId = "tools" | "questions" | "nodes";
 export type SearchGroup = { id: SearchGroupId; label: string; hits: Hit[] };
 
-/** How many of each a query shows. Enough to scan, too few to scroll. */
-export const GROUP_CAPS = { tools: 8, questions: 5, nodes: 6 } as const;
+/**
+ * How many of each a query shows. Enough to scan, too few to scroll.
+ *
+ * The tools are capped at the largest subject rather than at a round number:
+ * asking for "price" has to answer with every tool that reads one, or the
+ * subject a record matched on is a promise the list breaks. A test holds the
+ * two together.
+ */
+export const GROUP_CAPS = { tools: 9, questions: 5, nodes: 6 } as const;
 
 /** How many entries the palette remembers having opened. */
 export const RECENT_CAP = 5;

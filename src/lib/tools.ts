@@ -268,6 +268,78 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
     ],
     href: fixed("https://heartofphos.github.io/exile-leveling/"),
   },
+  {
+    name: "Exilence",
+    blurb: "Net worth tracker, as an app",
+    about:
+      "Prices every stash tab and follows your net worth over time, as a desktop app. Finds the bulk currency you forgot.",
+    icon: { src: "/exilence_icon.png", rounded: true },
+    topics: ["stash", "prices", "desktop"],
+    aliases: [
+      "Exilence CE",
+      "Exilence Next",
+      "Net worth tracker",
+      "Stash tracker",
+      "Wealth tracker",
+    ],
+    // The releases, which is where the installer is, the way Awakened PoE
+    // Trade points at its download page.
+    href: fixed("https://github.com/exilence-ce/exilence-ce/releases"),
+  },
+  {
+    name: "PoE Planner",
+    blurb: "Plan your Atlas tree",
+    about:
+      "The Atlas tree planner, with a link to share what you planned. It plans the passive tree too, which PoB is here for.",
+    icon: { src: "/poeplanner_icon.png" },
+    topics: ["atlas", "skill-tree"],
+    aliases: [
+      "poeplanner",
+      "Atlas planner",
+      "Atlas tree planner",
+      "Atlas passive planner",
+      "Tree planner",
+    ],
+    // Straight onto the Atlas tree. The passive tree it also has is what
+    // Path of Building is here for.
+    href: fixed("https://poeplanner.com/atlas-tree"),
+  },
+  {
+    name: "Craft of Exile",
+    blurb: "Simulate the craft first",
+    about:
+      "Simulates a craft before you spend on it: the odds of each method, the weight of a mod and the item level it needs.",
+    icon: { src: "/craftofexile_icon.png", rounded: true },
+    topics: ["crafting"],
+    aliases: [
+      "CoE",
+      "Crafting simulator",
+      "Craft simulator",
+      "Crafting calculator",
+      "Crafting odds",
+      "Mod weights",
+    ],
+    href: fixed("https://www.craftofexile.com/"),
+  },
+  {
+    name: "PoEDB",
+    blurb: "Every mod and its weight",
+    about:
+      "The game's own data, laid out plain. The clearest place to read a mod, its weight and its item level before crafting.",
+    // The 32px favicon. The site serves no larger mark of its own.
+    icon: { src: "/poedb_icon.png", rounded: true },
+    topics: ["wiki", "crafting"],
+    aliases: [
+      "poedb.tw",
+      "PoE DB",
+      "Wiki",
+      "Database",
+      "Modifiers",
+      "Mod pool",
+      "Item database",
+    ],
+    href: fixed("https://poedb.tw/us/"),
+  },
 ];
 
 export function toolByName(name: string) {
