@@ -17,6 +17,7 @@ import {
   MessageCircleQuestionMark,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MotionDiv } from "@/components/motion";
 import {
   Command,
   CommandDialog,
@@ -73,6 +74,19 @@ const recentStore = createStorageStore<string[]>(
  * appends an invisible check mark to any row without one, and a mark that is
  * there in some rows and not others moves the text about.
  */
+/**
+ * How a hit arrives: 3px up and out of nothing, in the time of a keystroke.
+ * Rows are keyed by entry, so only the ones a keystroke brings in move; the
+ * ones that stay, stay. The palette never renders on the server, so there is
+ * no first paint for this to hide. cmdk's item is its own element and takes
+ * no substitute, so the movement is on a row inside it.
+ */
+const ARRIVE = {
+  initial: { opacity: 0, y: 3 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.12 },
+} as const;
+
 function Row({
   hit,
   value,
@@ -90,33 +104,38 @@ function Row({
       value={value}
       onSelect={onSelect}
       onMouseDown={onMouseDown}
-      className="gap-3 py-2"
+      className="py-2"
     >
-      {entry.icon ? (
-        <ToolIcon icon={entry.icon} className="size-6" />
-      ) : (
-        <span className="text-muted-foreground flex size-6 shrink-0 items-center justify-center">
-          <MessageCircleQuestionMark className="size-5" />
-        </span>
-      )}
-      <span className="grid min-w-0 flex-1 leading-tight">
-        <span className="truncate">{entry.title}</span>
-        <span className="text-muted-foreground truncate text-xs">
-          {entry.subtitle}
-        </span>
-      </span>
-      <CommandShortcut className="flex shrink-0 items-center gap-1.5 tracking-normal">
-        {reason && (
-          <Badge
-            variant="outline"
-            className="font-normal"
-            title={`Matched on ${reason}`}
-          >
-            {reason}
-          </Badge>
+      <MotionDiv
+        className="flex min-w-0 flex-1 items-center gap-3"
+        {...ARRIVE}
+      >
+        {entry.icon ? (
+          <ToolIcon icon={entry.icon} className="size-6" />
+        ) : (
+          <span className="text-muted-foreground flex size-6 shrink-0 items-center justify-center">
+            <MessageCircleQuestionMark className="size-5" />
+          </span>
         )}
-        {entry.external && <ArrowUpRight className="size-3.5" />}
-      </CommandShortcut>
+        <span className="grid min-w-0 flex-1 leading-tight">
+          <span className="truncate">{entry.title}</span>
+          <span className="text-muted-foreground truncate text-xs">
+            {entry.subtitle}
+          </span>
+        </span>
+        <CommandShortcut className="flex shrink-0 items-center gap-1.5 tracking-normal">
+          {reason && (
+            <Badge
+              variant="outline"
+              className="font-normal"
+              title={`Matched on ${reason}`}
+            >
+              {reason}
+            </Badge>
+          )}
+          {entry.external && <ArrowUpRight className="size-3.5" />}
+        </CommandShortcut>
+      </MotionDiv>
     </CommandItem>
   );
 }
@@ -240,7 +259,11 @@ function SearchBody({
         placeholder="Search tools, questions, passives"
       />
       <CommandList className="max-h-none min-h-0 flex-1 sm:max-h-[min(60svh,26rem)]">
-        <CommandEmpty>Nothing matches &quot;{query.trim()}&quot;.</CommandEmpty>
+        <CommandEmpty>
+          <MotionDiv {...ARRIVE}>
+            Nothing matches &quot;{query.trim()}&quot;.
+          </MotionDiv>
+        </CommandEmpty>
         {recent.length > 0 && (
           <CommandGroup heading="Recent">
             {recent.map((entry) => (

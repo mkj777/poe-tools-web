@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { JsonLd } from "@/components/json-ld";
 import { MobileBar } from "@/components/mobile-bar";
+import { MotionProvider } from "@/components/motion-provider";
 import { SearchMount } from "@/components/search/search-mount";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -88,18 +89,20 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/* Who the site is and what it is called, once, for the crawlers that
             would otherwise have to infer both from the chrome. */}
         <JsonLd data={websiteLd()} />
-        <TooltipProvider>
-          <SidebarProvider>
-            <AppSidebar leagues={leagues} fallback={fallback} />
-            {/* The palette, once, where a hit can reach the sidebar it may
-                have been opened from. */}
-            <SearchMount leagues={leagues} fallback={fallback} />
-            <SidebarInset className="min-w-0">
-              <MobileBar />
-              {children}
-            </SidebarInset>
-          </SidebarProvider>
-        </TooltipProvider>
+        <MotionProvider>
+          <TooltipProvider>
+            <SidebarProvider>
+              <AppSidebar leagues={leagues} fallback={fallback} />
+              {/* The palette, once, where a hit can reach the sidebar it may
+                  have been opened from. */}
+              <SearchMount leagues={leagues} fallback={fallback} />
+              <SidebarInset className="min-w-0">
+                <MobileBar />
+                {children}
+              </SidebarInset>
+            </SidebarProvider>
+          </TooltipProvider>
+        </MotionProvider>
       </body>
     </html>
   );
