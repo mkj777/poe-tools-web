@@ -270,9 +270,11 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   },
   {
     name: "Exilence",
-    blurb: "Net worth tracker, as an app",
+    blurb: "Wealthy Exile as an app",
+    // Said in terms of Wealthy Exile on purpose: the two sit side by side on
+    // the home page and answer the same question, see SIDEBAR in nav.ts.
     about:
-      "Prices every stash tab and follows your net worth over time, as a desktop app. Finds the bulk currency you forgot.",
+      "Wealthy Exile as a desktop app: prices your stash tabs and charts your net worth over time. Finds currency you forgot.",
     icon: { src: "/exilence_icon.png", rounded: true },
     topics: ["stash", "prices", "desktop"],
     aliases: [
@@ -288,21 +290,22 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   },
   {
     name: "PoE Planner",
-    blurb: "Plan your Atlas tree",
+    blurb: "Atlas and skill tree planner",
     about:
-      "The Atlas tree planner, with a link to share what you planned. It plans the passive tree too, which PoB is here for.",
+      "Plans the Atlas tree, which Path of Building does not, and the passive tree too, each with a link to share.",
     icon: { src: "/poeplanner_icon.png" },
-    topics: ["atlas", "skill-tree"],
+    topics: ["atlas", "skill-tree", "builds"],
     aliases: [
       "poeplanner",
       "Atlas planner",
       "Atlas tree planner",
       "Atlas passive planner",
+      "Skill tree planner",
+      "Passive tree planner",
       "Tree planner",
     ],
-    // Straight onto the Atlas tree. The passive tree it also has is what
-    // Path of Building is here for.
-    href: fixed("https://poeplanner.com/atlas-tree"),
+    // The front page, which offers both trees; the Atlas tree is one click in.
+    href: fixed("https://poeplanner.com/"),
   },
   {
     name: "Craft of Exile",
@@ -323,9 +326,9 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
   },
   {
     name: "PoEDB",
-    blurb: "Every mod and its weight",
+    blurb: "Database of the whole game",
     about:
-      "The game's own data, laid out plain. The clearest place to read a mod, its weight and its item level before crafting.",
+      "The whole game as a database: items, uniques, gems, mods and their weights, monsters. Worth a bookmark for any lookup.",
     // The 32px favicon. The site serves no larger mark of its own.
     icon: { src: "/poedb_icon.png", rounded: true },
     topics: ["wiki", "crafting"],

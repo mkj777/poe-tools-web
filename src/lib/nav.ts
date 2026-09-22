@@ -194,12 +194,17 @@ const link = (name: string): SidebarEntry => ({
  * Three headings, all open. Essentials is what a session is spent in: the
  * trade site, the three that run beside the client, and the regex generator.
  * General is what every character reaches for at some point, whatever it
- * farms: the economy, the guides, the game's own data, what the stash is
- * worth, the campaign, the Atlas tree.
- * Specific is one tool for one mechanic. Within a heading the order is by
- * subject rather than by who built it. The pages of this site sit among the
- * rest, where the subject puts them, and wear a small tag saying they are
- * built here.
+ * farms: the economy, the guides, the game's data and the trees, what the
+ * stash is worth, the campaign. Specific is one tool for one mechanic.
+ * Within a heading the order is by subject rather than by who built it. The
+ * pages of this site sit among the rest, where the subject puts them, and wear
+ * a small tag saying they are built here.
+ *
+ * Two tools that answer the same question share a row on the home page, Wealthy
+ * Exile with Exilence and the Leveling Guide with Exile Leveling. That page
+ * lays a heading out two and three to a row, so the first of a pair stands at
+ * an index both leave at the start of a row or the middle of three: 0, 4 or 6.
+ * A test holds the pairs there.
  */
 export const SIDEBAR: readonly SidebarGroup[] = [
   {
@@ -220,11 +225,11 @@ export const SIDEBAR: readonly SidebarGroup[] = [
       link("poe.ninja"),
       link("Maxroll"),
       link("PoEDB"),
+      link("PoE Planner"),
       link("Wealthy Exile"),
       link("Exilence"),
       page("leveling"),
       link("Exile Leveling"),
-      link("PoE Planner"),
     ],
   },
   {

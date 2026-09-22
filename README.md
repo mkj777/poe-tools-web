@@ -10,8 +10,8 @@ The sidebar is the point of the site now, so it is a directory rather than a
 menu. Three headings, all open. Essentials is what a session is spent in,
 whoever hosts it: the trade site, the three that run beside the client, and the
 regex generator. General is what every character reaches for at some point,
-whatever it farms: the economy, the guides, the game's own data, what the stash
-is worth, the campaign, the Atlas tree. Specific is one tool for one mechanic. Within a heading the order is
+whatever it farms: the economy, the guides, the game's data and the trees, what
+the stash is worth, the campaign. Specific is one tool for one mechanic. Within a heading the order is
 by subject rather than by who built it, and the pages built here sit among the
 rest with a small "Built here" tag beside the name instead of a heading of
 their own. Every entry carries a few words saying what it is, because a name

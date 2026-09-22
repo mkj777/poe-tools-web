@@ -199,19 +199,33 @@ const names = (id: string) =>
   );
 
 test("general is what every character reaches for, sorted by subject", () => {
-  // The economy, the guides, the game's own data, what the stash is worth,
-  // the campaign, the Atlas tree. Maxroll stays here rather than among the
+  // The economy, the guides, the game's data and the trees, what the stash
+  // is worth, the campaign. Maxroll stays here rather than among the
   // essentials: a build comes from YouTube just as well.
   assert.deepEqual(names("general"), [
     "poe.ninja",
     "Maxroll",
     "PoEDB",
+    "PoE Planner",
     "Wealthy Exile",
     "Exilence",
     "leveling",
     "Exile Leveling",
-    "PoE Planner",
   ]);
+});
+
+test("two tools for the same question share a row on the home page", () => {
+  // The home page lays a heading out two to a row, and three on a wide screen.
+  const general = names("general")!;
+  for (const [first, second] of [
+    ["Wealthy Exile", "Exilence"],
+    ["leveling", "Exile Leveling"],
+  ]) {
+    const i = general.indexOf(first);
+    assert.equal(general[i + 1], second, first);
+    assert.equal(i % 2, 0, `${first} starts a row of two`);
+    assert.notEqual(i % 3, 2, `${first} is not last in a row of three`);
+  }
 });
 
 test("specific is one tool per mechanic, sorted by subject", () => {

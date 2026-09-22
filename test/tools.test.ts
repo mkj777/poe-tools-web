@@ -123,7 +123,7 @@ test("the links point where they are supposed to", () => {
     ["Maxroll", "https://maxroll.gg/poe"],
     ["Exile Leveling", "https://heartofphos.github.io/exile-leveling/"],
     ["Exilence", "https://github.com/exilence-ce/exilence-ce/releases"],
-    ["PoE Planner", "https://poeplanner.com/atlas-tree"],
+    ["PoE Planner", "https://poeplanner.com/"],
     ["Craft of Exile", "https://www.craftofexile.com/"],
     ["PoEDB", "https://poedb.tw/us/"],
   ];
