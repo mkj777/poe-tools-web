@@ -64,7 +64,7 @@ function Scarabs({ node }: { node: PricedNode }) {
             className="min-w-0 flex-1 truncate"
             title={
               scarab.tier
-                ? `${scarab.name} · ${scarab.tier}, ${pct(scarab.share)} of the family's scarabs`
+                ? `${scarab.name}, ${scarab.tier}, ${pct(scarab.share)} of the family's scarabs`
                 : scarab.name
             }
           >

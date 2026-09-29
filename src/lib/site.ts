@@ -36,6 +36,18 @@ export const SITE_DESCRIPTION =
   "Every Path of Exile tool in one place, to search and learn from. Beast Regex, Scarab Nodes and the Leveling Guide are my own projects.";
 
 /**
+ * Who builds the tools of this site. One entity with one id, shared by every
+ * site of his, so a crawler can tell the author of these pages is the same
+ * person as the one behind the others.
+ */
+export const AUTHOR = {
+  id: "https://maximiliankielholz.de/#person",
+  name: "Maximilian Kielholz",
+  url: "https://maximiliankielholz.de",
+  sameAs: ["https://github.com/mkj777"],
+} as const;
+
+/**
  * Terms a page may be found by. Google has ignored the keywords meta since
  * 2009, so this is not written for it: it is written for the description and
  * heading copy to be checked against, and for the few engines that still read

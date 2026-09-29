@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { FaqSection } from "@/components/faq-section";
+import { ToolGuide } from "@/components/tool-guide";
 import { JsonLd } from "@/components/json-ld";
 import { PageFrame } from "@/components/page-frame";
 import { Reveal } from "@/components/reveal";
@@ -83,9 +84,15 @@ export default function Page() {
           ))}
         </ol>
 
+        <ToolGuide
+          slug="leveling"
+          steps={false}
+          className="border-border/60 mt-12 border-t pt-8"
+        />
+
         <FaqSection
           faqs={LEVELING_FAQ}
-          className="border-border/60 mt-12 border-t pt-8"
+          className="mt-10"
         />
 
         <p className="text-muted-foreground border-border/60 mt-10 border-t pt-6 text-sm">

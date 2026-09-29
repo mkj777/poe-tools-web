@@ -230,7 +230,7 @@ export function MapSetup({
             <SelectItem value={NONE}>None</SelectItem>
             {astrolabes.map((entry) => (
               <SelectItem key={entry.id} value={entry.id}>
-                {entry.name.replace(" Astrolabe", "")} · {num(entry.chaosValue)}
+                {entry.name.replace(" Astrolabe", "")}: {num(entry.chaosValue)}
                 c
               </SelectItem>
             ))}

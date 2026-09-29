@@ -156,6 +156,14 @@ export default async function Page() {
     <PageFrame>
       <JsonLd data={toolListLd()} />
       <h1 className="sr-only">Path of Exile tools</h1>
+      <p className="text-muted-foreground max-w-2xl text-sm text-pretty">
+        Path of Tools is a free directory of the Path of Exile tools worth
+        having: the trade site, loot filters, build planners, price checkers,
+        regex generators and guides, each with a sentence on what it is for.
+        Three are built here: Beast Regex for selling Bestiary captures, Scarab
+        Nodes for pricing the scarab passives of the Atlas tree, and the PoE
+        Leveling Guide, a campaign overlay for Windows.
+      </p>
 
       {SIDEBAR.map((group, i) => (
         <Section

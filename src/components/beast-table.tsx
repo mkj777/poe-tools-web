@@ -828,7 +828,7 @@ export function BeastTable({
                           <span className="font-medium">{beast.name}</span>
                         )}
                         <div className="text-muted-foreground truncate text-sm">
-                          {traits.join(" · ") ||
+                          {traits.join(", ") ||
                             (isNotFound(beast)
                               ? "not found"
                               : "priced from the trade site")}

@@ -58,6 +58,16 @@ export const BEASTS_FAQ: readonly Faq[] = [
     answer:
       "Most are worth close to nothing and a handful carry the whole trip. This page lists every beast on the market for the league you picked with its chaos value, its seven day change and how many are currently listed, sorted so the ones worth catching are at the top.",
   },
+  {
+    question: "How do I sell beasts in Path of Exile?",
+    answer:
+      "Pick Sell and a chaos threshold on this page and it hands you the searches in the order they are run: a red one that releases the few cheap beasts that would get in the way, a green one that lights up every beast worth the threshold or more, and a blue one for a pile worth exactly the threshold, to sell in bulk at one price.",
+  },
+  {
+    question: "What regex do I paste into the Bestiary search for beasts?",
+    answer:
+      "The one this page writes for your league and threshold, since prices move and a fixed string goes stale. It is an alternation of short name fragments such as ^goatman$ or wine.r, each chosen to match no beast outside your selection, and it is split into several searches whenever it would pass the 249 character limit.",
+  },
 ];
 
 export const MAPS_FAQ: readonly Faq[] = [
@@ -141,5 +151,15 @@ export const LEVELING_FAQ: readonly Faq[] = [
     question: "Is the PoE Leveling Guide free?",
     answer:
       "Yes, and it is open source under the MIT licence. It is built on Kazte/path-of-levelling, runs on Windows, and is offered as an installer or a portable zip. There is no account and nothing to buy.",
+  },
+  {
+    question: "How does the leveling overlay know where I am?",
+    answer:
+      "It reads the zone changes Path of Exile writes to its Client.txt log, so the guide turns to the next step as you move through the campaign. The route is the walkthrough from the Exile Leveling project, downloaded on first start and stored locally, so no build has to be imported.",
+  },
+  {
+    question: "What are the hotkeys of the PoE Leveling Guide?",
+    answer:
+      "Ctrl, Shift and Alt with the right arrow go to the next step, and with the left arrow back one. Ctrl, Shift, Alt and O switch moving the overlay on and off, and Ctrl, Alt and 0 close it and return to the main window. Position, size and opacity are set in the app's settings.",
   },
 ];

@@ -12,6 +12,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { getLeagues, leagueSlug } from "@/lib/ninja";
 import { websiteLd } from "@/lib/seo";
 import {
+  AUTHOR,
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
@@ -38,13 +39,14 @@ export const metadata: Metadata = {
     // a search result needs the second: nobody searches for a name they have
     // not heard of yet.
     default: "Path of Tools: Every Path of Exile Tool in One Place",
-    template: `%s · ${SITE_NAME}`,
+    template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   keywords: SITE_KEYWORDS,
   applicationName: SITE_NAME,
   category: "games",
-  creator: "mkj777",
+  creator: AUTHOR.name,
+  authors: [{ name: AUTHOR.name, url: AUTHOR.url }],
   // No canonical here on purpose: a layout hands its metadata down, so one
   // canonical set once would claim every page of the site is the home page.
   // Each route declares its own.
@@ -99,6 +101,17 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <SidebarInset className="min-w-0">
               <MobileBar />
               {children}
+              <footer className="text-muted-foreground mx-auto mt-auto w-full max-w-[88rem] px-4 pt-4 pb-8 text-xs sm:px-6 lg:px-8">
+                Built by{" "}
+                <a
+                  href={AUTHOR.url}
+                  rel="author"
+                  className="hover:text-foreground underline underline-offset-4 transition-colors"
+                >
+                  {AUTHOR.name}
+                </a>
+                . Not affiliated with Grinding Gear Games.
+              </footer>
             </SidebarInset>
           </SidebarProvider>
         </TooltipProvider>

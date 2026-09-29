@@ -1,415 +1,189 @@
 # Path of Tools
 
-One place to reach every Path of Exile tool. Beast prices and the map regex are
-built here; everything else worth having already exists and is pointed at rather
-than copied.
+**Live: <https://www.pathoftools.app>**
 
-## The sidebar
+Path of Tools is a free directory of Path of Exile tools. It lists the tools
+the community actually relies on, from the trade site, loot filters and build
+planners to price checkers, regex generators and guides, each with a sentence
+saying what it is for and a link straight to it. Alongside the directory it
+hosts a few tools of its own, built by
+[Maximilian Kielholz](https://maximiliankielholz.de) for problems no other tool
+solved well: selling Bestiary beasts, pricing the scarab passives of the Atlas
+tree, and following the campaign without a second monitor.
 
-The sidebar is the point of the site now, so it is a directory rather than a
-menu. Three headings, all open. Essentials is what a session is spent in,
-whoever hosts it: the trade site, the three that run beside the client, and the
-regex generator. General is what every character reaches for at some point,
-whatever it farms: the economy, the guides, the game's data and the trees, what
-the stash is worth, the campaign. Specific is one tool for one mechanic. Within a heading the order is
-by subject rather than by who built it, and the pages built here sit among the
-rest with a small "Built here" tag beside the name instead of a heading of
-their own. Every entry carries a few words saying what it is, because a name
-alone is only useful once you already know it. The home page draws the same
-list in the same order, so the two cannot disagree.
+Everything on the site is for Path of Exile 1. It needs no account, runs no
+ads and stores nothing about visitors. Prices come from the poe.ninja economy
+API and the official trade site and are at most 15 minutes old.
 
-Trade and the disenchanting calculator are handed the league you are looking at,
-so the link lands where you already are.
+## Tools built here
 
-An entry wears the item out of the game, or the tool's own mark, and every entry
-has one. A test reads `public/` and fails on an icon naming a file which is not
-there, or is there under another capitalisation, which the machine this is
-written on would not notice and the one that serves it would.
+### Beast Regex (`/beasts/<league>`)
 
-## The search
+- Every beast on the market for the chosen league, with chaos value, seven day
+  change and listing count, sortable and filterable by name, genus or habitat.
+- Red or yellow minimap marker per beast.
+- Sell or Trash mode with a chaos threshold (presets 1 to 5, or any number),
+  and the Bestiary searches for that selection, ready to paste, never longer
+  than the 249 character limit of the in game field.
+- Sell mode as one run in up to three steps: release the cheap beasts in the
+  way, sell everything from the threshold up, bulk sell the pile sitting on the
+  threshold.
+- Scarab prices for a beast farming map and the current divine rate beside the
+  table.
 
-Every tool, every question and every Atlas passive of the site sit behind one
-field: the one at the top of the sidebar, the glass in the bar a phone gets, or
-Ctrl+K (⌘K on a Mac) from anywhere. It is a command palette on shadcn's
-`Command`, and it is a chunk of its own that arrives once somebody reaches for
-it, so a page nobody searches on pays nothing for it.
+Details: [docs/beast-regex.md](docs/beast-regex.md). In game test log for the
+search field: [docs/bestiary-search.md](docs/bestiary-search.md).
 
-What makes it worth having is that it answers to what a tool is about, not only
-to what it is called. Each entry in `src/lib/nav.ts` and `src/lib/tools.ts`
-declares its subjects out of `src/lib/topics.ts`, and each subject carries the
-words a player actually types for it, so "skill tree" brings up Path of
-Building, the two jewel calculators, the Atlas passives and poe.ninja, and each
-row says which subject brought it there. The ranking in `src/lib/search.ts` is
-a pure function with no dependency, and `test/search.test.ts` pins the queries
-it is measured against. A typo is forgiven only for a word that found nothing
-as typed.
+### Scarab Nodes (`/scarabs/<league>`)
 
-An unlisted page is searchable and not browsed: nothing typed shows the sidebar
-again, and "map regex" finds the map regex.
+- The twelve Atlas notables that turn a mechanic off, ranked by the scarab
+  value you give up, cheapest first.
+- The nine Carapace notables that double a scarab family's drop chance, ranked
+  by what the family's next drop is worth, dearest first.
+- Every scarab of each family with its price and its share of the family's
+  drops, from the game's five rarity tiers.
 
-## The URLs
+Details: [docs/scarab-nodes.md](docs/scarab-nodes.md).
 
-Every URL used to begin with a league, back when the site was one tool with a
-league picker over it. That does not survive more tools: the map mods are the
-same in every league and the leveling app has never heard of one, so a league in
-their path was a fiction.
+### PoE Leveling Guide (`/leveling`)
+
+- The download page for a free, MIT licensed Windows overlay that shows the
+  next campaign step inside the game and advances on its own by reading the
+  zone changes in `Client.txt`.
+- Installer and portable zip, with the release pinned in
+  `src/lib/leveling-app.ts`. The app lives in
+  [mkj777/poe-leveling-app](https://github.com/mkj777/poe-leveling-app).
+
+Details: [docs/leveling-guide.md](docs/leveling-guide.md).
+
+### Map Regex (`/maps/<league>`, unlisted)
+
+- Tick the map modifiers your build cannot run and get one stash search that
+  lights up only the maps without them, with optional minimums for quantity,
+  rarity and pack size.
+- Reachable by URL and in the sitemap, but in no menu yet.
+
+Details: [docs/map-regex.md](docs/map-regex.md). In game test log for the stash
+search: [docs/stash-search.md](docs/stash-search.md).
+
+## The directory
+
+The home page and the sidebar are drawn from the same list in
+`src/lib/nav.ts`, in three groups: Essentials (what a session is spent in),
+General (what every character reaches for at some point) and Specific (one tool
+for one mechanic). External tools are described in `src/lib/tools.ts`, and the
+pages built here sit among them with a small "Built here" tag.
+
+A command palette (the field at the top of the sidebar, or Ctrl+K) searches
+every tool, every question and every Atlas passive. It answers to what a tool is
+about, not only to its name: each tool declares subjects from
+`src/lib/topics.ts`, and each subject carries the words players type for it, so
+"skill tree" finds Path of Building, the jewel calculators and the Atlas
+passives. The ranking lives in `src/lib/search.ts` and is pinned by
+`test/search.test.ts`.
+
+## URLs
 
 ```
 /                             the directory: every tool, with a sentence each
-/beasts/<league>              the beasts, and the Bestiary search for them
-/beasts/<league>/simulation   the same beasts in a mock Bestiary window,
-                              unfinished, and in no menu because of it
-/scarabs/<league>             what each Atlas scarab passive is worth
-/maps/<league>                the map regex, in no menu and reachable by URL
-/leveling                     the overlay, which carries no league at all
+/beasts/<league>              beast prices and the Bestiary searches
+/beasts/<league>/simulation   a mock Bestiary window, unfinished and noindex
+/scarabs/<league>             what each scarab Atlas passive is worth
+/maps/<league>                the map stash search, unlisted
+/leveling                     the leveling overlay download
+/llms.txt, /llms-full.txt     the site as markdown for language models
+/sitemap.xml, /robots.txt
 ```
 
-The league is picked on the page, beside the prices it belongs to, and the tools
-still to come each decide for themselves whether they have one. The old
-league-first URLs redirect to where their pages live now.
+The league is picked on the page. The bare tool paths (`/beasts`, `/scarabs`,
+`/maps`) redirect to the current league, and the old league first URLs
+(`/<league>`) redirect to the beasts.
 
-The map regex is `unlisted`: it answers, it is in the sitemap and in
-`/llms.txt`, and it appears in no menu and on no card. `page()` throws if
-anybody puts an unlisted tool in the sidebar by accident, so it stays that way
-until the flag comes off.
+## Search engines and answer engines
 
-`/` used to redirect to the beasts. It does not any more: the strongest URL a
-site has cannot be a page that only points somewhere else, and there was nothing
-here at all for anybody looking for Path of Exile tools rather than for this
-one. It is the sidebar as a page, every tool with a sentence saying what it is
-for, which is also the only thing on the site a search engine can read about a
-tool that lives somewhere else.
+Everything a crawler reads is built from two files and tested without a build
+in `test/seo.test.ts`:
 
-## Being found
+- `src/lib/site.ts`: the origin, the site description and the author.
+- `src/lib/seo.ts`: the sitemap, the robots rules, `/llms.txt`,
+  `/llms-full.txt` and every schema.org block.
 
-Everything a crawler reads is built from two files. `src/lib/site.ts` holds the
-origin and the copy the site introduces itself with; `src/lib/seo.ts` holds the
-sitemap, the robots rules, `/llms.txt` and the schema.org blocks, all of them
-pure functions over the catalogue, so a new tool cannot fall out of them and
-`test/seo.test.ts` can read the lot without a build.
+Each page sets its own title, description, canonical and Open Graph block
+(Twitter cards inherit from Open Graph). The root layout renders an
+`Organization`, a `WebSite` and the author `Person`. Each tool page adds a
+`WebApplication` (or `SoftwareApplication` for the leveling download) with the
+author as creator, a `BreadcrumbList`, and an `FAQPage` whose questions are the
+ones printed on the page. The questions live in `src/lib/faq.ts`; the "what it
+does and how to use it" prose on each tool page lives in `src/lib/guides.ts`,
+and both are reused in the llms files so the page and the file say the same
+thing. The home page adds an `ItemList` of the directory.
 
-```
-/sitemap.xml   the home page, the overlay and every league page, current first
-/robots.txt    everything but /api/, and the answer engines welcomed by name
-/llms.txt      the site as one page of markdown, generated from the catalogue
-```
+`robots.txt` allows everything but `/api/` and names the AI crawlers (GPTBot,
+OAI-SearchBot, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended, CCBot
+and others) explicitly. The sitemap lists the home page, the leveling page and
+every league page of every league tool, current league first; redirecting paths
+are left out.
 
-Set **`NEXT_PUBLIC_SITE_URL`** to the domain the site actually answers on. Left
-unset it falls back to `VERCEL_PROJECT_PRODUCTION_URL`, which names the
-`*.vercel.app` host: correct until there is a custom domain, and quietly wrong
-after, because every canonical would then be telling Google the real domain is
-the copy. `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` renders the Search Console
-tag, and nothing at all when it is absent.
+## Stack
 
-Each page carries its own canonical, title and Open Graph block, so nothing is
-inherited by a page it was not written for. The Bestiary simulation is
-`noindex, follow` and deliberately still crawlable: a robots.txt ban would hide
-that line rather than obey it. The card a link unfurls into is drawn at
-`app/opengraph-image.tsx`, from the same palette as the site.
+- Next.js 16 (App Router), React 19, TypeScript
+- Tailwind CSS v4 and shadcn/ui on Radix, lucide icons, cmdk for the palette
+- Vercel hosting with a daily cron, Vercel Analytics and Speed Insights
+- Tests on `node --test` with Node's built in TypeScript stripping, no
+  framework
 
-Questions and their answers live in `src/lib/faq.ts` and are rendered on the
-page as well as marked up, because an engine that answers a question itself
-quotes the page that answered it first. What they say about the two search
-fields comes from the in game testing in `docs/`, which is the one thing this
-site knows that no other page about Path of Exile does.
-
-## The Leveling page
-
-The one tool here that is ours rather than somebody else's is
-[PoE Leveling Guide](https://github.com/mkj777/poe-leveling-app): an overlay
-that puts the next leveling step in the game window. The page is a download and
-three steps, nothing the app explains better itself.
-
-Which release it hands out lives in `src/lib/leveling-app.ts`: one constant,
-which both the installer and the portable zip are built from, so a new version
-is a one line change.
-
-## What it does
-
-- Lists **all** beasts for the selected league with their chaos value, 7-day
-  change and listing count, linked to their poe.ninja page for that league.
-- The scarabs a run needs and the current divine rate sit in the top corner,
-  with what one map costs to set up — 20 Duplicating, 40 of the Herd, 40
-  Kalguuran — next to what the run is worth.
-- Sort by any column, search by beast name, genus or habitat.
-- **Red or yellow** per row, drawn with the minimap marker the beast actually
-  uses, so it is obvious whether the expensive ones are worth the detour.
-- **Trash / Sell switch** with a chaos threshold — select everything under it,
-  or everything from it up.
-- **Bestiary searches** for that selection, ready to paste into the in-game
-  Bestiary window. Sell mode gives both halves of the run in order — a red
-  search that trashes everything below the threshold, then a green one over
-  what is left.
-- **Bestiary Sim**: the same beasts in a mock Bestiary window, where a pattern
-  can be tried out with every price on screen before anything is released. An
-  empty search shows all of them, as the game does.
-
-## The two modes want opposite things
-
-Trashing is destructive. A pattern that shows one expensive beast among the
-junk gets it released at the altar, so **no search may ever show a beast above
-the threshold** — whatever that costs in extra searches, and even if a beast
-has to be left out because nothing can single it out.
-
-Selling is not destructive. The point is to have every valuable beast in front
-of you, and a 1c beast in that list costs nothing. So coverage wins: **every
-beast above the threshold is selected**, in as few searches as possible, and
-the cheap ones that ride along are named rather than avoided.
-
-They are also two halves of one run, which is why sell mode shows both plans:
-the trash pattern goes first and empties the Bestiary of everything below the
-threshold, so the sell search afterwards runs over a window that holds keepers
-only, and its extras are whatever survived. Red is the destructive one, green
-the one that only selects — the colour is the reminder of which order they go
-in.
-
-| Threshold | Sell — coverage first | Trash — precision first |
-| --- | --- | --- |
-| 1c | 202 beasts, 2 searches, 12 extras | 16 beasts, 1 search |
-| 2c | 185 beasts, 2 searches, 24 extras | 33 beasts, 1 search |
-| 4c | 32 beasts, 1 search, no extras | 186 beasts, 4 searches |
-| 20c | 16 beasts, 1 search, no extras | 202 beasts, 4 searches |
-
-Nothing is left out any more. "Goatman" sits inside "Goatman Fire-raiser", so
-for a long time it could not be singled out at all and was named for the player
-to handle by hand. `^goatman$` does it — see the full-line form below.
-
-## Data
-
-| Source | Gives | Refresh |
-| --- | --- | --- |
-| [poe.ninja economy API](https://poe.ninja/docs/api) | prices, genus, family, habitat for the ~218 beasts with live listings | every 15 min |
-| `pathofexile.com/api/trade/data/items` | the full roster of 361 beast names | daily |
-| `pathofexile.com/api/trade/search` | prices for the ~143 beasts poe.ninja has no data on | daily, a slice at a time |
-
-Everything is fetched server-side with a descriptive User-Agent.
-
-### Pricing the beasts poe.ninja skips
-
-poe.ninja only lists beasts somebody is currently selling. The rest are priced
-by asking the trade site directly — the same fallback Awakened PoE Trade uses.
-
-The answer turned out to be blunt. Of the 143 beasts poe.ninja has no data for,
-searching the trade site with offline listings included found **exactly one**:
-Tunnelfiend, 4c, a single listing. The other 142 have no listing anywhere.
-Anything the game still drops is being sold by someone, so those 142 are not
-cheap beasts — they are beasts the game no longer hands out. They are labelled
-"not found", hidden behind a chip, and excluded from both patterns, which is
-what took the 4c keep pattern from 155 characters down to 127.
-
-That API allows 5 requests per 10 seconds and 30 per 300, so no page render ever
-touches it. Instead:
-
-- **`/api/refresh-prices`** runs on a Vercel cron once a day — Hobby plans
-  reject anything more frequent, and a deployment carrying `*/10 * * * *` does
-  not deploy at all. Each run walks ten names, 5s apart, which is 45s of the
-  60s a function gets and about a fortnight to get round all 143. Which slice
-  comes from the date, so no state is carried between runs, and entries inside
-  their 24 hour TTL cost no request at all. Set `CRON_SECRET` to lock the route
-  down; tune with `PRICE_REFRESH_SLICE` and `PRICE_REFRESH_SPACING_MS`. On a
-  plan with frequent crons, raise the schedule rather than the slice — the
-  limit that matters is GGG's, not Vercel's.
-- **`src/lib/trade-prices.fallback.json`** is a committed snapshot, served when
-  the cache is cold: a fresh deployment shows real prices immediately rather
-  than a table full of dashes. Regenerate it with `pnpm prices:snapshot`. It
-  paces itself, resumes where it stopped, and takes about an hour — run it when
-  you are not playing, since the rate limit is per IP.
-
-Two things that bit us and are now guarded:
-
-- **`status` must not be `"online"`.** With it, every single beast came back
-  with zero listings. Awakened PoE Trade sends `available`, `securable` or
-  `any`; the snapshot uses `any`, the widest net. Before doing anything, the
-  script now asks about the beast poe.ninja sees the most listings for — if
-  even that returns nothing, the query is wrong and it aborts instead of
-  recording a table full of zeroes.
-- **Exceeding 30 requests per 300s locks the whole IP out for half an hour**,
-  game client included. Both the script and the cron take a minority share of
-  every bucket and read the rate-limit headers.
-
-## The Bestiary regex
-
-The in-game search turned out to be a real, case-insensitive regex engine —
-`|`, `.`, `^`, `$`, groups, `[^x]` and `(?!…)` all work, `!` and `"quotes"` do
-not, and `.` stops at a line break. What it is *not* is row-oriented: every line
-of a row is matched separately and the row is shown if any one of them matches.
-A pattern is therefore an alternation of short name fragments:
-
-```
-wine.r|rric.g|cic.sa|rric.f|umal.s|wine.c|rric.w|rric.l|wine.v|icic.m|rric.m
-```
-
-Each fragment is chosen so it appears in **no** beast outside the selection.
-Picking the smallest such set is set cover, so `src/lib/bestiary-regex.ts` uses
-the greedy approximation: repeatedly take the fragment covering the most
-still-uncovered beasts, then pack the results into 249-character searches.
-
-### What the search reads is not just the name
-
-A Bestiary row is several lines, and every one of them is searchable: the beast
-type name, its genus, family and habitat, the name the game generated for that
-capture, and every modifier it rolled — names *and* descriptions.
-
-That is where false positives come from, and one got through: a trash pattern
-built at 2c brought up Wild Hellion Alpha, worth 50c, because a fragment landed
-somewhere in its modifier text. So three corpora are off limits to fragments:
-
-| Corpus | Size | Source |
-| --- | --- | --- |
-| Bestiary modifiers, names and effects | 28 | `pnpm mods:update` |
-| Generic rare monster modifiers | 224 | `pnpm mods:monsters` |
-| Words a generated name can be built from | 35,237 combinations | `pnpm words:update` |
-| Lines seen in game that neither scrape knows | 3 | `src/lib/observed-mods.ts`, by hand |
-
-That last one matters more than its size. One of the three is the line a beast
-keeps for surviving the altar, and it rides along on any beast of any type.
-
-No list of modifier text is ever complete, though, so length carries the rest
-of the weight: an **unanchored fragment must be at least six characters**,
-since something like `rar` sits inside "Rare pack minions" and is a coin flip
-against English prose. Anchored fragments (`^wild.hel`) may be shorter — `^`
-binds to the start of a line, so they only ever meet the first characters of a
-name, a genus or a modifier.
-
-A literal space is never emitted either: word breaks travel as a `.` wildcard,
-because the field does not treat a space as a plain character.
-
-### The full-line form
-
-`^goatman$` is the one fragment that cannot go wrong. Both anchors bind per
-line, so the whole line has to equal the fragment — which no generated name and
-no modifier ever will. It costs every character of the name plus two, so the
-solver reaches for it last, but it is what finally solved the beasts whose name
-another beast's name contains: Goatman, Devourer, Plummeting Ursa and the four
-Parasite variants. Nothing is unreachable now.
-
-Negation is the one part of the dialect that cannot help. `(?!…)` works, but a
-row is shown when *any* of its lines matches, and a modifier line that lacks the
-term always satisfies the lookahead — so per-line negation cannot exclude a row.
-"Everything except the expensive ones" stays un-expressible, and the cheap
-beasts have to be enumerated.
-
-`matchesBestiaryPattern()` implements this reading, and the UI warnings and the
-tests are measured against it rather than against `RegExp.test`.
-
-Every probe behind the model, including the ones that disproved earlier
-theories, is written up in [docs/bestiary-search.md](docs/bestiary-search.md).
-
-### Trying a pattern without the game
-
-`/beasts/<league>/simulation` is that model made visible: every beast with a listing, the lines
-the search reads, and a field to paste a pattern into. What comes back is what
-the Bestiary would show — except each tile carries the beast's price and the
-fragment that matched it, so a trash pattern that turns up something expensive
-is visible before the beast is released rather than after. Set the warning line
-to the threshold and any match at or above it turns red.
-
-Every beast is rolled into a capture the way the game rolls one: a generated
-name from the `Words.dat` word pool, three Bestiary modifiers on a red beast and
-one on a yellow, plus a few ordinary monster modifiers. Reroll draws again.
-
-A single roll only proves something about that roll, so the panel above the
-tiles asks the question that covers all of them: can any fragment land in *any*
-generated name or *any* modifier name? Type `rar` and it answers — inside
-"Tempo**rar**ily Revives", so that fragment can bring up any beast in the
-league. That was the actual bug behind a 50c beast turning up in a 2c trash
-pattern, and a test now asserts the planner never emits such a fragment.
-
-### The length budget
-
-The search field takes **249 characters**, and a truncated pattern silently
-matches the wrong beasts, so a pattern is never emitted that does not fit.
-Fragments that no longer fit spill into the next search instead.
-
-When a wanted name is fully contained in another (`Parasite` inside `Plated
-Parasite`, `Goatman` inside `Goatman Fire-raiser`), no fragment can separate
-them, and no number of extra searches helps — a search that finds the one finds
-the other. Those beasts are named as unreachable rather than quietly dragged in.
-
-### Where the planning happens
-
-Planning is the only expensive thing the app does, and almost all of it used to
-go into one question: can this fragment sit inside any of the 35,237 generated
-names? Asked by walking the three word lists it costs ~0.6ms, and a plan asks it
-nine thousand times. Every form of the question is a membership test, so the
-answers are precomputed into sets once — prefixes, suffixes, substrings and the
-seams between them. Ten plans went from **34s to 2.9s**, with byte-identical
-output, and a single plan is now 50–550ms.
-
-That is fast enough to stay in the browser for an unusual threshold, in a worker
-so the field keeps typing smoothly, and remembered for the session so going back
-is instant. The five preset thresholds do not wait at all: both modes for each
-are planned on the server and shipped with the page (~26 KB, ~6 gzipped).
-
-Those ten are cached on the **split** — which beasts fall either side of 1, 2, 3,
-4 and 5 chaos — not on the prices. Prices move every quarter of an hour, a beast
-crosses a preset far more rarely, so most refreshes cost nothing.
-
-### Nothing renders per request
-
-Every visitor sees the same page and poe.ninja recomputes every fifteen minutes,
-so there is nothing to render per request. A league lives in the **path** of the
-tools that have one, not in a query string, which is what lets the pages be
-prerendered:
-
-```
-○ /                                 15m   (redirects to the current league)
-○ /maps, /beasts                    15m   (the tool without a league picks one)
-● /maps/allflame                    15m
-● /beasts/allflame/simulation       15m
-● /standard, /hardcore, /allflamehc …
-○ /leveling                         15m   (no league, one page, built once)
-ƒ /beasts/[league]                        (rendered per visit, for live prices)
-ƒ /api/refresh-prices                     (the cron)
-```
-
-`export const revalidate = 900` plus `generateStaticParams` gives ISR: the HTML
-is served from Vercel's CDN with `s-maxage=900, stale-while-revalidate` and
-rebuilt in the background once it is that old. On a Hobby plan that matters
-twice over — almost no function invocations, and the seconds of pattern planning
-happen during the background rebuild rather than in front of somebody.
-
-The live leagues are prerendered at build time; a league that starts later
-renders on its first visit and is cached from then on, and a slug that matches no
-league 404s. Page renders never reach the trade API — `lookup()` throws unless
-the cron has called `allowLiveLookups()` — so a rebuild every quarter of an hour
-cannot walk into GGG's rate limit.
+The palette is four steps of one cold grey, defined once as shadcn tokens in
+`src/app/globals.css`. Red, green and amber appear only where they mean
+something: the altar, the sale and a warning.
 
 ## Development
 
 ```bash
 pnpm install
-pnpm dev              # http://localhost:3000
-pnpm test             # regex tests against a real 218-beast fixture
+pnpm dev      # http://localhost:3000
+pnpm lint
+pnpm test     # includes the regex tests against a real 218 beast fixture
 pnpm build
-
-pnpm prices:snapshot            # refresh the committed price fallback (~1 h)
-pnpm atlas:icons                # re-download the Atlas passive icons
-pnpm mods:update                # re-scrape the Bestiary modifier list
-pnpm mods:monsters              # re-scrape the generic monster modifier list
-pnpm rarity:update              # re-derive which beasts are red
-pnpm words:update <words.json>  # re-import the name pool from a Words.dat export
 ```
 
-Tests run on `node --test` with Node's built-in TypeScript stripping — no test
-framework needed. They assert the generated pattern never misses a wanted beast
-at several thresholds, and that every false positive is one the caller was
-warned about.
+### Data update scripts
 
-## Stack
+The generators check against data scraped from GGG, poe.ninja and the wiki. It
+is committed, and refreshed by hand when a patch changes it:
 
-Next.js 16 (App Router), React 19, Tailwind v4, shadcn/ui, lucide, motion,
-TypeScript.
+| Script | Writes | Source |
+| --- | --- | --- |
+| `pnpm mods:update` | `src/lib/bestiary-mods.ts` | poewiki list of Bestiary modifiers |
+| `pnpm mods:monsters` | `src/lib/monster-mods.ts` | generic rare monster modifiers |
+| `pnpm mods:maps` | `src/lib/map-mods.ts` | every modifier a map can roll |
+| `pnpm words:update <words.json>` | `src/lib/monster-words.ts` | a Words.dat export from poe-dat-viewer |
+| `pnpm rarity:update` | `src/lib/beast-rarity.ts` | which beasts are red, from the wiki |
+| `pnpm scarabs:tiers` | `src/lib/scarab-tiers.ts` | scarab rarity tiers from the wiki |
+| `pnpm atlas:icons` | `public/atlas/*.png` | Atlas passive art, GGG tree export plus wiki |
+| `pnpm prices:snapshot` | `src/lib/trade-prices.fallback.json` | trade site prices for beasts poe.ninja skips (about an hour, rate limited) |
 
-Every control on the page is a shadcn component, so the theme reaches all of
-them at once. Motion is used where an animation carries something and nowhere
-else: the bar beside the sidebar entry you are on travels to the entry you pick,
-and the leveling page arrives top to bottom. Both stop dead for a reader who has
-asked their system for less motion.
+## Deploy
 
-The palette is "Ash & Marble" out of the Claude Design mockup: four steps of one
-cold grey, with the lightest of them as the accent, so nothing on the page
-competes with the game's own art. It lives in the `.dark` block of
-`src/app/globals.css` as shadcn tokens and nowhere else, which is why every
-component picked it up without being touched. Red, green and amber stay: on the
-beasts table they mean the altar, the sale and a warning, not decoration.
+The site runs on Vercel and deploys automatically on every push to `main`.
+Price pages use ISR with a 15 minute revalidate (the beasts page renders per
+visit), so new prices arrive without a deploy and a new league appears on its
+first visit.
+
+`vercel.json` schedules `/api/refresh-prices` once a day. It tops up the trade
+site prices for the beasts poe.ninja does not list, ten at a time, well inside
+GGG's rate limits.
+
+Environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | The public origin, `https://www.pathoftools.app`. Without it canonicals fall back to the `*.vercel.app` host. |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Renders the Search Console verification tag when set. |
+| `CRON_SECRET` | Locks down the cron route. |
+| `PRICE_REFRESH_SLICE`, `PRICE_REFRESH_SPACING_MS` | Tune how many beasts a cron run prices and how far apart. |
+
+## Author
+
+Built by [Maximilian Kielholz](https://maximiliankielholz.de)
+([GitHub](https://github.com/mkj777)). Path of Tools is a fan project and is
+not affiliated with Grinding Gear Games.

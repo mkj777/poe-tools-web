@@ -12,6 +12,7 @@ import { MAPS_FAQ } from "@/lib/faq";
 import { breadcrumbLd, webAppLd } from "@/lib/seo";
 import { OG_IMAGE, canonical } from "@/lib/site";
 import { FaqSection } from "@/components/faq-section";
+import { ToolGuide } from "@/components/tool-guide";
 import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
 import { MapSearch } from "@/components/map-search";
@@ -98,9 +99,14 @@ export default async function Page({ params }: PageProps<"/maps/[league]">) {
 
       <MapSearch />
 
+      <ToolGuide
+        slug="maps"
+        className="border-border/60 mt-12 border-t pt-8"
+      />
+
       <FaqSection
         faqs={MAPS_FAQ}
-        className="border-border/60 mt-12 border-t pt-8"
+        className="mt-10"
       />
     </PageFrame>
   );

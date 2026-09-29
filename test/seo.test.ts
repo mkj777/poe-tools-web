@@ -13,6 +13,7 @@ import {
   breadcrumbLd,
   downloadLd,
   faqLd,
+  llmsFullTxt,
   llmsTxt,
   robotsRules,
   sitemapEntries,
@@ -20,7 +21,8 @@ import {
   webAppLd,
   websiteLd,
 } from "../src/lib/seo.ts";
-import { SITE_URL, canonical } from "../src/lib/site.ts";
+import { AUTHOR, SITE_URL, canonical } from "../src/lib/site.ts";
+import { GUIDES } from "../src/lib/guides.ts";
 import { SITE_TOOLS } from "../src/lib/nav.ts";
 import { EXTERNAL_TOOLS } from "../src/lib/tools.ts";
 
@@ -303,22 +305,97 @@ test("every tool says more about itself than four words, and not a paragraph", (
   }
 });
 
-test("no copy on this site carries an em dash", () => {
-  // A rule of the project, and the one kind of typo a language model reaches
-  // for by itself. Cheap to check on the files that are nothing but prose.
+test("no copy on this site carries an em dash or a middle dot", () => {
+  // A rule of the project, and the two kinds of typography a language model
+  // reaches for by itself. Cheap to check on the files that are nothing but
+  // prose, and on the layout, whose title template lands in every tab.
   const prose = [
-    "site.ts",
-    "faq.ts",
-    "seo.ts",
-    "tools.ts",
-    "nav.ts",
-    "scarab-nodes.ts",
+    "lib/site.ts",
+    "lib/faq.ts",
+    "lib/seo.ts",
+    "lib/guides.ts",
+    "lib/tools.ts",
+    "lib/nav.ts",
+    "lib/scarab-nodes.ts",
+    "app/layout.tsx",
+    "app/(home)/page.tsx",
+    "components/faq-section.tsx",
+    "components/tool-guide.tsx",
   ];
+  // By code point, so this file does not carry the characters it bans.
+  const EM_DASH = String.fromCharCode(0x2014);
+  const MIDDLE_DOT = String.fromCharCode(0xb7);
   for (const file of prose) {
     const source = readFileSync(
-      new URL(`../src/lib/${file}`, import.meta.url),
+      new URL(`../src/${file}`, import.meta.url),
       "utf8",
     );
-    assert.ok(!source.includes("—"), `src/lib/${file} has an em dash`);
+    assert.ok(!source.includes(EM_DASH), `src/${file} has an em dash`);
+    assert.ok(!source.includes(MIDDLE_DOT), `src/${file} has a middle dot`);
+  }
+  for (const text of [llmsTxt(), llmsFullTxt()]) {
+    assert.ok(!text.includes(EM_DASH) && !text.includes(MIDDLE_DOT));
+  }
+});
+
+/* -------------------------------------------------------------------------- */
+/* author and guides                                                           */
+/* -------------------------------------------------------------------------- */
+
+test("the author is one Person, named once and pointed at everywhere", () => {
+  const graph = ld(websiteLd())["@graph"];
+  const person = graph.find((n: { "@type": string }) => n["@type"] === "Person");
+  assert.equal(person["@id"], "https://maximiliankielholz.de/#person");
+  assert.equal(person.name, "Maximilian Kielholz");
+  assert.equal(person.url, "https://maximiliankielholz.de");
+  assert.deepEqual(person.sameAs, ["https://github.com/mkj777"]);
+
+  const app = ld(webAppLd({ name: "n", path: "/beasts/standard", description: "d" }));
+  assert.equal(app.author["@id"], AUTHOR.id);
+  assert.equal(app.creator["@id"], AUTHOR.id);
+  assert.equal(app.operatingSystem, "Web");
+  assert.equal(app.isAccessibleForFree, true);
+  assert.equal(app.offers.price, "0");
+
+  const download = ld(
+    downloadLd({
+      name: "n",
+      path: "/leveling",
+      description: "d",
+      downloadUrl: "https://example.com/a.exe",
+    }),
+  );
+  assert.equal(download.author["@id"], AUTHOR.id);
+});
+
+test("every tool built here has a guide, and every guide a tool", () => {
+  const slugs = SITE_TOOLS.map((t) => t.slug).sort();
+  assert.deepEqual(GUIDES.map((g) => g.slug).sort(), slugs);
+  for (const guide of GUIDES) {
+    assert.ok(guide.about.length > 0 && guide.steps.length > 0, guide.slug);
+    assert.ok(llmsTxt().includes(guide.about[0]), guide.slug);
+  }
+});
+
+test("llms-full.txt carries every question the pages answer, word for word", () => {
+  const text = llmsFullTxt();
+  assert.ok(text.startsWith("# Path of Tools"));
+  for (const faq of ALL_FAQ) {
+    assert.ok(text.includes(faq.question), faq.question);
+    assert.ok(text.includes(faq.answer), faq.question);
+  }
+});
+
+test("the answer engines include every crawler the brief names", () => {
+  for (const bot of [
+    "GPTBot",
+    "ClaudeBot",
+    "anthropic-ai",
+    "PerplexityBot",
+    "Google-Extended",
+    "OAI-SearchBot",
+    "CCBot",
+  ]) {
+    assert.ok(ANSWER_ENGINES.includes(bot), bot);
   }
 });

@@ -27,7 +27,7 @@ const reason = (query: string, title: string) =>
     .find((h) => h.entry.title === title)?.reason;
 
 test("the index holds every tool, question and passive, once", () => {
-  assert.equal(SEARCH_INDEX.entries.length, 22 + 23 + 21);
+  assert.equal(SEARCH_INDEX.entries.length, 22 + 27 + 21);
   const ids = SEARCH_INDEX.entries.map((e) => e.id);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(SEARCH_INDEX.byId.size, ids.length);

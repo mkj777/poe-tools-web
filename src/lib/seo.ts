@@ -1,4 +1,12 @@
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, canonical } from "./site.ts";
+import {
+  AUTHOR,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  canonical,
+} from "./site.ts";
+import { BEASTS_FAQ, HOME_FAQ, LEVELING_FAQ, MAPS_FAQ, SCARABS_FAQ } from "./faq.ts";
+import { GUIDES } from "./guides.ts";
 import { SIDEBAR_ENTRIES, SITE_TOOLS } from "./nav.ts";
 import { EXTERNAL_TOOLS } from "./tools.ts";
 
@@ -98,6 +106,7 @@ export const ANSWER_ENGINES = [
   "ChatGPT-User",
   "ClaudeBot",
   "Claude-User",
+  "anthropic-ai",
   "PerplexityBot",
   "Perplexity-User",
   "Google-Extended",
@@ -139,16 +148,33 @@ export function llmsTxt() {
     "",
     `> ${SITE_DESCRIPTION}`,
     "",
-    "Path of Exile 1. Prices come from the poe.ninja economy API and the",
-    "official trade site, and are at most 15 minutes old.",
+    `${SITE_NAME} (${SITE_URL}) is a free directory of Path of Exile tools: the trade site, loot filters, build planners, price checkers, regex generators and the guides the community relies on, each with a sentence on what it is for. It also hosts tools of its own, built by ${AUTHOR.name} (${AUTHOR.url}).`,
     "",
-    "## Tools built here",
+    "Everything here is for Path of Exile 1. Prices come from the poe.ninja economy API and the official trade site, and are at most 15 minutes old. No account, no ads, nothing stored about the visitor.",
     "",
   ];
 
+  // One section per tool built here, in prose, because that is what an agent
+  // quotes when somebody asks which tool does what.
   for (const tool of SITE_TOOLS) {
+    const guide = GUIDES.find((g) => g.slug === tool.slug);
     // A real URL rather than a placeholder: an angle bracket in a link is not
     // a link any more, and the note at the bottom says the segment varies.
+    const path = tool.league ? `/${tool.slug}/standard` : `/${tool.slug}`;
+    lines.push(`## ${tool.label}`, "");
+    lines.push(`URL: ${canonical(path)}`, "");
+    if (guide) {
+      for (const paragraph of guide.about) lines.push(paragraph, "");
+      lines.push("How to use it:", "");
+      guide.steps.forEach((step, i) => lines.push(`${i + 1}. ${step}`));
+      lines.push("");
+    } else {
+      lines.push(tool.about, "");
+    }
+  }
+
+  lines.push("## Tools built here", "");
+  for (const tool of SITE_TOOLS) {
     const path = tool.league ? `/${tool.slug}/standard` : `/${tool.slug}`;
     lines.push(`- [${tool.label}](${canonical(path)}): ${tool.about}`);
   }
@@ -166,8 +192,36 @@ export function llmsTxt() {
     "- The Bestiary search field runs a real regex per line and truncates past 249 characters.",
     "- The map stash search splits on whitespace, ANDs the terms, and negates one with `!`.",
     "",
+    "## Optional",
+    "",
+    `- [Full text](${canonical("/llms-full.txt")}): every question and answer from the tool pages, in one file.`,
+    `- [Author](${AUTHOR.url}): ${AUTHOR.name}, who builds and runs this site.`,
+    `- [Sitemap](${canonical("/sitemap.xml")}): every page worth crawling.`,
+    "",
   );
 
+  return lines.join("\n");
+}
+
+/**
+ * llms.txt plus every question the pages answer, for the agent that wants the
+ * whole site in one fetch. The answers are the ones printed on the pages and
+ * marked up as FAQPage there, word for word.
+ */
+export function llmsFullTxt() {
+  const sections: [string, string, readonly Faq[]][] = [
+    ["Path of Exile tools in general", "/", HOME_FAQ],
+    ["Beast Regex", "/beasts/standard", BEASTS_FAQ],
+    ["Scarab Nodes", "/scarabs/standard", SCARABS_FAQ],
+    ["Leveling Guide", "/leveling", LEVELING_FAQ],
+    ["Map Regex", "/maps/standard", MAPS_FAQ],
+  ];
+
+  const lines = [llmsTxt().trimEnd(), "", "# Questions and answers", ""];
+  for (const [title, path, faqs] of sections) {
+    lines.push(`## ${title}`, "", `Source: ${canonical(path)}`, "");
+    for (const faq of faqs) lines.push(`### ${faq.question}`, "", faq.answer, "");
+  }
   return lines.join("\n");
 }
 
@@ -194,6 +248,14 @@ export function websiteLd(): Ld {
         name: SITE_NAME,
         url: SITE_URL,
         logo: `${SITE_URL}/icon.svg`,
+        founder: { "@id": AUTHOR.id },
+      },
+      {
+        "@type": "Person",
+        "@id": AUTHOR.id,
+        name: AUTHOR.name,
+        url: AUTHOR.url,
+        sameAs: [...AUTHOR.sameAs],
       },
       {
         "@type": "WebSite",
@@ -221,11 +283,13 @@ export function webAppLd(app: {
     url: canonical(app.path),
     description: app.description,
     applicationCategory: "GameApplication",
-    operatingSystem: "Any",
+    operatingSystem: "Web",
     browserRequirements: "Requires JavaScript",
     isAccessibleForFree: true,
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     publisher: { "@id": PUBLISHER },
+    author: { "@id": AUTHOR.id },
+    creator: { "@id": AUTHOR.id },
     about: { "@type": "VideoGame", name: "Path of Exile" },
   };
 }
@@ -252,6 +316,9 @@ export function downloadLd(app: {
     license: "https://opensource.org/licenses/MIT",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     publisher: { "@id": PUBLISHER },
+    author: { "@id": AUTHOR.id },
+    creator: { "@id": AUTHOR.id },
+    about: { "@type": "VideoGame", name: "Path of Exile" },
   };
 }
 
