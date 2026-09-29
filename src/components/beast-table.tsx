@@ -359,7 +359,7 @@ function BestiaryRegex({
 
   const idle = threshold <= 0;
 
-  // Trashing throws beasts away, so it may never show an expensive one — and
+  // Trashing throws beasts away, so it may never show an expensive one, and
   // selling starts with exactly that pattern: clear the cheap ones out first
   // and the sell search then runs over a Bestiary that only holds keepers.
   const trashPlan = useBestiaryPattern(
@@ -379,7 +379,7 @@ function BestiaryRegex({
   );
 
   // Step one of a sell run is not "trash everything cheap", it is "trash the
-  // few cheap ones this search cannot avoid" — after them the sell search
+  // few cheap ones this search cannot avoid". After them the sell search
   // shows keepers and nothing else.
   const dragged = useMemo(() => {
     const names = new Set(sellPlan.falsePositives);
@@ -413,7 +413,7 @@ function BestiaryRegex({
   );
 
   // Step 3 sweeps the band up whole, so one of its beasts turning up in the
-  // step above is not an extra to warn about — and step 1 released the rest.
+  // step above is not an extra to warn about, and step 1 released the rest.
   const handled = useMemo(() => {
     if (!released || !banded) return released;
     return new Set([...released, ...band.map((b) => b.name)]);
@@ -597,7 +597,7 @@ export function BeastTable({
 
   // Anything that drops is being sold by someone. A beast the trade site
   // returns nothing for is not a cheap beast, it is one the game no longer
-  // hands out — so it stays out of the table and out of both patterns.
+  // hands out, so it stays out of the table and out of both patterns.
   // A beast nobody has ever listed cannot be priced, planned for, or sold, so
   // it never reaches the table at all.
   const found = useMemo(() => beasts.filter((b) => !isNotFound(b)), [beasts]);
@@ -681,7 +681,7 @@ export function BeastTable({
           </label>
 
           {/* The thresholds worth farming at, plus anything else, in one
-              control — the free field is the last segment of the same pill. */}
+              control: the free field is the last segment of the same pill. */}
           <div className="bg-secondary/60 flex items-center rounded-full p-1">
             {PRESETS.map((preset) => (
               <button
@@ -793,7 +793,7 @@ export function BeastTable({
                 <TableRow key={beast.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      {/* The minimap marker, not the item icon — every beast
+                      {/* The minimap marker, not the item icon: every beast
                           shares the same orb, but red versus yellow is the
                           thing worth seeing at a glance. */}
                       <Image

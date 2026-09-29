@@ -65,7 +65,7 @@ export const BESTIARY_MOD_TEXT: string[] = [
 ];
 
 /**
- * Just the names — what a captured beast's tooltip prints in red above the
+ * Just the names: what a captured beast's tooltip prints in red above the
  * ordinary monster modifiers. The simulation rolls from these.
  */
 export const BESTIARY_MOD_NAMES: string[] = [

@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 
 /**
- * The modifiers any rare monster — and so any captured beast — can roll, with
+ * The modifiers any rare monster (and so any captured beast) can roll, with
  * the text the Bestiary shows for them.
  *
  * The Bestiary-only mods (Farric Presence and friends) live in
@@ -26,7 +26,7 @@ const clean = (s) =>
     .trim();
 
 const text = new Set();
-/** Only what the Bestiary prints on a beast — the display names. */
+/** Only what the Bestiary prints on a beast: the display names. */
 const names = new Set();
 
 for (const page of PAGES) {

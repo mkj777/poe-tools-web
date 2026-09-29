@@ -8,7 +8,7 @@ const ORBS = {
 
 export type CurrencyKind = keyof typeof ORBS;
 
-/** The orb, the way a price is written in game — no "c", no "chaos". */
+/** The orb, the way a price is written in game: no "c", no "chaos". */
 export function CurrencyIcon({
   currency = "chaos",
   size = 18,

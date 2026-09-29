@@ -3,7 +3,7 @@
  *
  * Set cover over hundreds of beasts, each fragment checked against the modifier
  * text and 35,237 possible generated names, takes over a second. Run inline it
- * froze the page on every keystroke in the threshold field — and no amount of
+ * froze the page on every keystroke in the threshold field, and no amount of
  * `useDeferredValue` helps, since React cannot interrupt one long synchronous
  * `useMemo`. Here it just occupies a worker while the page stays live.
  */

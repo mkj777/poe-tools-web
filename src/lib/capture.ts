@@ -12,7 +12,7 @@ import type { Beast } from "./ninja.ts";
  * One captured beast, the way the Bestiary shows it.
  *
  * From the in-game tooltips: the header is the name the game spelled for that
- * capture — "Greyscreech", "Copperfrenzy", "Acridtalon the Drooling" — and the
+ * capture ("Greyscreech", "Copperfrenzy", "Acridtalon the Drooling") and the
  * type is only underneath it, in dashes. Then the level, then the Bestiary
  * modifiers in red, then the ordinary monster modifiers in white, by name and
  * nothing else.

@@ -2,7 +2,7 @@
  * Plans Bestiary searches that select exactly the beasts asked for.
  *
  * Precision comes first. One search cannot always be both exact and short
- * enough, so this returns as many as it takes — every one of them matching
+ * enough, so this returns as many as it takes, every one of them matching
  * nothing it should not.
  *
  * What the search actually does, established by in-game probing and written up
@@ -15,7 +15,7 @@
  *   characters: `|`, `.`, `^`, `$`, groups, `[^x]` and `(?!…)` all work. `!`
  *   and `"quotes"` do not, and `.` does not cross a line break.
  * - `^` and `$` both bind per line, so `^goatman$` selects "Goatman" without
- *   "Goatman Fire-raiser" — the one form nothing else can match by accident.
+ *   "Goatman Fire-raiser": the one form nothing else can match by accident.
  * - A literal space is not a plain character, so word breaks travel as `.`.
  *
  * Only the subset that earns its keep is used. Negation cannot help here: a row
@@ -44,8 +44,8 @@ export { MAX_PATTERN_LENGTH };
 /**
  * An anchored fragment only has to clear the handful of strings a line can
  * begin with. A free one can land anywhere in a modifier description, and no
- * list of those is ever complete — "Wild Hellion Alpha" came back for a
- * pattern none of its known text matches — so free fragments have to be long
+ * list of those is ever complete ("Wild Hellion Alpha" came back for a
+ * pattern none of its known text matches), so free fragments have to be long
  * enough that stumbling into English prose is unlikely.
  */
 const MIN_ANCHORED_FRAGMENT = 3;
@@ -70,7 +70,7 @@ const normalize = normalizeBestiaryLine;
 export type BeastEntry = {
   name: string;
   /**
-   * The separate lines the Bestiary row shows — genus, family, habitat. `^`
+   * The separate lines the Bestiary row shows: genus, family, habitat. `^`
    * binds to the start of any one of them, so they cannot be concatenated.
    * Defaults to just the name.
    */
@@ -82,8 +82,8 @@ const linesOf = (entry: BeastEntry) =>
 
 /**
  * Text every beast can carry regardless of type. A fragment found in here
- * matches beasts at random — `far` catches everything holding "Farric
- * Presence" — so it is never usable.
+ * matches beasts at random (`far` catches everything holding "Farric
+ * Presence"), so it is never usable.
  */
 const MOD_LINES = [
   ...BESTIARY_MOD_TEXT,
@@ -106,7 +106,7 @@ const NAME_TITLES = MONSTER_NAME_TITLES.map((t) => normalize(` ${t}`));
 /**
  * Asking "could this fragment sit inside any of the 35,237 names?" by walking
  * the three word lists costs about 0.6ms, and the solver asks it nine thousand
- * times — which was 96% of the time a plan took. Every question it needs is a
+ * times, which was 96% of the time a plan took. Every question it needs is a
  * membership test, so the answers are precomputed once instead.
  */
 function setOf(words: string[], take: (w: string) => string[]) {
@@ -142,7 +142,7 @@ const SUB_S = setOf(NAME_SUFFIXES, substringsOf);
 const PRE_T = setOf(NAME_TITLES, prefixesOf);
 const SUB_T = setOf(NAME_TITLES, substringsOf);
 
-/** All 35,237 base names, built on first use — only full-line fragments ask. */
+/** All 35,237 base names, built on first use (only full-line fragments ask). */
 let fullNames: Set<string> | null = null;
 function baseNames() {
   if (!fullNames) {
@@ -233,7 +233,7 @@ const emit = (f: Fragment) =>
 /**
  * The lines of one row, joined for matching. `.` never matches a newline and
  * `^`/`$` bind per line under `m`, so a blob behaves exactly like the lines it
- * was built from — and hands the work to the regex engine instead of to a
+ * was built from, and hands the work to the regex engine instead of to a
  * character loop, which is the difference between the solver taking seconds and
  * taking milliseconds.
  */
@@ -254,7 +254,7 @@ const fragmentRegExp = ({ body, anchored, terminated }: Fragment) =>
  * The game's engine, as far as it has been probed: one regex, tried against
  * each line on its own. Going through `RegExp` rather than the solver's own
  * fragment forms is what lets the simulator answer for a hand-typed `[^x]` or
- * `(?!…)` — the solver never emits those, but a player may well try them.
+ * `(?!…)`: the solver never emits those, but a player may well try them.
  *
  * A space is not a plain character in the field, so it travels as a wildcard.
  * An unfinished pattern (`^craicic(`) simply matches nothing.
@@ -345,7 +345,7 @@ function candidatesFor(targets: string[][], avoid: string[][]) {
     const name = lines[0];
 
     // The full name with both anchors. Costs every character of the name plus
-    // two, and in exchange nothing but an identical line can match it — which
+    // two, and in exchange nothing but an identical line can match it, which
     // is the only way to single out a name that another beast's name contains
     // ("Goatman" inside "Goatman Fire-raiser"). The solver reaches for it last,
     // since any shorter fragment covering the same beast scores better.
@@ -375,7 +375,7 @@ export type BestiaryStep = {
   pattern: string;
   /** The wanted beasts this step brings up. */
   covers: string[];
-  /** Unwanted beasts it brings up too — always empty when exact. */
+  /** Unwanted beasts it brings up too. Always empty when exact. */
   extras: string[];
 };
 
@@ -403,7 +403,7 @@ export type PlanOptions = {
    *
    * Selling is not: the point is to have every valuable beast in front of you,
    * and a cheap one riding along costs nothing. There precision gives way to
-   * coverage — every wanted beast is selected, and the extras are named.
+   * coverage: every wanted beast is selected, and the extras are named.
    */
   exact?: boolean;
 };

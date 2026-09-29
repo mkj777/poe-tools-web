@@ -9,7 +9,7 @@ This is a **different engine** from the Bestiary search. Do not carry
 conclusions across. `docs/bestiary-search.md` is the log for that one, and the
 two disagree on nearly every point that matters.
 
-Status legend: ✅ confirmed · ❓ open · ❌ ruled out
+Status legend: ✅ confirmed, ❓ open, ❌ ruled out
 
 ---
 

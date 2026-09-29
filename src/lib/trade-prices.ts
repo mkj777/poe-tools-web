@@ -83,7 +83,7 @@ async function chaosRates(league: string): Promise<Record<string, number>> {
  * The search body, shaped like the one Awakened PoE Trade sends.
  *
  * `status` matters: an earlier version used `"online"`, which came back with
- * zero results for every beast — including ones that certainly sell. APT uses
+ * zero results for every beast, including ones that certainly sell. APT uses
  * `available` / `securable` / `any`, never `online`. `any` is the widest net,
  * which is what pricing an obscure beast calls for: an offline listing is still
  * evidence that one exists, and 0 then really means nobody has ever listed it.
@@ -100,7 +100,7 @@ export function tradeQuery(name: string) {
   };
 }
 
-/** Set only inside the cron route — a page render must never call the trade API. */
+/** Set only inside the cron route: a page render must never call the trade API. */
 let liveLookupsAllowed = false;
 
 export function allowLiveLookups() {

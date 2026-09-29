@@ -3,7 +3,7 @@
  * scrapes. Hand-maintained on purpose: `pnpm mods:update` and `pnpm
  * mods:monsters` overwrite their own files, and these would not survive there.
  *
- * No list of modifier text is ever complete — that gap is what showed a 50c
+ * No list of modifier text is ever complete. That gap is what showed a 50c
  * Wild Hellion Alpha in a 2c trash pattern (docs/bestiary-search.md, Test 14).
  * Every line here is one a screenshot actually caught, and every one of them is
  * a fragment collision waiting to happen, so they join the ban list.
@@ -11,7 +11,7 @@
 
 /**
  * A beast lucky enough to survive the altar keeps this, so it rides along on
- * any beast regardless of type — which makes it the worst of the lot to leave
+ * any beast regardless of type, which makes it the worst of the lot to leave
  * out. Seen on most of the captures in Test 16.
  */
 export const BLOOD_ALTAR =

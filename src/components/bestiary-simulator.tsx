@@ -85,8 +85,8 @@ function Tile({ row, danger }: { row: Row; danger: boolean }) {
 /**
  * The Bestiary window, near enough to test a pattern against.
  *
- * Every beast with a listing is rolled into a capture — generated name, type,
- * Bestiary modifiers, monster modifiers — and the pattern runs over all of it,
+ * Every beast with a listing is rolled into a capture (generated name, type,
+ * Bestiary modifiers, monster modifiers) and the pattern runs over all of it,
  * the way the game does. Reroll to see other names and other modifiers; the
  * risk panel answers the same question without rolling, by asking whether a
  * fragment could ever land in a generated name or a modifier at all.

@@ -9,7 +9,7 @@
  *
  * It is slow on purpose. The trade API allows 5 requests per 10s, 15 per 60s,
  * 30 per 300s and 600 per 6h, and exceeding the 300s bucket locks the whole IP
- * out for half an hour — including the game client and anything else running.
+ * out for half an hour, including the game client and anything else running.
  * So this takes only a minority share of each bucket, obeys the rate-limit
  * headers, and resumes where it left off. Expect roughly an hour, and run it
  * when you are not playing.
@@ -24,7 +24,7 @@ const NINJA = "https://poe.ninja/poe1/api/economy";
  * Base spacing, deliberately far below what the limits allow.
  *
  * The binding rule is 30 requests per 300s, and breaking it costs a 30 minute
- * lockout for the whole IP — which is shared with the game client and anything
+ * lockout for the whole IP, which is shared with the game client and anything
  * else on the machine. 11s spacing sits at 27/300 and tripped it. 25s sits at
  * 12/300, leaving well over half the budget for everything else.
  */
@@ -54,7 +54,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Shaped like the body Awakened PoE Trade sends. `status: "any"` is load
- * bearing — an earlier version used "online" and every single beast came back
+ * bearing: an earlier version used "online" and every single beast came back
  * with zero listings, which is what the control check below now catches.
  */
 const tradeQuery = (name) => ({
@@ -91,7 +91,7 @@ function pauseFor(headers, remaining) {
 
     // A bucket the rest of this run cannot exhaust imposes nothing. Otherwise
     // spread what is left of our share across the window, and if it is already
-    // gone — someone else on this IP is using it — sit out the whole window.
+    // gone (someone else on this IP is using it), sit out the whole window.
     if (left >= remaining) continue;
     wait = Math.max(wait, left <= 0 ? period * 1000 : (period / share) * 1000);
   }
@@ -160,11 +160,11 @@ const out = { ...existing, [league]: { ...(existing[league] ?? {}) } };
 const force = process.argv.includes("--force");
 const todo = force ? missing : missing.filter((name) => !out[league][name]);
 if (todo.length !== missing.length) {
-  console.log(`resuming — ${missing.length - todo.length} already known\n`);
+  console.log(`resuming: ${missing.length - todo.length} already known\n`);
 }
 
 /**
- * Before trusting a single result, ask about a beast that certainly sells —
+ * Before trusting a single result, ask about a beast that certainly sells:
  * the one poe.ninja sees the most listings for. If even that comes back empty
  * the query is wrong, and writing 142 zeroes would bury the bug in data.
  */
@@ -178,7 +178,7 @@ if (control) {
     body: JSON.stringify(tradeQuery(control.name)),
   });
   console.log(
-    `control: ${control.name} — ${check.total} trade listings ` +
+    `control: ${control.name}: ${check.total} trade listings ` +
       `(poe.ninja sees ${control.listingCount})`,
   );
   if (!check.total) {

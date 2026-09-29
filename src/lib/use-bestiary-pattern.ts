@@ -32,13 +32,13 @@ const remembered = new Map<string, BestiaryPlan>();
 
 /**
  * Plans the searches in a worker, keeping the threshold field responsive. Only
- * the newest request counts — earlier answers are dropped, so holding a key
+ * the newest request counts: earlier answers are dropped, so holding a key
  * down does not paint stale patterns on the way through.
  *
  * Two things keep it off the worker where possible. `ready` carries the plans
  * the server precomputed for the preset thresholds, which are the ones most
  * people ever use, and everything the worker does answer is remembered for the
- * rest of the session — so going back to a threshold is instant even when it
+ * rest of the session, so going back to a threshold is instant even when it
  * was not a preset. Both are read while rendering rather than from an effect,
  * so a plan already in hand paints in the same frame as the click.
  */

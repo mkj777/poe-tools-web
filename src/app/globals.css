@@ -99,7 +99,7 @@
  * and the accent is the lightest of them rather than a colour: a page about a
  * game whose own art is loud has no business competing with it.
  *
- * The site renders dark only — `html` carries `dark` in the layout — so this
+ * The site renders dark only (`html` carries `dark` in the layout), so this
  * block is the theme, and the `:root` above it is the shadcn default nobody
  * sees. The hex each token came from is beside it.
  */
@@ -153,7 +153,7 @@
   }
   html {
     @apply font-sans;
-    /* Nudged up from 16px — this is a dense price table read at a glance. */
+    /* Nudged up from 16px: this is a dense price table read at a glance. */
     font-size: 17px;
   }
 }

@@ -7,7 +7,7 @@
  * Per the PoE Wiki's Beast article: yellow beasts are any normally spawnable
  * monster of the Beast category and carry one Bestiary mod; red beasts cannot
  * be encountered normally, carry two mods, and have far more life. So red is
- * the closed list — everything else is yellow by definition.
+ * the closed list: everything else is yellow by definition.
  *
  * Two sources, because neither is complete on its own: each beast's own wiki
  * page usually says "capturable red beast" outright, and the families that

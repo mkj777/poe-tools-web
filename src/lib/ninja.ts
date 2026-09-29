@@ -14,7 +14,7 @@ export type Beast = {
   id: number;
   name: string;
   icon?: string;
-  /** "Goliaths|Unnaturals|The Wilds" — genus|family|habitat. Missing on some lines. */
+  /** "Goliaths|Unnaturals|The Wilds": genus|family|habitat. Missing on some lines. */
   baseType?: string;
   /** Undefined only when neither poe.ninja nor the trade site could price it. */
   chaosValue?: number;
@@ -90,7 +90,7 @@ export async function pricesFetchedAt(league: string) {
 
 export type Scarab = {
   id: string;
-  /** What the card shows — the icon carries the rest. */
+  /** What the card shows. The icon carries the rest. */
   name: string;
   /** The full name, for the hover title. */
   fullName: string;
@@ -99,7 +99,7 @@ export type Scarab = {
   chaosValue: number;
   /** Stack sizes the card prints. 1 is the unit price. */
   show: number[];
-  /** How many of it a full setup uses — what the total is built from. */
+  /** How many of it a full setup uses: what the total is built from. */
   run: number;
 };
 
@@ -246,7 +246,7 @@ type TradeItemData = {
 
 /**
  * Every beast the trade site knows, priced or not. poe.ninja only lists beasts
- * with current listings (218 of them), while GGG's own item data has 361 — and
+ * with current listings (218 of them), while GGG's own item data has 361, and
  * a search pattern has to account for the ones nobody is selling too, or it
  * matches them by accident.
  *

@@ -20,7 +20,7 @@ import {
 
 type Fixture = { name: string; chaosValue: number; baseType?: string };
 
-/** A real Allflame beast overview from poe.ninja — 218 lines. */
+/** A real Allflame beast overview from poe.ninja (218 lines). */
 const BEASTS: Fixture[] = JSON.parse(
   readFileSync(new URL("./beasts.fixture.json", import.meta.url), "utf8"),
 );
@@ -109,7 +109,7 @@ test("anchoring isolates a name that ends other names", () => {
 });
 
 test("both anchors isolate a name that begins another name", () => {
-  // A leading `^` is not enough here — "Craicic Maw" begins "Craicic
+  // A leading `^` is not enough here: "Craicic Maw" begins "Craicic
   // Mawbeast". `$` binds per line too (in game: `goatman$` returns both
   // goatmen, `alph$` returns nothing), so the full line can be pinned.
   const { steps, unreachable } = planBestiaryPatterns(
@@ -194,7 +194,7 @@ test("never builds on text a modifier also carries", () => {
 
 test("never builds on a modifier line only a screenshot has caught", () => {
   // Neither wiki scrape knows "Stonemaul", "Spikes on Death" or the line a
-  // beast keeps for surviving the altar — that last one rides along on any
+  // beast keeps for surviving the altar. That last one rides along on any
   // beast at all, so a fragment inside it would be the worst kind of leak.
   for (const threshold of [2, 4, 20, 150]) {
     const { wanted, unwanted } = split(threshold);
@@ -215,7 +215,7 @@ test("never builds on a modifier line only a screenshot has caught", () => {
 test("never builds on text a generic monster modifier carries", () => {
   // Not just the Bestiary modifiers: a captured beast rolls ordinary rare
   // monster mods too, and the Bestiary prints those as well. "Wild Hellion
-  // Alpha" — 50c — came back for a trash pattern built at 2c, and its row
+  // Alpha" (50c) came back for a trash pattern built at 2c, and its row
   // showed Stonemaul, Soul Eater and Life Cannot Be Leeched.
   for (const threshold of [2, 4, 20, 150]) {
     const { wanted, unwanted } = split(threshold);
@@ -253,7 +253,7 @@ test("keeps unanchored fragments long enough to miss prose", () => {
 
 test("never builds on text a generated name could contain", () => {
   // Every captured beast shows a name the game spells out of a prefix word and
-  // a suffix word — Dark + mauler. The search reads it, so a fragment that can
+  // a suffix word: Dark + mauler. The search reads it, so a fragment that can
   // land inside one would match beasts at random.
   const names: string[] = [];
   for (const prefix of MONSTER_NAME_PREFIXES) {
@@ -343,7 +343,7 @@ test("rolls a capture the way the Bestiary shows one", () => {
   assert.notEqual(red.name, red.type);
   assert.ok(red.lines.includes(red.name) && red.lines.includes(red.type));
 
-  // Same seed, same roll — a shared link shows what the sender saw.
+  // Same seed, same roll: a shared link shows what the sender saw.
   assert.deepEqual(
     rollCapture({ id: 1, name: "Farric Flame Hellion Alpha", rarity: "red" }, 0),
     red,

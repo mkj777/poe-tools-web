@@ -16,7 +16,7 @@ export const maxDuration = 60;
 
 /**
  * Names per run. The cron is daily, because that is all a Hobby plan allows,
- * and a run has to finish inside maxDuration — ten lookups 5s apart is 45s of
+ * and a run has to finish inside maxDuration: ten lookups 5s apart is 45s of
  * a 60s budget. Which walks the 143 unpriced beasts in a fortnight; the
  * committed snapshot is what carries the rest, this only tops it up. On a plan
  * with more frequent crons, raise the schedule rather than the slice.
@@ -25,7 +25,7 @@ const SLICE = Number(process.env.PRICE_REFRESH_SLICE ?? 10);
 
 /**
  * Spacing between lookups. The tightest rules are 5 requests per 10s and 30
- * per 300s, and breaking the latter locks the IP out for half an hour — the
+ * per 300s, and breaking the latter locks the IP out for half an hour, the
  * game client with it. Ten requests over 45s stays a third of the way inside
  * both and leaves the rest of the budget to the player.
  */
@@ -74,7 +74,7 @@ export async function GET(request: Request) {
     if (i > 0) await sleep(SPACING_MS);
     const price = await getTradePrice(league, name);
     results[name] = price?.chaosValue ?? null;
-    // A null means the lookup failed — most likely rate limiting. Stop rather
+    // A null means the lookup failed, most likely rate limiting. Stop rather
     // than spend the rest of the slice making it worse.
     if (price === null) break;
   }

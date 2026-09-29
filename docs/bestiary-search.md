@@ -2,10 +2,10 @@
 
 A running log of every in-game test and what it rules in or out. The generator
 in `src/lib/bestiary-regex.ts` is built against the model at the bottom, so this
-file is the reason the code looks the way it does. **Append, never rewrite** —
+file is the reason the code looks the way it does. **Append, never rewrite**:
 a result that later turns out misleading is still evidence.
 
-Status legend: ✅ confirmed · ❓ open · ❌ ruled out
+Status legend: ✅ confirmed, ❓ open, ❌ ruled out
 
 ---
 
@@ -28,8 +28,8 @@ own and the row is shown if any single line matches.
 | `$` anchors, per line | ✅ | Test 16 C2, H1 |
 | Full-line `^name$` | ✅ | Test 16 H2 |
 | Negative lookahead `(?!…)` | ✅ parsed **and** applied | Test 16 F1, F2 |
-| Row-level negation | ❌ impossible | Test 16 — per-line OR defeats any lookahead |
-| `!` negation | ❌ | Test 4 — and `!` is not regex syntax at all |
+| Row-level negation | ❌ impossible | Test 16: per-line OR defeats any lookahead |
+| `!` negation | ❌ | Test 4 (and `!` is not regex syntax at all) |
 | `"quotes"` as exact match | ❌ | Test 16 G |
 | Field limit is 249 characters | ✅ | In-game testing; 250 truncates |
 | **Searched:** beast type name | ✅ | Every working pattern |
@@ -38,7 +38,7 @@ own and the row is shown if any single line matches.
 | **Searched:** the generated per-capture name | ✅ | Test 10 |
 | **Searched:** modifier descriptions, not just their names | ✅ | Test 13 |
 | **Searched:** generic rare monster mods, not only Bestiary ones | ✅ | Test 14 |
-| **Searched:** text we still cannot enumerate | ⚠️ | Test 14 — a pattern matched a row none of its known strings explain |
+| **Searched:** text we still cannot enumerate | ⚠️ | Test 14: a pattern matched a row none of its known strings explain |
 | `^` anchors, per line | ✅ | Test 12 |
 
 ### Precision is the goal, not brevity
@@ -56,13 +56,13 @@ another. Whatever no fragment can reach is named rather than swept in.
    every mid-word collision, so it usually wins.
 3. A fragment is rejected if it appears in **any** modifier name or description
    (`src/lib/bestiary-mods.ts`, 28 entries). Those ride along on any beast, so
-   such a fragment matches at random — `far` catches every beast holding
+   such a fragment matches at random: `far` catches every beast holding
    "Farric Presence".
 4. A fragment is rejected if it could occur inside a **generated name**
-   (`src/lib/monster-words.ts`) — inside a prefix word, a suffix word, a title,
+   (`src/lib/monster-words.ts`): inside a prefix word, a suffix word, a title,
    or across the seam where they are glued together.
-5. A fragment is rejected if it hits any line of an unwanted beast — name,
-   genus, family, habitat — as a substring, or as a line prefix when anchored.
+5. A fragment is rejected if it hits any line of an unwanted beast (name,
+   genus, family, habitat) as a substring, or as a line prefix when anchored.
 6. Word breaks are emitted as `.`, never as a literal space.
 7. If nothing fits 249 characters, the pattern is refused rather than truncated.
 
@@ -77,7 +77,7 @@ refused; now all of them build, and they survive the name-pool ban too:
 | 150c | 25 chars, 4 | 74 chars, 5 |
 
 Banning the name pool costs roughly 20 characters and pushes the solver towards
-fragments that span a word break — `cic.c`, `mal.pl`, `ild.h`. That is exactly
+fragments that span a word break: `cic.c`, `mal.pl`, `ild.h`. That is exactly
 right: prefix and suffix words are single words, so nothing spanning a space can
 ever sit inside a generated name.
 
@@ -86,14 +86,14 @@ line reads "Parasites"**, so `^parasite` matches it. No pattern can separate a
 beast from a genus that starts with its name.
 
 **Closed:** the generated names are checked too. See the `Words.dat` section
-below — the pool turned out to be 167 prefixes and 211 suffixes, so all 35,237
+below: the pool turned out to be 167 prefixes and 211 suffixes, so all 35,237
 possible names are known and a fragment that could land inside one is refused.
 
 ---
 
 ## Test log
 
-### Test 1 — literal spaces
+### Test 1: literal spaces
 **Pattern:** `k m|l p|parasite` (150c threshold, old generator)
 **Expected under substring-on-name:** Black Mórrigan, Fenumal Plagued Arachnid, Parasite + 4 Parasite variants
 **Observed:** also **Sulphuric Scorpion** and **Scum Crawler**
@@ -103,7 +103,7 @@ only if the space is dropped or treated as a separator.
 
 → Space is not a literal character. Word breaks are emitted as `.` from here on.
 
-### Test 2 — first counter-example to substring matching
+### Test 2: first counter-example to substring matching
 **Pattern:** `fir|rav|bac|d.vu|mal.c|k.m|l.p|ris|cry|tig|rot|sto|ld.h|d.sc|us.h|cic.c|nd.sk|red.c|parasite` (4c)
 **Observed extras:** **Farric Ursa**, **Farric Lynx Alpha**
 
@@ -117,7 +117,7 @@ the name alone:
 → First evidence for subsequence matching. The model at this point was
 "subsequence over the name"; Test 5 widened it to the whole row.
 
-### Test 3 — beasts the pattern never shows
+### Test 3: beasts the pattern never shows
 **Reported missing:** Grimsucker, Sharptooth, Grayshriek, Deathclaw the Mad,
 Darkslice, Gloomfang
 
@@ -137,14 +137,14 @@ procedurally generated rare monster names, which the game composes per capture.
 → No catalogue can contain them. Not a generator bug. (Gloomfang is also the
 name of a unique amulet, unrelated.)
 
-### Test 4 — negation
+### Test 4: negation
 **Search:** `!parasite`
 **Observed:** does not work.
 
 → The trash pattern cannot be expressed as "everything except the keep pattern".
 It has to be enumerated.
 
-### Test 5 — `ris` (the decisive one)
+### Test 5: `ris` (the decisive one)
 **Search:** `ris`
 **Observed:** Wild Bristle Matron, Farric Goliath, Craicic Savage Crab,
 Chrome-touched Croaker, Craicic Maw
@@ -167,7 +167,7 @@ family / habitat are searched alongside the name.
 Scale check: `ris` is a subsequence of the row text of **188 of 218** priced
 beasts. Seeing only 5 is consistent with a partly filled Bestiary.
 
-### Test 6 — `km` (unexplained)
+### Test 6: `km` (unexplained)
 **Search:** `km`
 **Observed:** Farric Gargantuan
 
@@ -191,30 +191,30 @@ Gargantuan is not among them.
 modifiers, the Beastcrafting recipes it is a component of, or an internal id.
 Also worth re-checking that the field was empty before typing.
 
-### Test 7 — `far` and `^far`
+### Test 7: `far` and `^far`
 **Observed:** both appear to return the same set, and it includes beasts whose
-type name has nothing to do with "far" — they carry the modifier
+type name has nothing to do with "far": they carry the modifier
 **Farric Presence**.
 
 → Modifier names are searched. `^` is untestable this way: the modifier line
 itself starts with "Far", so an anchored search would match it too.
 
-### Test 8 — `wldbrstl` (subsequence ruled out)
+### Test 8: `wldbrstl` (subsequence ruled out)
 **Observed:** nothing. Not even Wild Bristle Matron.
 
 → The search does not skip characters. **Subsequence matching is dead**, and
 with it the conclusions drawn in Tests 2, 5 and 6. Those hits came from
 substrings of text the row shows besides the type name.
 
-### Test 9 — `ursae`
+### Test 9: `ursae`
 **Observed:** every beast of the Ursae family, none of which has "ursae" in its
 name.
 
 → Family is searched directly. Confirms the row-text part of Test 5 by a much
 cleaner route.
 
-### Test 10 — `km` explained
-**Observed:** two beasts, both **Darkmauler** — an Ursae, type Farric
+### Test 10: `km` explained
+**Observed:** two beasts, both **Darkmauler**, an Ursae, type Farric
 Gargantuan, each carrying Farric Presence, Fertile Presence and Satyr Storm.
 
 Dar**km**auler. A plain substring of the generated name.
@@ -222,22 +222,22 @@ Dar**km**auler. A plain substring of the generated name.
 → Test 6's anomaly is closed. The generated per-capture name is searched, and
 nothing exotic is going on.
 
-### Test 11 — what a Bestiary row actually contains
+### Test 11: what a Bestiary row actually contains
 From inspecting captured beasts:
 
 | Generated name | Type | Modifiers | Description text |
 | --- | --- | --- | --- |
-| Darkmauler | Farric Gargantuan (Ursae) | Farric Presence, Fertile Presence, Satyr Storm | — |
+| Darkmauler | Farric Gargantuan (Ursae) | Farric Presence, Fertile Presence, Satyr Storm | – |
 | Stonegrowl | Farric Lynx Alpha | Fertile Presence, Aspect of the Hellion, Spectral Swipe | extra chaos damage, energy shield aura, lightning mirage when hit, 10% chance not to be consumed at the Blood Altar |
 | Whiteback | Farric Frost Hellion Alpha | Spectral Swipe, Farric Presence, Satyr Storm | periodically enrages, exploding crystals when hit, leeches life |
 
 So one row carries: generated name, type name, genus, family, up to three
 modifier names, and their descriptions. Free-text search reads all of it.
 
-Note that modifier names are not tied to a type — Farric Presence appears on a
+Note that modifier names are not tied to a type: Farric Presence appears on a
 Gargantuan and on a Frost Hellion Alpha alike.
 
-### Test 12 — `^` anchors work
+### Test 12: `^` anchors work
 **Searches:** `resence` → the Presence modifiers. `^resence` → **nothing**.
 
 → `^` is a real anchor, and Test 7 showed it binds per line rather than to the
@@ -247,14 +247,14 @@ because a later line ("Farric Presence", or the type name) starts with "Far".
 This is the single most valuable thing learned. Every fragment now gets offered
 in an anchored form for one extra character.
 
-### Test 13 — modifier descriptions are searched
+### Test 13: modifier descriptions are searched
 **Search:** `chaos damage`
 **Observed:** Stonegrowl and every other beast with chaos damage.
 
-→ Not just modifier names — their descriptions too. The ban list already
+→ Not just modifier names, their descriptions too. The ban list already
 carries both.
 
-### Test 14 — a false positive the model did not predict
+### Test 14: a false positive the model did not predict
 
 **Search** (trash, threshold 2c, step 1 of 1):
 
@@ -262,23 +262,23 @@ carries both.
 cic.s|ric.g|wine.r|ric.f|umal.s|wine.c|rar|c.va|c.wo|c.ly|e.vu|ex.m|ne.b|mal.h|mal.d|cic.m|c.pit|ic.ap|c.mag|cic.w|mal.q|c.tau|mal.w|c.chi|rric.u
 ```
 
-**Observed:** Wild Hellion Alpha — worth 50c, so squarely in the keep set —
+**Observed:** Wild Hellion Alpha (worth 50c, so squarely in the keep set)
 came back. Its row showed Stonemaul, Aspect of the Hellion, Satyr Storm,
 Spectral Swipe, Soul Eater, Life cannot be leeched.
 
-Checked every fragment against every string of that row — name, genus, family,
+Checked every fragment against every string of that row: name, genus, family,
 habitat, all six modifier names, and the descriptions we hold for the three
 Bestiary ones. **None of them matches**, under substring, under subsequence,
 under a `.`-as-glob reading, and against the row concatenated into one string.
 So the matching text is something the row carries that is not written down
-here — almost certainly the description of one of the modifiers we have no
+here, almost certainly the description of one of the modifiers we have no
 text for.
 
 Two of those, Soul Eater and Life cannot be leeched, are not Bestiary
 modifiers at all: they are ordinary rare monster mods. That was the gap. The
 ban list held 28 Bestiary modifiers and nothing else, while a captured beast
 also rolls from the generic monster pool, which the wiki lists as 224 mods with
-their effect text — `rar` alone sits inside "Rare pack minions are replaced
+their effect text: `rar` alone sits inside "Rare pack minions are replaced
 with Saplings" and "Rare Minions create Frost Beacons on Death".
 
 **Changed as a result:**
@@ -287,12 +287,12 @@ with Saplings" and "Rare Minions create Frost Beacons on Death".
   list, so no fragment may appear in generic monster modifier text either.
 - Unanchored fragments must now be at least **6 characters**. No list of
   modifier text can ever be complete, and a three-character fragment like `rar`
-  is a coin flip against English prose. Anchored fragments may stay short —
+  is a coin flip against English prose. Anchored fragments may stay short:
   they only ever meet the start of a line.
 - Cost, measured on the 218-beast fixture: trash at 4c goes from 3 searches to
   4. Nothing else moves.
 
-### Test 15 — the tooltip, and what actually leaked
+### Test 15: the tooltip, and what actually leaked
 
 Four in-game screenshots of captured beasts settled the shape of a row:
 
@@ -310,7 +310,7 @@ Extra Fire Damage and Exposure
 Three things follow.
 
 **Modifier names, not descriptions.** The tooltip prints one short line per
-modifier — "Extra Fire Damage and Exposure", "Periodically Enrages", "Shocked
+modifier: "Extra Fire Damage and Exposure", "Periodically Enrages", "Shocked
 Ground on Death". That revises Test 13: `chaos damage` did not match a
 description, it matched the modifier *named* "Extra Chaos Damage". Which means
 the searchable text is enumerable after all, and small: 24 Bestiary modifier
@@ -318,7 +318,7 @@ names and 111 monster ones.
 
 **And that is the leak.** `rar` is inside **Tempo*rar*ily Revives**, an
 ordinary rare monster modifier. Any beast can roll it, so `rar` could show any
-beast in the league — which is exactly what Wild Hellion Alpha was doing in a
+beast in the league, which is exactly what Wild Hellion Alpha was doing in a
 2c trash pattern. The user's list of that row's modifiers did not include it,
 but the row had more lines than were quoted.
 
@@ -332,13 +332,13 @@ answers the question without rolling: can this fragment land in *any* generated
 name or *any* modifier name? A test asserts the planner never emits one that
 can, at every threshold and in both modes.
 
-### Test 16 — it is a real regex engine
+### Test 16: it is a real regex engine
 
 Test 4 had `!parasite` doing nothing, and that was read as "no negation". Wrong
 read: `!` is item-filter syntax, not regex, so its failure said nothing about
 the dialect. Meanwhile `.`, `|` and a per-line `^` are exactly a regex engine in
 multiline mode. So the whole dialect was probed properly, each probe paired with
-a control that had to match — an unsupported metacharacter is most likely
+a control that had to match. An unsupported metacharacter is most likely
 treated as a literal, so "nothing came back" alone proves nothing.
 
 | Probe | Control | Result | Conclusion |
@@ -347,8 +347,8 @@ treated as a literal, so "nothing came back" alone proves nothing.
 | `f[^x]rric` | `f[^a]rric` | farric / empty | negated classes work |
 | `wild.*hellion` | `wild.hellion` | both | quantifiers work |
 | `alph$` | `alpha` | empty / matches | `$` is a real anchor |
-| `goatman$` | — | both goatmen | `$` binds **per line** |
-| `^farric.goatman$` | — | Farric Goatman only | full-line matching works |
+| `goatman$` | – | both goatmen | `$` binds **per line** |
+| `^farric.goatman$` | – | Farric Goatman only | full-line matching works |
 | `^elder(?!.*zzzz)` | `^elder` | identical, all three | `(?!…)` is parsed, not literal |
 | `^elder(?!.*goatman)` | `^elder` | Goatman **gone** | `(?!…)` is applied |
 | `ragetusk.*spectral` | `ragetusk`, `spectral` | empty / both match | `.` does not cross a line break |
@@ -372,24 +372,24 @@ fixture, it emptied the unreachable list entirely:
 | 20c | 4 → **0** | 4 | 2 → **0** (`^goatman$ ^devourer$`) |
 
 Search counts did not move. The extras at 4c and 20c dropping to zero was not
-expected — a collision-proof fragment helps the coverage mode too.
+expected: a collision-proof fragment helps the coverage mode too.
 
-#### Test 16, spaces — and Test 1 finally closed
+#### Test 16, spaces, and Test 1 finally closed
 
 Test 1 read `l p` matching Sulphuric Scorpion as "the space is dropped", since
-`l.p` cannot match "su**lp**huric" — there is no character between the l and the
+`l.p` cannot match "su**lp**huric": there is no character between the l and the
 p. Two probes killed that reading:
 
 - `farric goatman` returns Farric Goatman. Under dropping, "farricgoatman"
   appears nowhere and it would return nothing. **A space is a `.` wildcard.**
 - `k m|l p` was run again and twelve of its hits screenshotted. Every single one
   is explained by a space-as-wildcard match inside a **modifier name** or a type
-  name — not one needed the "dropped" reading:
+  name. Not one needed the "dropped" reading:
 
 | Matched text | Beasts |
 | --- | --- |
 | "Tempora**l P**roximity Shield" | Agonyguardian, Bluescreech, Wrathback, Shaggysucker, Crimsonraker, Ebonrumble, Ichorband, Shadowshiver |
-| "Fenuma**l P**resence" | Crimsongnaw, Cavetusks, **Slenderripper — a Sulphuric Scorpion** |
+| "Fenuma**l P**resence" | Crimsongnaw, Cavetusks, **Slenderripper (a Sulphuric Scorpion)** |
 | "Blac**k M**órrigan" | Shaggyscar |
 
 So Test 1's extras were never a hole in the model: they were modifier hits, the
@@ -399,20 +399,20 @@ match on its own name at all.
 **Two corpus gaps found in those screenshots.** Checking all 39 modifier lines
 they show against both scrapes, 37 were already banned. The misses:
 
-- **"Spikes on Death"** — in neither scrape.
-- **the Blood Altar survival line** — it existed in `capture.ts` for the
+- **"Spikes on Death"**: in neither scrape.
+- **the Blood Altar survival line**: it existed in `capture.ts` for the
   simulator to roll, but was never in the ban list. It rides along on any beast
   regardless of type, so a fragment inside it would have been the worst leak
   available.
 
-Both, plus "Stonemaul" from Test 14, now live in `src/lib/observed-mods.ts` —
+Both, plus "Stonemaul" from Test 14, now live in `src/lib/observed-mods.ts`,
 hand-maintained, because `pnpm mods:update` overwrites the scraped files. A test
 asserts no emitted fragment touches them, at four thresholds in both modes.
 Plans did not change size, so the ban cost nothing.
 
 **What it did not give.** Negation, despite `(?!…)` working. A row is shown when
 *any* line matches, and on a beast whose type line contains the term, the
-modifier lines do not — so they satisfy the lookahead and bring the row back.
+modifier lines do not, so they satisfy the lookahead and bring the row back.
 Row-level exclusion cannot be expressed by a per-line pattern at all, however
 good the dialect. `^(?!.*goatman)` returns everything, and that is not a bug in
 the engine, it is the line-oriented model. Enumeration stays the only option for
@@ -425,7 +425,7 @@ the trash side.
 the Bestiary Sim holds every beast with a listing, with the lines this model says
 the search reads, and applies a pasted pattern the way `matchesBestiaryPattern`
 does. Each tile shows the price and the fragment that matched, so a probe can
-be checked against the model before it is checked against the game — and, more
+be checked against the model before it is checked against the game and, more
 useful, the two can be compared. Where the simulation shows a beast the game
 does not, or the game shows one the simulation does not, the model is wrong and
 the difference says where.
@@ -435,12 +435,12 @@ Both lines that vary per capture are now rolled: the generated name, from the
 again; the risk panel skips the dice and asks whether a fragment could land in
 any generated name or any modifier name at all.
 
-What would make it exact rather than close — exports from
+What would make it exact rather than close: exports from
 [poe-dat-viewer](https://snosme.github.io/poe-dat-viewer/):
 
 | File | What it settles |
 | --- | --- |
-| `Mods.dat64` (Name, Domain, GenerationType) | every modifier name a beast can roll. The wiki lists 111 and misses some — "Stonemaul" is on a captured beast and on no wiki page |
+| `Mods.dat64` (Name, Domain, GenerationType) | every modifier name a beast can roll. The wiki lists 111 and misses some: "Stonemaul" is on a captured beast and on no wiki page |
 | `MonsterVarieties.dat64` (Id, Name) | which beast each `BestiaryCapturableMonsters` row is, so the dead ones can be dropped by their own flag instead of by "no listings" |
 | `BestiaryGenus.dat64`, `BestiaryFamilies.dat64` | whether genus and family really are searched, and under which spelling |
 | `Words.dat64` | already imported, would only be refreshed |
@@ -462,7 +462,7 @@ Anchors are the prize. `^` would let a fragment bind to the start of the type
 name, which would rule out most collisions with generated names and modifier
 text in one stroke.
 
-### The generated names — found: `Words.dat`
+### The generated names (found: `Words.dat`)
 
 Grimtooth, Darkmauler, Stonegrowl, Whiteback, Marrowthirst, Razordroll the
 Relentless. Not random: PoE composes rare monster names from a fixed word pool
@@ -487,7 +487,7 @@ enum Wordlists {
 
 Source: [poe-tool-dev/dat-schema](https://github.com/poe-tool-dev/dat-schema),
 `dat-schema/_Core.gql`. `Dark`+`mauler`, `Stone`+`growl`, `Grim`+`tooth`,
-`Razor`+`droll` + `the Relentless` — prefix, suffix and title, exactly.
+`Razor`+`droll` + `the Relentless`: prefix, suffix and title, exactly.
 
 **Extracted, and now in use.** Export `Data/Words.dat64` from
 [poe-dat-viewer](https://snosme.github.io/poe-dat-viewer/) as JSON and run
@@ -520,13 +520,13 @@ Awakened PoE Trade's bundled data, the PoE Wiki cargo tables, and poedb
 | --- | --- | --- |
 | `poe.ninja/poe1/api/economy/stash/current/item/overview?type=Beast` | 218 beasts **with prices** | Only beasts with live listings |
 | `pathofexile.com/api/trade/data/items` → Itemised Monsters | 361 beast **names** | No prices |
-| `pathofexile.com/api/trade/search/{league}` | Live listings per beast — this is how the 143 unpriced ones get a value, 0c when nobody sells them | 5 req/10 s, 30 req/300 s. A cron refreshes a slice at a time; `src/lib/trade-prices.fallback.json` covers a cold cache |
+| `pathofexile.com/api/trade/search/{league}` | Live listings per beast. This is how the 143 unpriced ones get a value, 0c when nobody sells them | 5 req/10 s, 30 req/300 s. A cron refreshes a slice at a time; `src/lib/trade-prices.fallback.json` covers a cold cache |
 | Awakened PoE Trade `renderer/public/data/en/items.ndjson` | 220 `CAPTURED_BEAST` names + icons | Subset of GGG's list, no prices, no genus |
 | PoE Wiki `List_of_bestiary_modifiers` + `mods` cargo table | 28 modifier names and descriptions | Committed as `src/lib/bestiary-mods.ts`; refresh with `pnpm mods:update` |
 
 The app uses GGG's 361 as the universe and poe.ninja for prices where it has
 them. The other 143 were each searched on the trade site with offline listings
-included; **exactly one came back with anything** — Tunnelfiend, 4c, one
+included; **exactly one came back with anything**: Tunnelfiend, 4c, one
 listing. Since everything the game drops is being sold by someone, the remaining
 142 read as content that no longer drops, which matches the other two signals:
 127 of them are absent from Awakened PoE Trade's current-patch data, and

@@ -54,8 +54,8 @@ function Card({
 /**
  * The rates at the top of the economy, then what a beast run costs to set up.
  * Scarabs are bought by the stack, so the bulk figures matter more than the
- * unit price, and they share one card because the total under them — 20
- * Duplicating, 40 of the Herd, 40 Kalguuran, one map's worth — is the number
+ * unit price, and they share one card because the total under them (20
+ * Duplicating, 40 of the Herd, 40 Kalguuran, one map's worth) is the number
  * the three of them add up to.
  */
 export function ScarabPrices({

@@ -44,14 +44,14 @@ const asArray = (name, words) =>
     .join("\n")}\n];\n`;
 
 const file = `/**
- * The word pool the game builds rare monster names from — every captured beast
+ * The word pool the game builds rare monster names from. Every captured beast
  * shows one, and the Bestiary search reads it. "Darkmauler" is MONSTER_PREFIX
  * "Dark" plus MONSTER_SUFFIX "mauler"; a title like "the Relentless" may follow.
  *
  * A search fragment that can occur inside any of these names would match beasts
  * at random, so the generator refuses it.
  *
- * Extracted from Words.dat via poe-dat-viewer — see
+ * Extracted from Words.dat via poe-dat-viewer, see
  * scripts/update-monster-words.mjs. ${pools.prefixes.length} prefixes,
  * ${pools.suffixes.length} suffixes, ${pools.titles.length} titles, which
  * together spell ${(pools.prefixes.length * pools.suffixes.length).toLocaleString("en-US")} possible names.
