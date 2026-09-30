@@ -1,9 +1,9 @@
 /**
  * What each tool of this site does and how it is used, said in plain prose.
  *
- * Rendered on the tool's own page above its questions, and repeated in
- * /llms.txt and /llms-full.txt, so the page and the files an agent reads say
- * the same thing. Every sentence here describes what the code does today:
+ * Rendered on /about, the one page with prose on it, each above the questions
+ * about its tool, and repeated in /llms.txt and /llms-full.txt, so the page
+ * and the files an agent reads say the same thing. Every sentence here describes what the code does today:
  * a feature is named only once it ships.
  */
 export type ToolGuide = {

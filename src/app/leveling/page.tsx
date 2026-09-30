@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { FaqSection } from "@/components/faq-section";
-import { ToolGuide } from "@/components/tool-guide";
 import { JsonLd } from "@/components/json-ld";
 import { PageFrame } from "@/components/page-frame";
 import { Reveal } from "@/components/reveal";
-import { LEVELING_FAQ } from "@/lib/faq";
 import { LEVELING_APP, LEVELING_SETUP } from "@/lib/leveling-app";
 import { LevelingHeader } from "./header";
 import { breadcrumbLd, downloadLd } from "@/lib/seo";
@@ -83,17 +80,6 @@ export default function Page() {
             </Reveal>
           ))}
         </ol>
-
-        <ToolGuide
-          slug="leveling"
-          steps={false}
-          className="border-border/60 mt-12 border-t pt-8"
-        />
-
-        <FaqSection
-          faqs={LEVELING_FAQ}
-          className="mt-10"
-        />
 
         <p className="text-muted-foreground border-border/60 mt-10 border-t pt-6 text-sm">
           MIT, built on{" "}

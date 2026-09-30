@@ -1,19 +1,20 @@
 import type { Faq } from "./seo.ts";
 
 /**
- * The questions a page is actually asked, answered on the page itself.
+ * The questions the site gets, answered on /about and nowhere else.
  *
- * Two readers want this. A person who arrived from a search wants the answer
- * without going back, and a search engine that writes the answer itself wants a
- * short block it can lift whole. Both are served by the same thing: the
- * question as somebody would type it, and forty to sixty words under it that
- * settle it without a preamble.
+ * The owner wants the tool pages to be the tools and nothing more, so every
+ * question lives on the one about page, grouped by the tool it is about. The
+ * palette indexes them there, and /llms-full.txt repeats them word for word.
+ *
+ * Each answer is the question as somebody would type it and forty to sixty
+ * words that settle it without a preamble: short enough for an answer engine
+ * to lift whole.
  *
  * Nothing here is guessed. What the two search fields do comes from the in game
  * testing logged in `docs/bestiary-search.md` and `docs/stash-search.md`, which
  * is the one thing this site knows that no other page about it does.
  */
-
 export const HOME_FAQ: readonly Faq[] = [
   {
     question: "What tools do you need for Path of Exile?",
@@ -163,3 +164,25 @@ export const LEVELING_FAQ: readonly Faq[] = [
       "Ctrl, Shift and Alt with the right arrow go to the next step, and with the left arrow back one. Ctrl, Shift, Alt and O switch moving the overlay on and off, and Ctrl, Alt and 0 close it and return to the main window. Position, size and opacity are set in the app's settings.",
   },
 ];
+
+/**
+ * The groups on /about, in the order they are shown. `id` is the section's
+ * anchor there and the prefix of every question's anchor; a tool's group
+ * shares the tool's slug, so its guide in guides.ts sits in the same section.
+ */
+export const FAQ_GROUPS: readonly {
+  id: string;
+  title: string;
+  faqs: readonly Faq[];
+}[] = [
+  { id: "general", title: "General", faqs: HOME_FAQ },
+  { id: "beasts", title: "Beast Regex", faqs: BEASTS_FAQ },
+  { id: "scarabs", title: "Scarab Nodes", faqs: SCARABS_FAQ },
+  { id: "maps", title: "Map Regex", faqs: MAPS_FAQ },
+  { id: "leveling", title: "Leveling Guide", faqs: LEVELING_FAQ },
+];
+
+/** The id a question wears on /about: zero based in, one based out. */
+export function faqAnchor(group: string, index: number) {
+  return `faq-${group}-${index + 1}`;
+}

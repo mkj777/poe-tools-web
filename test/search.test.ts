@@ -33,11 +33,12 @@ test("the index holds every tool, question and passive, once", () => {
   assert.equal(SEARCH_INDEX.byId.size, ids.length);
 });
 
-test("every question knows the page it is answered on", () => {
+test("every question knows the group of /about it is answered in", () => {
   for (const entry of SEARCH_INDEX.entries) {
     if (entry.target.kind !== "faq") continue;
-    const page = entry.target.page;
-    assert.ok(page === "home" || toolBySlug(page), entry.id);
+    const group = entry.target.group;
+    assert.ok(group === "general" || toolBySlug(group), entry.id);
+    assert.match(entryHref(entry, at).href, /^\/about#faq-[a-z]+-\d+$/);
   }
 });
 
@@ -238,12 +239,12 @@ test("a hit goes where the league says", () => {
       external: true,
     },
   );
-  assert.deepEqual(entryHref(entry("faq:home:0"), at), {
-    href: "/#faq-1",
+  assert.deepEqual(entryHref(entry("faq:general:0"), at), {
+    href: "/about#faq-general-1",
     external: false,
   });
   assert.deepEqual(entryHref(entry("faq:scarabs:4"), at), {
-    href: "/scarabs/allflame#faq-5",
+    href: "/about#faq-scarabs-5",
     external: false,
   });
   assert.deepEqual(entryHref(entry("node:loved-by-the-sun"), at), {

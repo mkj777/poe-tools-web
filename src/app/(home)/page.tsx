@@ -2,12 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { BuiltHere } from "@/components/built-here";
-import { FaqSection } from "@/components/faq-section";
 import { JsonLd } from "@/components/json-ld";
 import { PageFrame } from "@/components/page-frame";
 import { Reveal } from "@/components/reveal";
 import { ToolIcon } from "@/components/tool-icon";
-import { HOME_FAQ } from "@/lib/faq";
 import { SIDEBAR, toolHref, type SidebarEntry } from "@/lib/nav";
 import { getLeagues, leagueSlug } from "@/lib/ninja";
 import { toolListLd } from "@/lib/seo";
@@ -140,9 +138,9 @@ function Section({
  * link to it points at and left nothing at all to be found by anybody typing
  * "path of exile tools" into a search box. So the sidebar is now also a page:
  * the same groups in the same order, every tool with a sentence saying what it
- * is for, and the questions that bring people here answered underneath. It
- * opens on the tools themselves; the heading is there for a screen reader and
- * a crawler, and for nobody else.
+ * is for. It opens on the tools themselves; the heading is there for a screen
+ * reader and a crawler, and for nobody else. What the tools of this site do,
+ * and the questions about them, are on /about and nowhere else.
  */
 export default async function Page() {
   // The links out that take a league want it spelled the way the game does,
@@ -156,14 +154,6 @@ export default async function Page() {
     <PageFrame>
       <JsonLd data={toolListLd()} />
       <h1 className="sr-only">Path of Exile tools</h1>
-      <p className="text-muted-foreground max-w-2xl text-sm text-pretty">
-        Path of Tools is a free directory of the Path of Exile tools worth
-        having: the trade site, loot filters, build planners, price checkers,
-        regex generators and guides, each with a sentence on what it is for.
-        Three are built here: Beast Regex for selling Bestiary captures, Scarab
-        Nodes for pricing the scarab passives of the Atlas tree, and the PoE
-        Leveling Guide, a campaign overlay for Windows.
-      </p>
 
       {SIDEBAR.map((group, i) => (
         <Section
@@ -176,14 +166,6 @@ export default async function Page() {
           delay={i * 0.05}
         />
       ))}
-
-      <Reveal delay={SIDEBAR.length * 0.05}>
-        <FaqSection
-          faqs={HOME_FAQ}
-          heading="Common questions"
-          className="border-border/60 mt-12 border-t pt-8"
-        />
-      </Reveal>
     </PageFrame>
   );
 }

@@ -5,7 +5,7 @@ import {
   SITE_URL,
   canonical,
 } from "./site.ts";
-import { BEASTS_FAQ, HOME_FAQ, LEVELING_FAQ, MAPS_FAQ, SCARABS_FAQ } from "./faq.ts";
+import { FAQ_GROUPS } from "./faq.ts";
 import { GUIDES } from "./guides.ts";
 import { SIDEBAR_ENTRIES, SITE_TOOLS } from "./nav.ts";
 import { EXTERNAL_TOOLS } from "./tools.ts";
@@ -53,6 +53,13 @@ export function sitemapEntries(
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1,
+    },
+    // The one page of prose: what each tool does and the questions about it.
+    {
+      url: canonical("/about"),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
     },
   ];
 
@@ -167,7 +174,11 @@ export function llmsTxt() {
       for (const paragraph of guide.about) lines.push(paragraph, "");
       lines.push("How to use it:", "");
       guide.steps.forEach((step, i) => lines.push(`${i + 1}. ${step}`));
-      lines.push("");
+      lines.push(
+        "",
+        `More, with questions and answers: ${canonical(`/about#${tool.slug}`)}`,
+        "",
+      );
     } else {
       lines.push(tool.about, "");
     }
@@ -194,7 +205,8 @@ export function llmsTxt() {
     "",
     "## Optional",
     "",
-    `- [Full text](${canonical("/llms-full.txt")}): every question and answer from the tool pages, in one file.`,
+    `- [About](${canonical("/about")}): what each tool does, how to use it, and the questions about it.`,
+    `- [Full text](${canonical("/llms-full.txt")}): every question and answer from the about page, in one file.`,
     `- [Author](${AUTHOR.url}): ${AUTHOR.name}, who builds and runs this site.`,
     `- [Sitemap](${canonical("/sitemap.xml")}): every page worth crawling.`,
     "",
@@ -204,22 +216,14 @@ export function llmsTxt() {
 }
 
 /**
- * llms.txt plus every question the pages answer, for the agent that wants the
- * whole site in one fetch. The answers are the ones printed on the pages and
+ * llms.txt plus every question the site answers, for the agent that wants the
+ * whole site in one fetch. The answers are the ones printed on /about and
  * marked up as FAQPage there, word for word.
  */
 export function llmsFullTxt() {
-  const sections: [string, string, readonly Faq[]][] = [
-    ["Path of Exile tools in general", "/", HOME_FAQ],
-    ["Beast Regex", "/beasts/standard", BEASTS_FAQ],
-    ["Scarab Nodes", "/scarabs/standard", SCARABS_FAQ],
-    ["Leveling Guide", "/leveling", LEVELING_FAQ],
-    ["Map Regex", "/maps/standard", MAPS_FAQ],
-  ];
-
   const lines = [llmsTxt().trimEnd(), "", "# Questions and answers", ""];
-  for (const [title, path, faqs] of sections) {
-    lines.push(`## ${title}`, "", `Source: ${canonical(path)}`, "");
+  for (const { id, title, faqs } of FAQ_GROUPS) {
+    lines.push(`## ${title}`, "", `Source: ${canonical(`/about#${id}`)}`, "");
     for (const faq of faqs) lines.push(`### ${faq.question}`, "", faq.answer, "");
   }
   return lines.join("\n");
