@@ -154,6 +154,7 @@ test("the sidebar opens on what a session is spent in", () => {
       "Awakened PoE Trade",
       "Path of Building",
       "PoE Regex",
+      "Craft of Exile",
     ],
   );
 });
@@ -236,7 +237,6 @@ test("specific is one tool per mechanic, sorted by subject", () => {
     "Disenchanting",
     "Timeless Jewels",
     "Cluster Jewels",
-    "Craft of Exile",
     "PoELab",
   ]);
 });
