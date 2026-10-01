@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { SITE_NAME } from "@/lib/site";
 import { EXTERNAL_TOOLS } from "@/lib/tools";
 
-export const alt = `${SITE_NAME}: every Path of Exile tool in one place`;
+export const alt = `${SITE_NAME}: a list of Path of Exile tools`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

@@ -24,7 +24,7 @@ export const HOME_FAQ: readonly Faq[] = [
   {
     question: "Are these Path of Exile tools free?",
     answer:
-      "Yes. Every tool listed here is free and community made, and most are open source. This site asks for no account, runs no ads and stores nothing about you. It is a directory with three tools of its own, not a service.",
+      "Yes. Every tool listed here is free and made by the community, and most are open source. This site needs no account, shows no ads and stores nothing about you. It is a list of Path of Exile tools. Three of them were built here: Beast Regex, Scarab Nodes and the Leveling Guide.",
   },
   {
     question: "Where do the prices on this site come from?",
@@ -166,7 +166,9 @@ export const LEVELING_FAQ: readonly Faq[] = [
 ];
 
 /**
- * The groups on /about, in the order they are shown. `id` is the section's
+ * The groups on /about, in the order they are shown. Map Regex is unlisted, so
+ * MAPS_FAQ is kept but not shown, and the palette does not offer it either.
+ * `id` is the section's
  * anchor there and the prefix of every question's anchor; a tool's group
  * shares the tool's slug, so its guide in guides.ts sits in the same section.
  */
@@ -178,7 +180,6 @@ export const FAQ_GROUPS: readonly {
   { id: "general", title: "General", faqs: HOME_FAQ },
   { id: "beasts", title: "Beast Regex", faqs: BEASTS_FAQ },
   { id: "scarabs", title: "Scarab Nodes", faqs: SCARABS_FAQ },
-  { id: "maps", title: "Map Regex", faqs: MAPS_FAQ },
   { id: "leveling", title: "Leveling Guide", faqs: LEVELING_FAQ },
 ];
 

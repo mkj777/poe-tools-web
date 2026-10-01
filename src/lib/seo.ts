@@ -155,7 +155,7 @@ export function llmsTxt() {
     "",
     `> ${SITE_DESCRIPTION}`,
     "",
-    `${SITE_NAME} (${SITE_URL}) is a free directory of Path of Exile tools: the trade site, loot filters, build planners, price checkers, regex generators and the guides the community relies on, each with a sentence on what it is for. It also hosts tools of its own, built by ${AUTHOR.name} (${AUTHOR.url}).`,
+    `${SITE_NAME} (${SITE_URL}) is a list of Path of Exile tools: the trade site, loot filters, build planners, price checkers, regex generators and guides, each with a line on what it does. Three of them were built here by ${AUTHOR.name} (${AUTHOR.url}): Beast Regex, Scarab Nodes and the Leveling Guide.`,
     "",
     "Everything here is for Path of Exile 1. Prices come from the poe.ninja economy API and the official trade site, and are at most 15 minutes old. No account, no ads, nothing stored about the visitor.",
     "",
@@ -174,11 +174,14 @@ export function llmsTxt() {
       for (const paragraph of guide.about) lines.push(paragraph, "");
       lines.push("How to use it:", "");
       guide.steps.forEach((step, i) => lines.push(`${i + 1}. ${step}`));
-      lines.push(
-        "",
-        `More, with questions and answers: ${canonical(`/about#${tool.slug}`)}`,
-        "",
-      );
+      lines.push("");
+      // An unlisted tool has no section on /about to point at.
+      if (!tool.unlisted) {
+        lines.push(
+          `More, with questions and answers: ${canonical(`/about#${tool.slug}`)}`,
+          "",
+        );
+      }
     } else {
       lines.push(tool.about, "");
     }
@@ -385,7 +388,7 @@ export function toolListLd(): Ld {
     "@type": "ItemList",
     name: "Path of Exile tools",
     description:
-      "The Path of Exile tools worth having, from build planning and loot filters to prices, regex and the labyrinth.",
+      "A list of Path of Exile tools, from build planning and loot filters to prices, regex and the labyrinth.",
     numberOfItems: listed.length,
     itemListElement: listed.map((tool, i) => ({
       "@type": "ListItem",

@@ -256,16 +256,16 @@ test("a breadcrumb counts from one and points at absolute pages", () => {
   assert.equal(trail[1].item, canonical("/beasts/allflame"));
 });
 
-test("every tool built here has a group of questions on /about, and every group a place", () => {
+test("every tool the site offers has a group of questions on /about, and no other", () => {
   const ids = FAQ_GROUPS.map((g) => g.id);
   assert.equal(new Set(ids).size, ids.length);
   assert.deepEqual(
     ids.filter((id) => id !== "general").sort(),
-    SITE_TOOLS.map((t) => t.slug).sort(),
+    SITE_TOOLS.filter((t) => !t.unlisted).map((t) => t.slug).sort(),
   );
   const grouped = FAQ_GROUPS.flatMap((g) => g.faqs);
-  const every = [HOME_FAQ, BEASTS_FAQ, MAPS_FAQ, SCARABS_FAQ, LEVELING_FAQ];
-  assert.equal(grouped.length, every.flat().length);
+  const shown = [HOME_FAQ, BEASTS_FAQ, SCARABS_FAQ, LEVELING_FAQ];
+  assert.equal(grouped.length, shown.flat().length);
 });
 
 test("a question in the markup is the same question as on the page", () => {
@@ -392,7 +392,13 @@ test("every tool built here has a guide, and every guide a tool", () => {
   for (const guide of GUIDES) {
     assert.ok(guide.about.length > 0 && guide.steps.length > 0, guide.slug);
     assert.ok(llmsTxt().includes(guide.about[0]), guide.slug);
-    assert.ok(llmsTxt().includes(canonical(`/about#${guide.slug}`)), guide.slug);
+    // An unlisted tool has no section on /about, so no link to one.
+    const offered = !SITE_TOOLS.find((t) => t.slug === guide.slug)!.unlisted;
+    assert.equal(
+      llmsTxt().includes(canonical(`/about#${guide.slug}`)),
+      offered,
+      guide.slug,
+    );
   }
 });
 
@@ -402,10 +408,12 @@ test("llms-full.txt carries every question the pages answer, word for word", () 
   for (const group of FAQ_GROUPS) {
     assert.ok(text.includes(`Source: ${canonical(`/about#${group.id}`)}`), group.id);
   }
-  for (const faq of ALL_FAQ) {
+  for (const faq of FAQ_GROUPS.flatMap((g) => g.faqs)) {
     assert.ok(text.includes(faq.question), faq.question);
     assert.ok(text.includes(faq.answer), faq.question);
   }
+  // Map Regex is unlisted, so its questions are not offered anywhere.
+  for (const faq of MAPS_FAQ) assert.ok(!text.includes(faq.question), faq.question);
 });
 
 test("the answer engines include every crawler the brief names", () => {

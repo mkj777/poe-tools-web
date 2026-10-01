@@ -13,7 +13,7 @@ import { AUTHOR, OG_IMAGE, SITE_NAME, canonical } from "@/lib/site";
 
 const TITLE = "About and FAQ";
 const DESCRIPTION =
-  "What Path of Tools is, how to use Beast Regex, Scarab Nodes, Map Regex and the PoE Leveling Guide, and the questions players ask about each.";
+  "What Path of Tools is, how to use Beast Regex, Scarab Nodes and the PoE Leveling Guide, and the questions asked about each.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -51,16 +51,15 @@ export default function Page() {
 
         <div className="text-muted-foreground space-y-3 text-sm text-pretty">
           <p>
-            {SITE_NAME} is a free directory of the Path of Exile tools worth
-            having: the trade site, loot filters, build planners, price
-            checkers, regex generators and guides, each with a sentence on what
-            it is for. A few are built here: Beast Regex for selling Bestiary
-            captures, Scarab Nodes for pricing the scarab passives of the Atlas
-            tree, Map Regex for filtering maps in the stash, and the PoE
-            Leveling Guide, a campaign overlay for Windows.
+            {SITE_NAME} is a list of Path of Exile tools: the trade site, loot
+            filters, build planners, price checkers, regex generators and
+            guides, each with a line on what it does. Three of them were built
+            here: Beast Regex sells Bestiary captures, Scarab Nodes prices the
+            scarab passives of the Atlas tree, and the Leveling Guide is a
+            campaign overlay for Windows.
           </p>
           <p>
-            No account, no ads, nothing stored about you. Built by{" "}
+            No account, no ads, and nothing about you is stored. Built by{" "}
             <a
               href={AUTHOR.url}
               rel="author"
