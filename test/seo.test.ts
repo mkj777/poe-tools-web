@@ -301,13 +301,13 @@ test("every question is a question, and no two are the same", () => {
   assert.equal(new Set(questions).size, questions.length);
 });
 
-test("every answer is the length an engine will quote whole", () => {
-  // Roughly forty to sixty words. Shorter says nothing, longer gets cut, and a
-  // cut answer is the version that ends up in somebody else's summary.
+test("every answer is one or two short sentences", () => {
+  // The owner's rule: facts only, no pitch. A long answer is the one that
+  // starts selling.
   for (const faq of ALL_FAQ) {
     const words = faq.answer.split(/\s+/).length;
-    assert.ok(words >= 30, `${faq.question}: ${words} words`);
-    assert.ok(words <= 70, `${faq.question}: ${words} words`);
+    assert.ok(words >= 5, `${faq.question}: ${words} words`);
+    assert.ok(words <= 30, `${faq.question}: ${words} words`);
     assert.ok(faq.answer.endsWith("."), faq.question);
   }
 });

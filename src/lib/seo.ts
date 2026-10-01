@@ -155,9 +155,9 @@ export function llmsTxt() {
     "",
     `> ${SITE_DESCRIPTION}`,
     "",
-    `${SITE_NAME} (${SITE_URL}) is a list of Path of Exile tools: the trade site, loot filters, build planners, price checkers, regex generators and guides, each with a line on what it does. Three of them were built here by ${AUTHOR.name} (${AUTHOR.url}): Beast Regex, Scarab Nodes and the Leveling Guide.`,
+    `${SITE_NAME} (${SITE_URL}) is a list of Path of Exile tools. Beast Regex, Scarab Nodes and the Leveling Guide were built here by ${AUTHOR.name} (${AUTHOR.url}).`,
     "",
-    "Everything here is for Path of Exile 1. Prices come from the poe.ninja economy API and the official trade site, and are at most 15 minutes old. No account, no ads, nothing stored about the visitor.",
+    "Path of Exile 1 only. Prices from poe.ninja, re-read every 15 minutes; beasts poe.ninja does not list are priced from a snapshot of the official trade site. No account, no ads.",
     "",
   ];
 
@@ -179,7 +179,7 @@ export function llmsTxt() {
       guide.steps.forEach((step, i) => lines.push(`${i + 1}. ${step}`));
       lines.push(
         "",
-        `More, with questions and answers: ${canonical(`/about#${tool.slug}`)}`,
+        `Questions: ${canonical(`/about#${tool.slug}`)}`,
         "",
       );
     } else {
@@ -208,10 +208,10 @@ export function llmsTxt() {
     "",
     "## Optional",
     "",
-    `- [About](${canonical("/about")}): what each tool does, how to use it, and the questions about it.`,
-    `- [Full text](${canonical("/llms-full.txt")}): every question and answer from the about page, in one file.`,
-    `- [Author](${AUTHOR.url}): ${AUTHOR.name}, who builds and runs this site.`,
-    `- [Sitemap](${canonical("/sitemap.xml")}): every page worth crawling.`,
+    `- [About](${canonical("/about")}): what each tool does, the steps, and the questions.`,
+    `- [Full text](${canonical("/llms-full.txt")}): every question and answer from the about page.`,
+    `- [Author](${AUTHOR.url}): ${AUTHOR.name}.`,
+    `- [Sitemap](${canonical("/sitemap.xml")}): every page.`,
     "",
   );
 

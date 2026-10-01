@@ -13,7 +13,7 @@ import { AUTHOR, OG_IMAGE, SITE_NAME, canonical } from "@/lib/site";
 
 const TITLE = "About and FAQ";
 const DESCRIPTION =
-  "What Path of Tools is, how to use Beast Regex, Scarab Nodes and the PoE Leveling Guide, and the questions asked about each.";
+  "How to use Beast Regex, Scarab Nodes and the PoE Leveling Guide, and where their data comes from.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
 /**
  * The one page of prose on the site.
  *
- * The tool pages are the tools and nothing else. Whatever explains them, what
- * each one does, how a session goes, and the questions people ask, is here,
+ * The tool pages are the tools and nothing else. What each one does, the
+ * steps to use it, and the questions it leaves open are here,
  * grouped by tool, with one FAQPage block for all of it. Built once: nothing
  * on it comes from the network.
  */
@@ -49,27 +49,18 @@ export default function Page() {
       <div className="mx-auto max-w-3xl">
         <PageHeader title={`About ${SITE_NAME}`} />
 
-        <div className="text-muted-foreground space-y-3 text-sm text-pretty">
-          <p>
-            {SITE_NAME} is a list of Path of Exile tools: the trade site, loot
-            filters, build planners, price checkers, regex generators and
-            guides, each with a line on what it does. Three of them were built
-            here: Beast Regex sells Bestiary captures, Scarab Nodes prices the
-            scarab passives of the Atlas tree, and the Leveling Guide is a
-            campaign overlay for Windows.
-          </p>
-          <p>
-            No account, no ads, and nothing about you is stored. Built by{" "}
-            <a
-              href={AUTHOR.url}
-              rel="author"
-              className="text-foreground underline underline-offset-4"
-            >
-              {AUTHOR.name}
-            </a>
-            .
-          </p>
-        </div>
+        <p className="text-muted-foreground text-sm text-pretty">
+          A list of Path of Exile tools. Beast Regex, Scarab Nodes and the
+          Leveling Guide were built here by{" "}
+          <a
+            href={AUTHOR.url}
+            rel="author"
+            className="text-foreground underline underline-offset-4"
+          >
+            {AUTHOR.name}
+          </a>
+          .
+        </p>
 
         <nav
           aria-label="On this page"
