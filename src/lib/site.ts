@@ -33,7 +33,7 @@ export const SITE_NAME = "Path of Tools";
  * in the voice the cards on the home page use.
  */
 export const SITE_DESCRIPTION =
-  "Every Path of Exile tool in one place, to search and learn from. Beast Regex, Scarab Nodes and the Leveling Guide are my own projects.";
+  "A list of Path of Exile tools, each with a line on what it does. Three of them were built here: Beast Regex, Scarab Nodes and the Leveling Guide.";
 
 /**
  * Who builds the tools of this site. One entity with one id, shared by every
@@ -86,5 +86,5 @@ export const OG_IMAGE = {
   url: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: `${SITE_NAME}: every Path of Exile tool in one place`,
+  alt: `${SITE_NAME}: a list of Path of Exile tools`,
 };

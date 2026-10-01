@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   BEASTS_FAQ,
+  FAQ_GROUPS,
   HOME_FAQ,
   LEVELING_FAQ,
   MAPS_FAQ,
@@ -61,6 +62,7 @@ test("the sitemap lists the home page and every page of every tool", () => {
   const without = SITE_TOOLS.filter((t) => !t.league);
 
   assert.ok(urls.includes(canonical("/")));
+  assert.ok(urls.includes(canonical("/about")));
   for (const tool of without) {
     assert.ok(urls.includes(canonical(`/${tool.slug}`)), tool.slug);
   }
@@ -71,7 +73,7 @@ test("the sitemap lists the home page and every page of every tool", () => {
   }
   assert.equal(
     urls.length,
-    1 + without.length + LEAGUES.length * withLeague.length,
+    2 + without.length + LEAGUES.length * withLeague.length,
   );
 });
 
@@ -116,7 +118,11 @@ test("prices change daily and the overlay does not, and the sitemap says so", ()
 
 test("a poe.ninja that is down costs the league pages, not the sitemap", () => {
   const urls = sitemapEntries([]).map((e) => e.url);
-  assert.deepEqual(urls, [canonical("/"), canonical("/leveling")]);
+  assert.deepEqual(urls, [
+    canonical("/"),
+    canonical("/about"),
+    canonical("/leveling"),
+  ]);
 });
 
 test("every entry is stamped with one moment, so the file is stable", () => {
@@ -165,10 +171,10 @@ test("llms.txt opens with the name of the site and one line saying what it is", 
   assert.ok(lines[2].startsWith("> "));
 });
 
-test("llms.txt lists every tool, wherever it lives", () => {
+test("llms.txt lists every tool the menus offer, and no hidden one", () => {
   const text = llmsTxt();
   for (const tool of SITE_TOOLS)
-    assert.ok(text.includes(tool.label), tool.slug);
+    assert.equal(text.includes(tool.label), !tool.unlisted, tool.slug);
   for (const tool of EXTERNAL_TOOLS)
     assert.ok(text.includes(tool.name), tool.name);
   for (const tool of EXTERNAL_TOOLS) {
@@ -250,6 +256,18 @@ test("a breadcrumb counts from one and points at absolute pages", () => {
   assert.equal(trail[1].item, canonical("/beasts/allflame"));
 });
 
+test("every tool the site offers has a group of questions on /about, and no other", () => {
+  const ids = FAQ_GROUPS.map((g) => g.id);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.deepEqual(
+    ids.filter((id) => id !== "general").sort(),
+    SITE_TOOLS.filter((t) => !t.unlisted).map((t) => t.slug).sort(),
+  );
+  const grouped = FAQ_GROUPS.flatMap((g) => g.faqs);
+  const shown = [HOME_FAQ, BEASTS_FAQ, SCARABS_FAQ, LEVELING_FAQ];
+  assert.equal(grouped.length, shown.flat().length);
+});
+
 test("a question in the markup is the same question as on the page", () => {
   const marked = ld(faqLd(BEASTS_FAQ)).mainEntity;
   assert.equal(marked.length, BEASTS_FAQ.length);
@@ -283,13 +301,13 @@ test("every question is a question, and no two are the same", () => {
   assert.equal(new Set(questions).size, questions.length);
 });
 
-test("every answer is the length an engine will quote whole", () => {
-  // Roughly forty to sixty words. Shorter says nothing, longer gets cut, and a
-  // cut answer is the version that ends up in somebody else's summary.
+test("every answer is one or two short sentences", () => {
+  // The owner's rule: facts only, no pitch. A long answer is the one that
+  // starts selling.
   for (const faq of ALL_FAQ) {
     const words = faq.answer.split(/\s+/).length;
-    assert.ok(words >= 30, `${faq.question}: ${words} words`);
-    assert.ok(words <= 70, `${faq.question}: ${words} words`);
+    assert.ok(words >= 5, `${faq.question}: ${words} words`);
+    assert.ok(words <= 30, `${faq.question}: ${words} words`);
     assert.ok(faq.answer.endsWith("."), faq.question);
   }
 });
@@ -319,8 +337,8 @@ test("no copy on this site carries an em dash or a middle dot", () => {
     "lib/scarab-nodes.ts",
     "app/layout.tsx",
     "app/(home)/page.tsx",
+    "app/about/page.tsx",
     "components/faq-section.tsx",
-    "components/tool-guide.tsx",
   ];
   // By code point, so this file does not carry the characters it bans.
   const EM_DASH = String.fromCharCode(0x2014);
@@ -373,17 +391,30 @@ test("every tool built here has a guide, and every guide a tool", () => {
   assert.deepEqual(GUIDES.map((g) => g.slug).sort(), slugs);
   for (const guide of GUIDES) {
     assert.ok(guide.about.length > 0 && guide.steps.length > 0, guide.slug);
-    assert.ok(llmsTxt().includes(guide.about[0]), guide.slug);
+    // An unlisted tool keeps its guide for the day it is listed again, and is
+    // left out of llms.txt and /about until then.
+    const offered = !SITE_TOOLS.find((t) => t.slug === guide.slug)!.unlisted;
+    assert.equal(llmsTxt().includes(guide.about[0]), offered, guide.slug);
+    assert.equal(
+      llmsTxt().includes(canonical(`/about#${guide.slug}`)),
+      offered,
+      guide.slug,
+    );
   }
 });
 
 test("llms-full.txt carries every question the pages answer, word for word", () => {
   const text = llmsFullTxt();
   assert.ok(text.startsWith("# Path of Tools"));
-  for (const faq of ALL_FAQ) {
+  for (const group of FAQ_GROUPS) {
+    assert.ok(text.includes(`Source: ${canonical(`/about#${group.id}`)}`), group.id);
+  }
+  for (const faq of FAQ_GROUPS.flatMap((g) => g.faqs)) {
     assert.ok(text.includes(faq.question), faq.question);
     assert.ok(text.includes(faq.answer), faq.question);
   }
+  // Map Regex is unlisted, so its questions are not offered anywhere.
+  for (const faq of MAPS_FAQ) assert.ok(!text.includes(faq.question), faq.question);
 });
 
 test("the answer engines include every crawler the brief names", () => {

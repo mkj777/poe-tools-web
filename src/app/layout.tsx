@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -101,16 +102,20 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <SidebarInset className="min-w-0">
               <MobileBar />
               {children}
-              <footer className="text-muted-foreground mx-auto mt-auto w-full max-w-[88rem] px-4 pt-4 pb-8 text-xs sm:px-6 lg:px-8">
-                Built by{" "}
+              <footer className="text-muted-foreground mx-auto mt-auto flex w-full max-w-[88rem] gap-4 px-4 pt-4 pb-8 text-xs sm:px-6 lg:px-8">
                 <a
                   href={AUTHOR.url}
                   rel="author"
-                  className="hover:text-foreground underline underline-offset-4 transition-colors"
+                  className="hover:text-foreground underline-offset-4 transition-colors hover:underline"
                 >
-                  {AUTHOR.name}
+                  Built by {AUTHOR.name}
                 </a>
-                . Not affiliated with Grinding Gear Games.
+                <Link
+                  href="/about"
+                  className="hover:text-foreground underline-offset-4 transition-colors hover:underline"
+                >
+                  About
+                </Link>
               </footer>
             </SidebarInset>
           </SidebarProvider>

@@ -2,12 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { leagueParams, resolveLeague } from "@/lib/league";
 import { getAllScarabs, leagueSlug } from "@/lib/ninja";
-import { SCARABS_FAQ } from "@/lib/faq";
 import { BOOSTS, EXCLUSIONS, priceNodes } from "@/lib/scarab-nodes";
 import { breadcrumbLd, webAppLd } from "@/lib/seo";
 import { OG_IMAGE, canonical } from "@/lib/site";
-import { FaqSection } from "@/components/faq-section";
-import { ToolGuide } from "@/components/tool-guide";
 import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
 import { PageFrame } from "@/components/page-frame";
@@ -83,16 +80,6 @@ export default async function Page({ params }: PageProps<"/scarabs/[league]">) {
       />
 
       <ScarabNodes exclusions={exclusions} boosts={boosts} />
-
-      <ToolGuide
-        slug="scarabs"
-        className="border-border/60 mt-12 border-t pt-8"
-      />
-
-      <FaqSection
-        faqs={SCARABS_FAQ}
-        className="mt-10"
-      />
     </PageFrame>
   );
 }

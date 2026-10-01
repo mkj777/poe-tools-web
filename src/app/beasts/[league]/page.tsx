@@ -10,12 +10,9 @@ import {
 } from "@/lib/ninja";
 import { loadBeasts } from "@/lib/beasts";
 import { resolveLeague } from "@/lib/league";
-import { BEASTS_FAQ } from "@/lib/faq";
 import { breadcrumbLd, webAppLd } from "@/lib/seo";
 import { OG_IMAGE, canonical } from "@/lib/site";
 import { BeastTable } from "@/components/beast-table";
-import { FaqSection } from "@/components/faq-section";
-import { ToolGuide } from "@/components/tool-guide";
 import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
 import { PageFrame } from "@/components/page-frame";
@@ -107,16 +104,6 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
       />
 
       <BeastTable beasts={beasts} league={league} fetchedAt={fetchedAt} />
-
-      <ToolGuide
-        slug="beasts"
-        className="border-border/60 mt-12 border-t pt-8"
-      />
-
-      <FaqSection
-        faqs={BEASTS_FAQ}
-        className="mt-10"
-      />
     </PageFrame>
   );
 }

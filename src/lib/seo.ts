@@ -5,7 +5,7 @@ import {
   SITE_URL,
   canonical,
 } from "./site.ts";
-import { BEASTS_FAQ, HOME_FAQ, LEVELING_FAQ, MAPS_FAQ, SCARABS_FAQ } from "./faq.ts";
+import { FAQ_GROUPS } from "./faq.ts";
 import { GUIDES } from "./guides.ts";
 import { SIDEBAR_ENTRIES, SITE_TOOLS } from "./nav.ts";
 import { EXTERNAL_TOOLS } from "./tools.ts";
@@ -53,6 +53,13 @@ export function sitemapEntries(
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1,
+    },
+    // The one page of prose: what each tool does and the questions about it.
+    {
+      url: canonical("/about"),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
     },
   ];
 
@@ -148,15 +155,18 @@ export function llmsTxt() {
     "",
     `> ${SITE_DESCRIPTION}`,
     "",
-    `${SITE_NAME} (${SITE_URL}) is a free directory of Path of Exile tools: the trade site, loot filters, build planners, price checkers, regex generators and the guides the community relies on, each with a sentence on what it is for. It also hosts tools of its own, built by ${AUTHOR.name} (${AUTHOR.url}).`,
+    `${SITE_NAME} (${SITE_URL}) is a list of Path of Exile tools. Beast Regex, Scarab Nodes and the Leveling Guide were built here by ${AUTHOR.name} (${AUTHOR.url}).`,
     "",
-    "Everything here is for Path of Exile 1. Prices come from the poe.ninja economy API and the official trade site, and are at most 15 minutes old. No account, no ads, nothing stored about the visitor.",
+    "Path of Exile 1 only. Prices from poe.ninja, re-read every 15 minutes; beasts poe.ninja does not list are priced from a snapshot of the official trade site. No account, no ads.",
     "",
   ];
 
   // One section per tool built here, in prose, because that is what an agent
   // quotes when somebody asks which tool does what.
-  for (const tool of SITE_TOOLS) {
+  // Only the tools the menus offer: an unlisted one is not one the site says
+  // it has, so it is left out of both lists below.
+  const offered = SITE_TOOLS.filter((t) => !t.unlisted);
+  for (const tool of offered) {
     const guide = GUIDES.find((g) => g.slug === tool.slug);
     // A real URL rather than a placeholder: an angle bracket in a link is not
     // a link any more, and the note at the bottom says the segment varies.
@@ -167,14 +177,18 @@ export function llmsTxt() {
       for (const paragraph of guide.about) lines.push(paragraph, "");
       lines.push("How to use it:", "");
       guide.steps.forEach((step, i) => lines.push(`${i + 1}. ${step}`));
-      lines.push("");
+      lines.push(
+        "",
+        `Questions: ${canonical(`/about#${tool.slug}`)}`,
+        "",
+      );
     } else {
       lines.push(tool.about, "");
     }
   }
 
   lines.push("## Tools built here", "");
-  for (const tool of SITE_TOOLS) {
+  for (const tool of offered) {
     const path = tool.league ? `/${tool.slug}/standard` : `/${tool.slug}`;
     lines.push(`- [${tool.label}](${canonical(path)}): ${tool.about}`);
   }
@@ -194,9 +208,10 @@ export function llmsTxt() {
     "",
     "## Optional",
     "",
-    `- [Full text](${canonical("/llms-full.txt")}): every question and answer from the tool pages, in one file.`,
-    `- [Author](${AUTHOR.url}): ${AUTHOR.name}, who builds and runs this site.`,
-    `- [Sitemap](${canonical("/sitemap.xml")}): every page worth crawling.`,
+    `- [About](${canonical("/about")}): what each tool does, the steps, and the questions.`,
+    `- [Full text](${canonical("/llms-full.txt")}): every question and answer from the about page.`,
+    `- [Author](${AUTHOR.url}): ${AUTHOR.name}.`,
+    `- [Sitemap](${canonical("/sitemap.xml")}): every page.`,
     "",
   );
 
@@ -204,22 +219,14 @@ export function llmsTxt() {
 }
 
 /**
- * llms.txt plus every question the pages answer, for the agent that wants the
- * whole site in one fetch. The answers are the ones printed on the pages and
+ * llms.txt plus every question the site answers, for the agent that wants the
+ * whole site in one fetch. The answers are the ones printed on /about and
  * marked up as FAQPage there, word for word.
  */
 export function llmsFullTxt() {
-  const sections: [string, string, readonly Faq[]][] = [
-    ["Path of Exile tools in general", "/", HOME_FAQ],
-    ["Beast Regex", "/beasts/standard", BEASTS_FAQ],
-    ["Scarab Nodes", "/scarabs/standard", SCARABS_FAQ],
-    ["Leveling Guide", "/leveling", LEVELING_FAQ],
-    ["Map Regex", "/maps/standard", MAPS_FAQ],
-  ];
-
   const lines = [llmsTxt().trimEnd(), "", "# Questions and answers", ""];
-  for (const [title, path, faqs] of sections) {
-    lines.push(`## ${title}`, "", `Source: ${canonical(path)}`, "");
+  for (const { id, title, faqs } of FAQ_GROUPS) {
+    lines.push(`## ${title}`, "", `Source: ${canonical(`/about#${id}`)}`, "");
     for (const faq of faqs) lines.push(`### ${faq.question}`, "", faq.answer, "");
   }
   return lines.join("\n");
@@ -381,7 +388,7 @@ export function toolListLd(): Ld {
     "@type": "ItemList",
     name: "Path of Exile tools",
     description:
-      "The Path of Exile tools worth having, from build planning and loot filters to prices, regex and the labyrinth.",
+      "A list of Path of Exile tools, from build planning and loot filters to prices, regex and the labyrinth.",
     numberOfItems: listed.length,
     itemListElement: listed.map((tool, i) => ({
       "@type": "ListItem",

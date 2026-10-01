@@ -1,10 +1,4 @@
-import {
-  BEASTS_FAQ,
-  HOME_FAQ,
-  LEVELING_FAQ,
-  MAPS_FAQ,
-  SCARABS_FAQ,
-} from "./faq.ts";
+import { FAQ_GROUPS, faqAnchor } from "./faq.ts";
 import {
   SIDEBAR_ENTRIES,
   SITE_TOOLS,
@@ -22,7 +16,7 @@ import { topicById, type TopicId } from "./topics.ts";
  * goes.
  *
  * Everything searchable on this site is a few dozen records already declared
- * in `src/lib`: the sixteen tools, the questions under each page and the
+ * in `src/lib`: the sixteen tools, the questions on the about page and the
  * twenty one Atlas passives. That is small enough that no index structure is
  * needed, only the text normalised once so a keystroke costs a handful of
  * string comparisons per record. What needs care is not speed but the ranking,
@@ -35,7 +29,7 @@ import { topicById, type TopicId } from "./topics.ts";
 export type SearchTarget =
   | { kind: "page"; slug: string }
   | { kind: "link"; name: string }
-  | { kind: "faq"; page: "home" | string; index: number }
+  | { kind: "faq"; group: string; index: number }
   | { kind: "node"; id: string };
 
 export type SearchEntry = {
@@ -192,23 +186,14 @@ function linkEntry(tool: ExternalTool, order: number): SearchEntry {
   });
 }
 
-/** The questions, under the page each set is answered on. */
-const FAQS: readonly [page: "home" | string, faqs: readonly Faq[]][] = [
-  ["home", HOME_FAQ],
-  ["beasts", BEASTS_FAQ],
-  ["maps", MAPS_FAQ],
-  ["scarabs", SCARABS_FAQ],
-  ["leveling", LEVELING_FAQ],
-];
-
-function faqEntry(page: string, faq: Faq, index: number, order: number) {
-  const subtitle = page === "home" ? "Home" : mustTool(page).label;
+/** The questions, each under the group of /about it is answered in. */
+function faqEntry(group: string, title: string, faq: Faq, index: number, order: number) {
   return finish({
-    id: `faq:${page}:${index}`,
+    id: `faq:${group}:${index}`,
     kind: "faq",
-    target: { kind: "faq", page, index },
+    target: { kind: "faq", group, index },
     title: faq.question,
-    subtitle,
+    subtitle: title,
     icon: null,
     external: false,
     topics: [],
@@ -263,9 +248,9 @@ export function buildIndex(): SearchIndex {
     if (tool.unlisted) entries.push(pageEntry(tool, entries.length));
   }
   let order = 0;
-  for (const [page, faqs] of FAQS) {
+  for (const { id, title, faqs } of FAQ_GROUPS) {
     faqs.forEach((faq, index) => {
-      entries.push(faqEntry(page, faq, index, order++));
+      entries.push(faqEntry(id, title, faq, index, order++));
     });
   }
   [...EXCLUSIONS, ...BOOSTS].forEach((node, i) => {
@@ -495,12 +480,12 @@ export function entryHref(
       };
     case "link":
       return { href: toolByName(target.name).href(at.league), external: true };
-    case "faq": {
-      const anchor = `#faq-${target.index + 1}`;
-      const page =
-        target.page === "home" ? "/" : toolHref(mustTool(target.page), at.slug);
-      return { href: `${page}${anchor}`, external: false };
-    }
+    case "faq":
+      // Every question is answered on /about, whatever tool it is about.
+      return {
+        href: `/about#${faqAnchor(target.group, target.index)}`,
+        external: false,
+      };
     case "node":
       return {
         href: `${toolHref(mustTool("scarabs"), at.slug)}#${target.id}`,

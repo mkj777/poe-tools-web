@@ -27,17 +27,18 @@ const reason = (query: string, title: string) =>
     .find((h) => h.entry.title === title)?.reason;
 
 test("the index holds every tool, question and passive, once", () => {
-  assert.equal(SEARCH_INDEX.entries.length, 22 + 27 + 21);
+  assert.equal(SEARCH_INDEX.entries.length, 22 + 11 + 21);
   const ids = SEARCH_INDEX.entries.map((e) => e.id);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(SEARCH_INDEX.byId.size, ids.length);
 });
 
-test("every question knows the page it is answered on", () => {
+test("every question knows the group of /about it is answered in", () => {
   for (const entry of SEARCH_INDEX.entries) {
     if (entry.target.kind !== "faq") continue;
-    const page = entry.target.page;
-    assert.ok(page === "home" || toolBySlug(page), entry.id);
+    const group = entry.target.group;
+    assert.ok(group === "general" || toolBySlug(group), entry.id);
+    assert.match(entryHref(entry, at).href, /^\/about#faq-[a-z]+-\d+$/);
   }
 });
 
@@ -110,7 +111,7 @@ test("regex is the three regex tools and no badge on any of them", () => {
   for (const hit of find("regex", "tools")!.hits) {
     assert.equal(hit.reason, undefined, hit.entry.title);
   }
-  assert.ok(titles("regex", "questions").length > 0);
+  assert.ok(titles("bestiary", "questions").length > 0);
 });
 
 test("price is every tool that reads one", () => {
@@ -186,9 +187,9 @@ test("the content a passive touches finds the passive", () => {
 });
 
 test("a question is found by its wording", () => {
-  const found = titles("free", "questions");
-  assert.ok(found.includes("Are these Path of Exile tools free?"));
-  assert.equal(find("free", "tools"), undefined);
+  const found = titles("stored", "questions");
+  assert.ok(found.includes("Is anything stored?"));
+  assert.equal(find("stored", "tools"), undefined);
 });
 
 test("one typo is forgiven, and only where nothing was right", () => {
@@ -197,7 +198,7 @@ test("one typo is forgiven, and only where nothing was right", () => {
   assert.equal(titles("timles")[0], "Timeless Jewels");
   assert.equal(titles("clsuter")[0], "Cluster Jewels");
   assert.ok(
-    !titles("tree", "questions").includes("Are these Path of Exile tools free?"),
+    !titles("tree", "questions").includes("Is anything stored?"),
   );
 });
 
@@ -238,12 +239,12 @@ test("a hit goes where the league says", () => {
       external: true,
     },
   );
-  assert.deepEqual(entryHref(entry("faq:home:0"), at), {
-    href: "/#faq-1",
+  assert.deepEqual(entryHref(entry("faq:general:0"), at), {
+    href: "/about#faq-general-1",
     external: false,
   });
-  assert.deepEqual(entryHref(entry("faq:scarabs:4"), at), {
-    href: "/scarabs/allflame#faq-5",
+  assert.deepEqual(entryHref(entry("faq:scarabs:2"), at), {
+    href: "/about#faq-scarabs-3",
     external: false,
   });
   assert.deepEqual(entryHref(entry("node:loved-by-the-sun"), at), {
