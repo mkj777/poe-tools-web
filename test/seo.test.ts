@@ -171,10 +171,10 @@ test("llms.txt opens with the name of the site and one line saying what it is", 
   assert.ok(lines[2].startsWith("> "));
 });
 
-test("llms.txt lists every tool, wherever it lives", () => {
+test("llms.txt lists every tool the menus offer, and no hidden one", () => {
   const text = llmsTxt();
   for (const tool of SITE_TOOLS)
-    assert.ok(text.includes(tool.label), tool.slug);
+    assert.equal(text.includes(tool.label), !tool.unlisted, tool.slug);
   for (const tool of EXTERNAL_TOOLS)
     assert.ok(text.includes(tool.name), tool.name);
   for (const tool of EXTERNAL_TOOLS) {
@@ -391,9 +391,10 @@ test("every tool built here has a guide, and every guide a tool", () => {
   assert.deepEqual(GUIDES.map((g) => g.slug).sort(), slugs);
   for (const guide of GUIDES) {
     assert.ok(guide.about.length > 0 && guide.steps.length > 0, guide.slug);
-    assert.ok(llmsTxt().includes(guide.about[0]), guide.slug);
-    // An unlisted tool has no section on /about, so no link to one.
+    // An unlisted tool keeps its guide for the day it is listed again, and is
+    // left out of llms.txt and /about until then.
     const offered = !SITE_TOOLS.find((t) => t.slug === guide.slug)!.unlisted;
+    assert.equal(llmsTxt().includes(guide.about[0]), offered, guide.slug);
     assert.equal(
       llmsTxt().includes(canonical(`/about#${guide.slug}`)),
       offered,

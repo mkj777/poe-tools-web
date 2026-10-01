@@ -163,7 +163,10 @@ export function llmsTxt() {
 
   // One section per tool built here, in prose, because that is what an agent
   // quotes when somebody asks which tool does what.
-  for (const tool of SITE_TOOLS) {
+  // Only the tools the menus offer: an unlisted one is not one the site says
+  // it has, so it is left out of both lists below.
+  const offered = SITE_TOOLS.filter((t) => !t.unlisted);
+  for (const tool of offered) {
     const guide = GUIDES.find((g) => g.slug === tool.slug);
     // A real URL rather than a placeholder: an angle bracket in a link is not
     // a link any more, and the note at the bottom says the segment varies.
@@ -174,21 +177,18 @@ export function llmsTxt() {
       for (const paragraph of guide.about) lines.push(paragraph, "");
       lines.push("How to use it:", "");
       guide.steps.forEach((step, i) => lines.push(`${i + 1}. ${step}`));
-      lines.push("");
-      // An unlisted tool has no section on /about to point at.
-      if (!tool.unlisted) {
-        lines.push(
-          `More, with questions and answers: ${canonical(`/about#${tool.slug}`)}`,
-          "",
-        );
-      }
+      lines.push(
+        "",
+        `More, with questions and answers: ${canonical(`/about#${tool.slug}`)}`,
+        "",
+      );
     } else {
       lines.push(tool.about, "");
     }
   }
 
   lines.push("## Tools built here", "");
-  for (const tool of SITE_TOOLS) {
+  for (const tool of offered) {
     const path = tool.league ? `/${tool.slug}/standard` : `/${tool.slug}`;
     lines.push(`- [${tool.label}](${canonical(path)}): ${tool.about}`);
   }
