@@ -192,7 +192,8 @@ const link = (name: string): SidebarEntry => ({
  * one list, so they cannot disagree.
  *
  * Three headings, all open. Essentials is what a session is spent in: the
- * trade site, the three that run beside the client, and the regex generator.
+ * trade site, the three that run beside the client, the regex generator and
+ * the crafting simulator.
  * General is what every character reaches for at some point, whatever it
  * farms: the economy, the guides, the game's data and the trees, what the
  * stash is worth, the campaign. Specific is one tool for one mechanic.
@@ -216,6 +217,7 @@ export const SIDEBAR: readonly SidebarGroup[] = [
       link("Awakened PoE Trade"),
       link("Path of Building"),
       link("PoE Regex"),
+      link("Craft of Exile"),
     ],
   },
   {
@@ -242,7 +244,6 @@ export const SIDEBAR: readonly SidebarGroup[] = [
       link("Disenchanting"),
       link("Timeless Jewels"),
       link("Cluster Jewels"),
-      link("Craft of Exile"),
       link("PoELab"),
     ],
   },
