@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
+import { LeagueNotice } from "@/components/league-notice";
 import { JsonLd } from "@/components/json-ld";
 import { MobileBar } from "@/components/mobile-bar";
 import { SearchMount } from "@/components/search/search-mount";
@@ -101,6 +102,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <SearchMount leagues={leagues} fallback={fallback} />
             <SidebarInset className="min-w-0">
               <MobileBar />
+              <LeagueNotice />
               {children}
               <footer className="text-muted-foreground mx-auto mt-auto flex w-full max-w-[88rem] gap-4 px-4 pt-4 pb-8 text-xs sm:px-6 lg:px-8">
                 <a
