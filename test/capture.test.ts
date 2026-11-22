@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { rollCapture } from "../src/lib/capture.ts";
+import { RED_BESTIARY_MODS, rollCapture } from "../src/lib/capture.ts";
+import { BESTIARY_MOD_NAMES } from "../src/lib/bestiary-mods.ts";
 import { BLOOD_ALTAR } from "../src/lib/observed-mods.ts";
 
 test("a comma title attaches with no space, unlike a 'the …' title", () => {
@@ -23,14 +24,21 @@ test("the rare one-in-many-hundred roll can carry the Blood Altar survival mod",
   assert.ok(capture.lines.includes(BLOOD_ALTAR));
 });
 
-test("a yellow beast rolls one Bestiary mod, a red beast rolls three", () => {
+test("a yellow beast rolls one Bestiary mod, a red beast rolls the 3.30 most of five", () => {
   const yellow = rollCapture(
     { id: 1, name: "Crypt Ambusher", rarity: "yellow" },
     0,
   );
   const red = rollCapture({ id: 2, name: "Farric Ape", rarity: "red" }, 0);
   assert.equal(yellow.bestiaryMods.length, 1);
-  assert.equal(red.bestiaryMods.length, 3);
+  // Two of its own, one from Nose-to-Tail, two from the Bestiary Thread mod.
+  assert.equal(RED_BESTIARY_MODS, 5);
+  assert.equal(red.bestiaryMods.length, 5);
+  assert.equal(new Set(red.bestiaryMods).size, 5);
+});
+
+test("there are enough Bestiary mod names to roll a full red beast", () => {
+  assert.ok(BESTIARY_MOD_NAMES.length >= RED_BESTIARY_MODS);
 });
 
 test("a beast with no rarity at all rolls the yellow amount", () => {

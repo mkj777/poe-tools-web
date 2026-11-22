@@ -31,7 +31,7 @@ export type Capture = {
   name: string;
   type: string;
   level: number;
-  /** Red in game, and only three on a red beast, one on a yellow. */
+  /** Red in game: up to five on a red beast, one on a yellow. */
   bestiaryMods: string[];
   monsterMods: string[];
   /** Every line the search can read. */
@@ -72,6 +72,20 @@ function sample<T>(random: () => number, from: T[], count: number) {
 /** Names the wiki scrape misses, so the roll can show them the way the game does. */
 const MONSTER_MODS = [...MONSTER_MOD_NAMES, ...OBSERVED_MOD_NAMES];
 
+/**
+ * The most Bestiary modifiers a red beast can carry, which is what the roll
+ * gives every one of them, so a pattern is tried against the most text a
+ * capture can bring. Two of its own, one from the Nose-to-Tail Atlas passive
+ * ("Red Beasts in your Maps have an additional Bestiary Modifier", the old
+ * Two-Hearted Hunt), and since 3.30.0c two more from the Bestiary Thread:
+ * "Added a Bestiary Thread modifier: Red Beasts have an additional Bestiary
+ * modifier. This modifier can occur up to two times."
+ */
+export const RED_BESTIARY_MODS = 2 + 1 + 2;
+
+/** A yellow beast has one, and nothing adds to it. */
+export const YELLOW_BESTIARY_MODS = 1;
+
 export function rollCapture(beast: Beast, salt = 0): Capture {
   const random = mulberry32(seedFrom(beast.name, salt));
 
@@ -87,7 +101,7 @@ export function rollCapture(beast: Beast, salt = 0): Capture {
   const bestiaryMods = sample(
     random,
     BESTIARY_MOD_NAMES,
-    beast.rarity === "red" ? 3 : 1,
+    beast.rarity === "red" ? RED_BESTIARY_MODS : YELLOW_BESTIARY_MODS,
   );
   const monsterMods = sample(random, MONSTER_MODS, 2 + Math.floor(random() * 3));
   if (random() < 0.15) monsterMods.push(BLOOD_ALTAR);

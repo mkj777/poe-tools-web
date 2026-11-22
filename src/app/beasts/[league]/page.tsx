@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import {
+  getBestiaryThread,
   getCurrencyPrices,
-  getScarabPrices,
   leagueSlug,
   pricesFetchedAt,
   type CurrencyPrices,
@@ -16,7 +16,7 @@ import { BeastTable } from "@/components/beast-table";
 import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
 import { PageFrame } from "@/components/page-frame";
-import { ScarabPrices } from "@/components/scarab-prices";
+import { BestiaryRail } from "@/components/bestiary-rail";
 import { BeastsHeader } from "./header";
 
 /**
@@ -60,9 +60,9 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
   const { leagues, league } = await resolveLeague((await params).league);
   if (!league) notFound();
 
-  const [beasts, scarabs, currency, fetchedAt] = await Promise.all([
+  const [beasts, thread, currency, fetchedAt] = await Promise.all([
     loadBeasts(league),
-    getScarabPrices(league).catch(() => []),
+    getBestiaryThread(league).catch(() => undefined),
     getCurrencyPrices(league).catch((): CurrencyPrices => ({})),
     pricesFetchedAt(league),
   ]);
@@ -80,8 +80,8 @@ export default async function Page({ params }: PageProps<"/beasts/[league]">) {
         />
       }
       aside={
-        <ScarabPrices
-          scarabs={scarabs}
+        <BestiaryRail
+          thread={thread}
           divine={divine}
           mirror={mirrorInDivine}
           mirrorChaos={mirror}

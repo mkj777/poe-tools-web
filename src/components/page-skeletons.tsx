@@ -60,22 +60,34 @@ export function TableSkeleton({ rows }: { rows: number }) {
   );
 }
 
-/** The rail beside the beast table: mirror, divine, and the scarab total. */
+/**
+ * The rail beside the beast table: mirror, divine, and the Bestiary Thread
+ * card, which is the thread with its count field over the total. See
+ * bestiary-rail.tsx and bestiary-thread.tsx.
+ */
 export function PriceCardsSkeleton() {
   return (
     <div className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 rail:grid-cols-1">
-      {Array.from({ length: 3 }, (_, i) => (
+      {Array.from({ length: 2 }, (_, i) => (
         <div
           key={i}
-          className={cn(
-            "bg-card flex items-center gap-2.5 rounded-xl border px-3 py-2",
-            i === 2 && "col-span-2 sm:col-span-1",
-          )}
+          className="bg-card flex items-center gap-2.5 rounded-xl border px-3 py-2"
         >
           <Skeleton className="size-[26px] shrink-0 rounded-full" />
           <Lines widths={["w-16", "w-20"]} className="flex-1" />
         </div>
       ))}
+      <div className="bg-card col-span-2 divide-y rounded-xl border sm:col-span-1">
+        <div className="flex items-center gap-2.5 px-3 py-2">
+          <Skeleton className="size-[26px] shrink-0 rounded-full" />
+          <Lines widths={["w-24", "w-10"]} className="flex-1" />
+          <Skeleton className="h-8 w-12 shrink-0" />
+        </div>
+        <div className="flex items-center justify-between px-3 py-2">
+          <Skeleton className="h-4 w-10" />
+          <Skeleton className="h-4 w-12" />
+        </div>
+      </div>
     </div>
   );
 }

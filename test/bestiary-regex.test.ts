@@ -338,7 +338,8 @@ test("rolls a capture the way the Bestiary shows one", () => {
   );
   const yellow = rollCapture({ id: 2, name: "Crypt Ambusher", rarity: "yellow" }, 0);
 
-  assert.equal(red.bestiaryMods.length, 3);
+  // The 3.30 most for a red beast, see RED_BESTIARY_MODS in capture.ts.
+  assert.equal(red.bestiaryMods.length, 5);
   assert.equal(yellow.bestiaryMods.length, 1);
   assert.notEqual(red.name, red.type);
   assert.ok(red.lines.includes(red.name) && red.lines.includes(red.type));

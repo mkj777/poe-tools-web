@@ -10,6 +10,7 @@
 import { NextResponse } from "next/server";
 import { getAllBeastNames, getBeasts, getLeagues } from "@/lib/ninja";
 import { allowLiveLookups, getTradePrice } from "@/lib/trade-prices";
+import { existsIn } from "@/lib/beast-list";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -56,7 +57,11 @@ export async function GET(request: Request) {
     getAllBeastNames(),
   ]);
   const known = new Set(priced.map((b) => b.name));
-  const missing = allNames.filter((name) => !known.has(name)).sort();
+  // In a challenge league only red beasts and bosses can be caught, so a
+  // lookup for anything else is a request spent on a beast nobody can sell.
+  const missing = allNames
+    .filter((name) => !known.has(name) && existsIn(league, name))
+    .sort();
   if (missing.length === 0) {
     return NextResponse.json({ league, refreshed: 0, missing: 0 });
   }

@@ -88,49 +88,6 @@ export async function pricesFetchedAt(league: string) {
   return Date.parse(res.headers.get("date") ?? "") || Date.now();
 }
 
-export type Scarab = {
-  id: string;
-  /** What the card shows. The icon carries the rest. */
-  name: string;
-  /** The full name, for the hover title. */
-  fullName: string;
-  icon: string;
-  /** Chaos each, from the currency exchange. */
-  chaosValue: number;
-  /** Stack sizes the card prints. 1 is the unit price. */
-  show: number[];
-  /** How many of it a full setup uses: what the total is built from. */
-  run: number;
-};
-
-/** The scarabs that decide whether a beast run is worth setting up. */
-const BESTIARY_SCARABS = [
-  {
-    id: "bestiary-scarab-of-duplicating",
-    name: "Duplicating",
-    fullName: "Bestiary Scarab of Duplicating",
-    icon: "/duplicating_scarab.png",
-    show: [1, 20],
-    run: 20,
-  },
-  {
-    id: "bestiary-scarab-of-the-herd",
-    name: "The Herd",
-    fullName: "Bestiary Scarab of the Herd",
-    icon: "/herd_scarab.png",
-    show: [1, 40],
-    run: 40,
-  },
-  {
-    id: "kalguuran-scarab",
-    name: "Kalguuran",
-    fullName: "Kalguuran Scarab",
-    icon: "/kalguuran_scarab.png",
-    show: [1, 40],
-    run: 40,
-  },
-];
-
 /**
  * poe.ninja hands out image paths without a host, and the host is not its own:
  * `poe.ninja/gen/image/…` is a 404, while the same path on GGG's CDN serves the
@@ -187,11 +144,7 @@ async function exchangeItems(
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/**
- * All hundred-odd scarabs. `getScarabPrices` below answers a different
- * question: what a beast run costs, which is three known scarabs in known
- * amounts.
- */
+/** All hundred-odd scarabs. */
 export const getAllScarabs = (league: string) =>
   exchangeItems(league, "Scarab");
 
@@ -199,22 +152,19 @@ export const getAllScarabs = (league: string) =>
 export const getAstrolabes = (league: string) =>
   exchangeItems(league, "Astrolabe");
 
-export async function getScarabPrices(league: string): Promise<Scarab[]> {
-  const data = await ninja<{
-    lines: { id: string; primaryValue: number }[];
-    core: { primary: string };
-  }>(exchangePath(league, "Scarab"));
+/**
+ * The poe.ninja id of the Bestiary Thread, the one item a beast run costs
+ * since 3.30.0: "Scarabs have been removed from the game. A new item type,
+ * Threads, have been added in their place." Up to eight go into one map.
+ */
+export const BESTIARY_THREAD_ID = "bestiary-thread";
 
-  // The exchange quotes in a primary currency; for PoE 1 that is chaos.
-  const chaos = data.core?.primary === "chaos";
-  const byId = new Map(data.lines.map((line) => [line.id, line.primaryValue]));
-
-  return BESTIARY_SCARABS.flatMap((scarab) => {
-    const value = byId.get(scarab.id);
-    return value === undefined || !chaos
-      ? []
-      : [{ ...scarab, chaosValue: value }];
-  });
+/** The Bestiary Thread's price and icon, or undefined when it has neither. */
+export async function getBestiaryThread(
+  league: string,
+): Promise<ExchangeItem | undefined> {
+  const threads = await exchangeItems(league, "Thread");
+  return threads.find((thread) => thread.id === BESTIARY_THREAD_ID);
 }
 
 /**

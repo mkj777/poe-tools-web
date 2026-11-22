@@ -5,9 +5,9 @@ import {
   getAllScarabs,
   getAstrolabes,
   getBeasts,
+  getBestiaryThread,
   getCurrencyPrices,
   getLeagues,
-  getScarabPrices,
   leagueSlug,
   pricesFetchedAt,
 } from "../src/lib/ninja.ts";
@@ -224,31 +224,51 @@ test("getAstrolabes is the same request shape with a different type", async (t) 
   assert.ok(seenUrl.includes("type=Astrolabe"), seenUrl);
 });
 
-test("getScarabPrices only returns the three run scarabs that priced", async (t) => {
+test("getBestiaryThread picks the Bestiary Thread out of the Thread overview", async (t) => {
+  let seenUrl = "";
+  stubFetch(t, (url) => {
+    seenUrl = url;
+    return fakeResponse({
+      core: { primary: "chaos" },
+      items: [
+        { id: "abyss-thread", name: "Abyss Thread", image: "/abyss.png" },
+        { id: "bestiary-thread", name: "Bestiary Thread", image: "/b.png" },
+      ],
+      lines: [
+        { id: "abyss-thread", primaryValue: 3.52 },
+        { id: "bestiary-thread", primaryValue: 1.68 },
+      ],
+    });
+  });
+  assert.deepEqual(await getBestiaryThread("Covens"), {
+    id: "bestiary-thread",
+    name: "Bestiary Thread",
+    icon: "https://web.poecdn.com/b.png",
+    chaosValue: 1.68,
+  });
+  assert.ok(seenUrl.includes("type=Thread"), seenUrl);
+});
+
+test("getBestiaryThread is undefined when the overview has no Bestiary Thread", async (t) => {
   stubFetch(t, () =>
     fakeResponse({
       core: { primary: "chaos" },
-      lines: [
-        { id: "bestiary-scarab-of-duplicating", primaryValue: 3 },
-        { id: "some-other-scarab", primaryValue: 99 },
-      ],
+      items: [{ id: "abyss-thread", name: "Abyss Thread", image: "/a.png" }],
+      lines: [{ id: "abyss-thread", primaryValue: 3 }],
     }),
   );
-  const prices = await getScarabPrices("Standard");
-  assert.equal(prices.length, 1);
-  assert.equal(prices[0].id, "bestiary-scarab-of-duplicating");
-  assert.equal(prices[0].chaosValue, 3);
-  assert.equal(prices[0].run, 20);
+  assert.equal(await getBestiaryThread("Covens"), undefined);
 });
 
-test("getScarabPrices is empty when the exchange quotes in something other than chaos, even with matching ids priced", async (t) => {
+test("getBestiaryThread is undefined when the exchange quotes in something other than chaos", async (t) => {
   stubFetch(t, () =>
     fakeResponse({
       core: { primary: "divine" },
-      lines: [{ id: "bestiary-scarab-of-duplicating", primaryValue: 3 }],
+      items: [{ id: "bestiary-thread", name: "Bestiary Thread", image: "/b.png" }],
+      lines: [{ id: "bestiary-thread", primaryValue: 1 }],
     }),
   );
-  assert.deepEqual(await getScarabPrices("Standard"), []);
+  assert.equal(await getBestiaryThread("Covens"), undefined);
 });
 
 test("getCurrencyPrices reads the divine and mirror rates out of one overview", async (t) => {
