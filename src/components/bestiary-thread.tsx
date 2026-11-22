@@ -9,8 +9,18 @@ import { createStorageStore } from "@/lib/storage-store";
 import { MAX_THREADS, MIN_THREADS, threadCount } from "@/lib/thread-count";
 import { cn } from "@/lib/utils";
 
-/** One digit, as typed. Anything else is not a count of Threads. */
-const digit = (typed: string) => typed.replace(/\D/g, "").slice(0, 1);
+/** One digit. Anything else is not a count of Threads. */
+const digit = (typed: string) => typed.replace(/\D/g, "").slice(-1);
+
+/**
+ * The digit just typed, wherever the caret was: a key pressed before or after
+ * the digit already there replaces it instead of being thrown away.
+ */
+const typedDigit = (value: string, before: string) => {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length < 2) return digits;
+  return digits.replace(before, "").slice(-1) || digits.slice(-1);
+};
 
 /**
  * How many Threads a map gets survives a reload, the way the map page's setup
@@ -68,7 +78,8 @@ export function BestiaryThreadCost({
           aria-label="Bestiary Threads per map"
           title={`Threads per map, ${MIN_THREADS} to ${MAX_THREADS}`}
           value={typed}
-          onChange={(e) => countStore.write(digit(e.target.value))}
+          onChange={(e) => countStore.write(typedDigit(e.target.value, typed))}
+          onFocus={(e) => e.currentTarget.select()}
           // Leaving the field shows the count the total is built from.
           onBlur={() => countStore.write(String(count))}
           className="h-8 w-12 shrink-0 text-right tabular-nums"
