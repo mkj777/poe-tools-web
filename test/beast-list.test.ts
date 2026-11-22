@@ -36,7 +36,7 @@ test("a red beast and a First One exist everywhere, a yellow beast only in the p
   assert.equal(existsIn("Standard", "Crypt Ambusher"), true);
 });
 
-test("a challenge league drops yellow beasts from both poe.ninja and the trade fallback", () => {
+test("a challenge league keeps what poe.ninja sells and drops yellow names from the trade fallback", () => {
   const asked: string[][] = [];
   const beasts = assembleBeasts(
     "Covens",
@@ -49,11 +49,14 @@ test("a challenge league drops yellow beasts from both poe.ninja and the trade f
   );
 
   assert.deepEqual(
-    beasts.map((b) => b.name),
-    ["Craicic Croaker", "Wild Rhex"],
+    beasts.map((b) => [b.name, b.source]),
+    [
+      ["Craicic Croaker", "ninja"],
+      ["Crypt Ambusher", "ninja"],
+      ["Wild Rhex", "trade"],
+    ],
   );
-  assert.ok(beasts.every((b) => b.rarity === "red"));
-  // The yellow names are never even looked up.
+  // The yellow names nobody sells are never even looked up.
   assert.deepEqual(asked, [["Wild Rhex"]]);
 });
 

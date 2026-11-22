@@ -34,7 +34,10 @@ export function assembleBeasts(
   allNames: string[],
   tradePrices: (missing: string[]) => Map<string, TradePrice>,
 ): Beast[] {
-  const present = priced.filter((b) => existsIn(league, b.name));
+  // What poe.ninja prices is on sale in this league, which proves it exists
+  // there whatever the rarity list says: a red beast the wiki has not caught
+  // up with, or a yellow one still caught somewhere other than a map. Only the
+  // names nobody is selling are filtered, since those are a guess.
   const known = new Set(priced.map((b) => b.name));
   const missing = allNames
     .filter((name) => !known.has(name) && existsIn(league, name))
@@ -42,7 +45,7 @@ export function assembleBeasts(
   const prices = tradePrices(missing);
 
   return [
-    ...present.map((b) => ({
+    ...priced.map((b) => ({
       ...b,
       source: "ninja" as const,
       rarity: rarityOf(b.name),
