@@ -123,8 +123,15 @@ export type Fragment = {
  *
  * `needle` is the shortest text that reaches one of the three and none of the
  * others. It ends at the colon, so the digits that follow can be asked about.
+ * `also` names other labels the same number may be printed under, asked for
+ * as alternatives in the same term.
  */
-export type RewardStat = { id: string; label: string; needle: string };
+export type RewardStat = {
+  id: string;
+  label: string;
+  needle: string;
+  also?: readonly string[];
+};
 
 export const REWARD_STATS: readonly RewardStat[] = [
   /**
@@ -133,9 +140,17 @@ export const REWARD_STATS: readonly RewardStat[] = [
    * taken from the 3.30.0.1 client string `ItemDisplayMapDropScalingBonus`, and
    * neither its author nor this project has yet checked it against a map
    * copied in game with Ctrl+C. Until then the needle starts at `Drops`, which
-   * still reaches the line if the label in front of it turns out different.
+   * still reaches the line if the label in front of it turns out different,
+   * and the 3.29 label is asked for beside it: should maps still print
+   * `Item Quantity: +45%`, a search for Drops alone would match no map at all
+   * and leave the whole tab dark. Drop `also` once a copied map settles it.
    */
-  { id: "atlasDrops", label: "Atlas Drops", needle: "Drops: " },
+  {
+    id: "atlasDrops",
+    label: "Atlas Drops",
+    needle: "Drops: ",
+    also: ["Item Quantity: "],
+  },
   { id: "rarity", label: "Item Rarity", needle: "Rarity: " },
   { id: "packSize", label: "Monster Pack Size", needle: "Pack Size: " },
 ];
@@ -205,8 +220,11 @@ export function atLeastPattern(min: number): string {
  */
 export function statTerm(stat: RewardStat, min: number): string | null {
   if (min <= 0) return null;
-  if (min === 1) return `"${stat.needle.trim()}"`;
-  return `"${stat.needle}.(${atLeastPattern(min)})%"`;
+  const head = stat.also
+    ? `(${[stat.needle, ...stat.also].map((n) => n.replace(/: $/, "")).join("|")}): `
+    : stat.needle;
+  if (min === 1) return `"${head.trim()}"`;
+  return `"${head}.(${atLeastPattern(min)})%"`;
 }
 
 export type MapSearch = {

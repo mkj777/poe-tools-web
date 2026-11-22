@@ -155,8 +155,12 @@ test("a threshold reads the property block the game prints", () => {
   assert.ok(!new RegExp(body).test("Atlas Drops: +29%"));
   assert.ok(!new RegExp(body).test("Atlas Drops: +8%"));
   assert.ok(!new RegExp(body).test("Item Rarity: +71%"));
-  // The 3.29 line is gone from maps; reading it would be reading nothing.
-  assert.ok(!new RegExp(body).test("Item Quantity: +71%"));
+  // The 3.29 label is read too, until a map copied in game settles which one
+  // 3.30 prints, and under the same threshold.
+  assert.ok(new RegExp(body).test("Item Quantity: +71%"));
+  assert.ok(!new RegExp(body).test("Item Quantity: +29%"));
+  // Neither reaches the quality line that names quantity in brackets.
+  assert.ok(!new RegExp(body).test("Quality (Quantity): +71%"));
 
   // The wildcard digits cannot reach past the percent sign, which is the whole
   // reason they are allowed to be wildcards.
@@ -166,7 +170,8 @@ test("a threshold reads the property block the game prints", () => {
 test("a minimum of one asks only that the line is there", () => {
   // The game prints nothing for a stat of zero, so presence is the same
   // question, and far shorter than spelling out every number from one up.
-  assert.equal(statTerm(atlasDrops, 1), '"Drops:"');
+  assert.equal(statTerm(atlasDrops, 1), '"(Drops|Item Quantity):"');
+  assert.equal(statTerm(REWARD_STATS[1], 1), '"Rarity:"');
   assert.equal(statTerm(atlasDrops, 0), null);
   assert.equal(statTerm(atlasDrops, -5), null);
 });
@@ -189,7 +194,7 @@ test("minimums stand beside the negated term, in declaration order", () => {
 test("minimums on their own still ask for something", () => {
   assert.equal(
     planMapSearch([], { minimums: { atlasDrops: 1 } }).search,
-    '"Drops:"',
+    '"(Drops|Item Quantity):"',
   );
   assert.equal(planMapSearch([], { minimums: {} }).search, "");
 });
