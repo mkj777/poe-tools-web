@@ -83,23 +83,6 @@ export const SITE_TOOLS: readonly SiteTool[] = [
     league: true,
   },
   {
-    slug: "scarabs",
-    label: "Scarab Nodes",
-    blurb: "Economy of Scarab Nodes",
-    about:
-      "Roughly which scarab nodes are best and which to exclude, for the spare points on your Atlas tree.",
-    icon: { src: "/Kalguuran_Scarab_inventory_icon.png" },
-    topics: ["scarabs", "atlas", "prices"],
-    aliases: [
-      "Scarab prices",
-      "Atlas passives",
-      "Atlas keystones",
-      "Carapaces",
-      "Scarab farming",
-    ],
-    league: true,
-  },
-  {
     slug: "leveling",
     label: "Leveling Guide",
     blurb: "Overlay for the campaign",
@@ -239,7 +222,6 @@ export const SIDEBAR: readonly SidebarGroup[] = [
     label: "Specific",
     entries: [
       page("beasts"),
-      page("scarabs"),
       link("PoE Antiquary"),
       link("Disenchanting"),
       link("Timeless Jewels"),

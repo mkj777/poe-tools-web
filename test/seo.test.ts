@@ -7,7 +7,6 @@ import {
   HOME_FAQ,
   LEVELING_FAQ,
   MAPS_FAQ,
-  SCARABS_FAQ,
 } from "../src/lib/faq.ts";
 import {
   ANSWER_ENGINES,
@@ -264,7 +263,7 @@ test("every tool the site offers has a group of questions on /about, and no othe
     SITE_TOOLS.filter((t) => !t.unlisted).map((t) => t.slug).sort(),
   );
   const grouped = FAQ_GROUPS.flatMap((g) => g.faqs);
-  const shown = [HOME_FAQ, BEASTS_FAQ, SCARABS_FAQ, LEVELING_FAQ];
+  const shown = [HOME_FAQ, BEASTS_FAQ, LEVELING_FAQ];
   assert.equal(grouped.length, shown.flat().length);
 });
 
@@ -288,7 +287,6 @@ const ALL_FAQ = [
   ...HOME_FAQ,
   ...BEASTS_FAQ,
   ...MAPS_FAQ,
-  ...SCARABS_FAQ,
   ...LEVELING_FAQ,
 ];
 
@@ -334,7 +332,6 @@ test("no copy on this site carries an em dash or a middle dot", () => {
     "lib/guides.ts",
     "lib/tools.ts",
     "lib/nav.ts",
-    "lib/scarab-nodes.ts",
     "app/layout.tsx",
     "app/(home)/page.tsx",
     "app/about/page.tsx",

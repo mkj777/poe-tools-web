@@ -55,24 +55,6 @@ export const MAPS_FAQ: readonly Faq[] = [
   },
 ];
 
-export const SCARABS_FAQ: readonly Faq[] = [
-  {
-    question: "How is a family valued?",
-    answer:
-      "Each scarab's poe.ninja price, weighted by how often its rarity tier drops. That is what the next scarab of the family is worth.",
-  },
-  {
-    question: "Where do the drop rates come from?",
-    answer:
-      "GGG has not published them. The weights are medians from about 33,000 vendor recipes a player logged in 3.27, linked from the wiki.",
-  },
-  {
-    question: "Do the scarabs still drop if I turn the content off?",
-    answer:
-      "No. Eleven of the twelve nodes also stop that family dropping. Straight and Narrow turns off Smuggler's Caches, which have no scarabs.",
-  },
-];
-
 export const LEVELING_FAQ: readonly Faq[] = [
   {
     question: "How does it know where I am?",
@@ -105,7 +87,6 @@ export const FAQ_GROUPS: readonly {
 }[] = [
   { id: "general", title: "General", faqs: HOME_FAQ },
   { id: "beasts", title: "Beast Regex", faqs: BEASTS_FAQ },
-  { id: "scarabs", title: "Scarab Nodes", faqs: SCARABS_FAQ },
   { id: "leveling", title: "Leveling Guide", faqs: LEVELING_FAQ },
 ];
 

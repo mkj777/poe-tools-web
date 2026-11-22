@@ -8,8 +8,8 @@ planners to price checkers, regex generators and guides, each with a sentence
 saying what it is for and a link straight to it. Alongside the directory it
 hosts a few tools of its own, built by
 [Maximilian Kielholz](https://maximiliankielholz.de) for problems no other tool
-solved well: selling Bestiary beasts, pricing the scarab passives of the Atlas
-tree, and following the campaign without a second monitor.
+solved well: selling Bestiary beasts and following the campaign without a
+second monitor.
 
 Everything on the site is for Path of Exile 1. It needs no account, runs no
 ads and stores nothing about visitors. Prices come from the poe.ninja economy
@@ -33,17 +33,6 @@ API and the official trade site and are at most 15 minutes old.
 
 Details: [docs/beast-regex.md](docs/beast-regex.md). In game test log for the
 search field: [docs/bestiary-search.md](docs/bestiary-search.md).
-
-### Scarab Nodes (`/scarabs/<league>`)
-
-- The twelve Atlas notables that turn a mechanic off, ranked by the scarab
-  value you give up, cheapest first.
-- The nine Carapace notables that double a scarab family's drop chance, ranked
-  by what the family's next drop is worth, dearest first.
-- Every scarab of each family with its price and its share of the family's
-  drops, from the game's five rarity tiers.
-
-Details: [docs/scarab-nodes.md](docs/scarab-nodes.md).
 
 ### PoE Leveling Guide (`/leveling`)
 
@@ -75,11 +64,10 @@ for one mechanic). External tools are described in `src/lib/tools.ts`, and the
 pages built here sit among them with a small "Built here" tag.
 
 A command palette (the field at the top of the sidebar, or Ctrl+K) searches
-every tool, every question and every Atlas passive. It answers to what a tool is
-about, not only to its name: each tool declares subjects from
-`src/lib/topics.ts`, and each subject carries the words players type for it, so
-"skill tree" finds Path of Building, the jewel calculators and the Atlas
-passives. The ranking lives in `src/lib/search.ts` and is pinned by
+every tool and every question. It answers to what a tool is about, not only to
+its name: each tool declares subjects from `src/lib/topics.ts`, and each
+subject carries the words players type for it, so "skill tree" finds Path of
+Building and the jewel calculators. The ranking lives in `src/lib/search.ts` and is pinned by
 `test/search.test.ts`.
 
 ## URLs
@@ -88,16 +76,17 @@ passives. The ranking lives in `src/lib/search.ts` and is pinned by
 /                             the directory: every tool, with a sentence each
 /beasts/<league>              beast prices and the Bestiary searches
 /beasts/<league>/simulation   a mock Bestiary window, unfinished and noindex
-/scarabs/<league>             what each scarab Atlas passive is worth
 /maps/<league>                the map stash search, unlisted
 /leveling                     the leveling overlay download
 /llms.txt, /llms-full.txt     the site as markdown for language models
 /sitemap.xml, /robots.txt
 ```
 
-The league is picked on the page. The bare tool paths (`/beasts`, `/scarabs`,
-`/maps`) redirect to the current league, and the old league first URLs
-(`/<league>`) redirect to the beasts.
+The league is picked on the page. The bare tool paths (`/beasts`, `/maps`)
+redirect to the current league, and the old league first URLs
+(`/<league>`) redirect to the beasts. `/scarabs` and `/scarabs/<league>` (the
+Scarab Nodes page, gone since 3.30 removed the scarab passives from the Atlas
+tree) redirect to the home page.
 
 ## Search engines and answer engines
 
@@ -158,8 +147,6 @@ is committed, and refreshed by hand when a patch changes it:
 | `pnpm mods:maps` | `src/lib/map-mods.ts` | every modifier a map can roll |
 | `pnpm words:update <words.json>` | `src/lib/monster-words.ts` | a Words.dat export from poe-dat-viewer |
 | `pnpm rarity:update` | `src/lib/beast-rarity.ts` | which beasts are red, from the wiki |
-| `pnpm scarabs:tiers` | `src/lib/scarab-tiers.ts` | scarab rarity tiers from the wiki |
-| `pnpm atlas:icons` | `public/atlas/*.png` | Atlas passive art, GGG tree export plus wiki |
 | `pnpm prices:snapshot` | `src/lib/trade-prices.fallback.json` | trade site prices for beasts poe.ninja skips (about an hour, rate limited) |
 
 ## Deploy

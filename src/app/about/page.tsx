@@ -13,7 +13,7 @@ import { AUTHOR, OG_IMAGE, SITE_NAME, canonical } from "@/lib/site";
 
 const TITLE = "About and FAQ";
 const DESCRIPTION =
-  "How to use Beast Regex, Scarab Nodes and the PoE Leveling Guide, and where their data comes from.";
+  "How to use Beast Regex and the PoE Leveling Guide, and where their data comes from.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -50,8 +50,8 @@ export default function Page() {
         <PageHeader title={`About ${SITE_NAME}`} />
 
         <p className="text-muted-foreground text-sm text-pretty">
-          A list of Path of Exile tools. Beast Regex, Scarab Nodes and the
-          Leveling Guide were built here by{" "}
+          A list of Path of Exile tools. Beast Regex and the Leveling Guide
+          were built here by{" "}
           <a
             href={AUTHOR.url}
             rel="author"

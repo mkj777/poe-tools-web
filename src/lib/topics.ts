@@ -5,7 +5,7 @@ import { EXTERNAL_TOOLS } from "./tools.ts";
  * What a tool is about, as distinct from what it is called.
  *
  * The search over the catalogue has to answer "skill tree" with the build
- * planner, the two jewel calculators, the Atlas passives and poe.ninja, and
+ * planner, the two jewel calculators, the tree planner and poe.ninja, and
  * not one of those five has the words in its name or its blurb. A name says
  * what a tool is called and a blurb what you go there to do; neither says what
  * it has to do with. So every tool declares the subjects it touches, and each
@@ -416,24 +416,6 @@ export const TOPICS = [
       "blood altar",
       "aspect",
       "aspects",
-    ],
-  },
-  {
-    id: "scarabs",
-    label: "Scarabs",
-    aliases: [
-      "scarab",
-      "scarabs",
-      "scarab prices",
-      "scarab drop",
-      "carapace",
-      "carapaces",
-      "map device",
-      "farming",
-      "farm",
-      "atlas content",
-      "mechanic",
-      "mechanics",
     ],
   },
   {

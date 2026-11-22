@@ -33,7 +33,7 @@ export const SITE_NAME = "Path of Tools";
  * in the voice the cards on the home page use.
  */
 export const SITE_DESCRIPTION =
-  "A list of Path of Exile tools, each with a line on what it does. Three of them were built here: Beast Regex, Scarab Nodes and the Leveling Guide.";
+  "A list of Path of Exile tools, each with a line on what it does. Two of them were built here: Beast Regex and the Leveling Guide.";
 
 /**
  * Who builds the tools of this site. One entity with one id, shared by every

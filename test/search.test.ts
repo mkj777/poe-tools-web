@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readdirSync } from "node:fs";
 import test from "node:test";
 import { SIDEBAR_ENTRIES, toolBySlug } from "../src/lib/nav.ts";
 import {
@@ -26,8 +25,8 @@ const reason = (query: string, title: string) =>
     .flatMap((g) => g.hits)
     .find((h) => h.entry.title === title)?.reason;
 
-test("the index holds every tool, question and passive, once", () => {
-  assert.equal(SEARCH_INDEX.entries.length, 22 + 11 + 21);
+test("the index holds every tool and question, once", () => {
+  assert.equal(SEARCH_INDEX.entries.length, 21 + 8);
   const ids = SEARCH_INDEX.entries.map((e) => e.id);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(SEARCH_INDEX.byId.size, ids.length);
@@ -39,15 +38,6 @@ test("every question knows the group of /about it is answered in", () => {
     const group = entry.target.group;
     assert.ok(group === "general" || toolBySlug(group), entry.id);
     assert.match(entryHref(entry, at).href, /^\/about#faq-[a-z]+-\d+$/);
-  }
-});
-
-test("every passive wears art that is really in public", () => {
-  const files = new Set(readdirSync(new URL("../public/atlas/", import.meta.url)));
-  for (const entry of SEARCH_INDEX.entries) {
-    if (entry.kind !== "node" || !entry.icon) continue;
-    const file = entry.icon.src.replace("/atlas/", "");
-    assert.ok(files.has(file), `public${entry.icon.src} is missing`);
   }
 });
 
@@ -92,15 +82,11 @@ test("skill tree finds everything that has to do with one", () => {
         "Timeless Jewels",
         "Cluster Jewels",
         "PoE Planner",
-        "Scarab Nodes",
       ]),
       query,
     );
     assert.equal(found[0], "Path of Building", query);
-    assert.equal(found.at(-1), "Scarab Nodes", query);
-    assert.equal(reason(query, "Scarab Nodes"), "Atlas tree", query);
     assert.equal(reason(query, "Path of Building"), "Skill tree", query);
-    assert.equal(find(query, "nodes"), undefined, query);
   }
 });
 
@@ -126,7 +112,6 @@ test("price is every tool that reads one", () => {
       "Disenchanting",
       "Exilence",
       "Beast Regex",
-      "Scarab Nodes",
     ]),
   );
 });
@@ -168,22 +153,11 @@ test("the four newest are found by what they are, not only by name", () => {
   assert.ok(titles("net worth").includes("Exilence"));
   assert.ok(titles("net worth").includes("Wealthy Exile"));
   assert.ok(titles("atlas tree").includes("PoE Planner"));
-  assert.ok(titles("atlas tree").includes("Scarab Nodes"));
 });
 
 test("a page the sidebar does not list is still found by a query", () => {
   assert.equal(titles("map regex")[0], "Map Regex");
   assert.ok(titles("stash").includes("Map Regex"));
-});
-
-test("the content a passive touches finds the passive", () => {
-  assert.ok(titles("abyss", "nodes").includes("Loved by the Sun"));
-  assert.equal(reason("abyss", "Loved by the Sun"), "Abyss");
-  assert.ok(titles("heist", "nodes").includes("Straight and Narrow"));
-  assert.ok(titles("shrines", "nodes").includes("Devoted Carapaces"));
-  const carapaces = titles("carapace", "nodes");
-  assert.equal(carapaces.length, GROUP_CAPS.nodes);
-  for (const title of carapaces) assert.ok(title.endsWith("Carapaces"), title);
 });
 
 test("a question is found by its wording", () => {
@@ -193,7 +167,6 @@ test("a question is found by its wording", () => {
 });
 
 test("one typo is forgiven, and only where nothing was right", () => {
-  assert.equal(titles("scarb")[0], "Scarab Nodes");
   assert.equal(titles("timelss")[0], "Timeless Jewels");
   assert.equal(titles("timles")[0], "Timeless Jewels");
   assert.equal(titles("clsuter")[0], "Cluster Jewels");
@@ -243,12 +216,8 @@ test("a hit goes where the league says", () => {
     href: "/about#faq-general-1",
     external: false,
   });
-  assert.deepEqual(entryHref(entry("faq:scarabs:2"), at), {
-    href: "/about#faq-scarabs-3",
-    external: false,
-  });
-  assert.deepEqual(entryHref(entry("node:loved-by-the-sun"), at), {
-    href: "/scarabs/allflame#loved-by-the-sun",
+  assert.deepEqual(entryHref(entry("faq:beasts:0"), at), {
+    href: "/about#faq-beasts-1",
     external: false,
   });
 });

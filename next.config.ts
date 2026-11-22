@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
    */
   async redirects() {
     return [
+      // Scarab Nodes priced the scarab passives of the Atlas tree, which 3.30
+      // took out of the game. The page went with them, for good.
+      { source: "/scarabs", destination: "/", permanent: true },
+      { source: "/scarabs/:league", destination: "/", permanent: true },
       {
         source: "/:league/maps",
         destination: "/maps/:league",

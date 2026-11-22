@@ -63,15 +63,13 @@ export default function Image() {
           Every Path of Exile tool in one place
         </div>
         <div style={{ fontSize: 30, color: muted, maxWidth: 880 }}>
-          Live Bestiary beast prices, the cost of every Atlas exclusion, and the
-          tools worth having next to them.
+          Live Bestiary beast prices and the tools worth having next to them.
         </div>
       </div>
 
       <div style={{ display: "flex", gap: 16, fontSize: 24, color: muted }}>
         {[
           "Bestiary prices",
-          "Scarab nodes",
           "Leveling overlay",
           `${EXTERNAL_TOOLS.length} more tools`,
         ].map((item) => (

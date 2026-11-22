@@ -32,18 +32,6 @@ export const GUIDES: readonly ToolGuide[] = [
     ],
   },
   {
-    slug: "scarabs",
-    title: "Scarab Nodes",
-    about: [
-      "Atlas passives for one scarab family, ranked by what the next scarab of that family is worth.",
-    ],
-    steps: [
-      "Pick your league.",
-      "Turn content off: the top card costs you the least scarab value.",
-      "Double drop chance: the top card is the family worth the most per drop.",
-    ],
-  },
-  {
     slug: "maps",
     title: "Map Regex",
     about: [

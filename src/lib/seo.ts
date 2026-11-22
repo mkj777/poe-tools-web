@@ -155,7 +155,7 @@ export function llmsTxt() {
     "",
     `> ${SITE_DESCRIPTION}`,
     "",
-    `${SITE_NAME} (${SITE_URL}) is a list of Path of Exile tools. Beast Regex, Scarab Nodes and the Leveling Guide were built here by ${AUTHOR.name} (${AUTHOR.url}).`,
+    `${SITE_NAME} (${SITE_URL}) is a list of Path of Exile tools. Beast Regex and the Leveling Guide were built here by ${AUTHOR.name} (${AUTHOR.url}).`,
     "",
     "Path of Exile 1 only. Prices from poe.ninja, re-read every 15 minutes; beasts poe.ninja does not list are priced from a snapshot of the official trade site. No account, no ads.",
     "",

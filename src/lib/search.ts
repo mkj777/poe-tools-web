@@ -6,7 +6,6 @@ import {
   toolHref,
   type SiteTool,
 } from "./nav.ts";
-import { BOOSTS, EXCLUSIONS, type ScarabNode } from "./scarab-nodes.ts";
 import type { Faq } from "./seo.ts";
 import { toolByName, type ExternalTool, type ToolIcon } from "./tools.ts";
 import { topicById, type TopicId } from "./topics.ts";
@@ -16,9 +15,8 @@ import { topicById, type TopicId } from "./topics.ts";
  * goes.
  *
  * Everything searchable on this site is a few dozen records already declared
- * in `src/lib`: the sixteen tools, the questions on the about page and the
- * twenty one Atlas passives. That is small enough that no index structure is
- * needed, only the text normalised once so a keystroke costs a handful of
+ * in `src/lib`: the tools and the questions on the about page. That is small
+ * enough that no index structure is needed, only the text normalised once so a keystroke costs a handful of
  * string comparisons per record. What needs care is not speed but the ranking,
  * because a name, an abbreviation, a subject and a sentence of description are
  * not the same kind of evidence, and the palette has to say why a tool came up
@@ -29,15 +27,14 @@ import { topicById, type TopicId } from "./topics.ts";
 export type SearchTarget =
   | { kind: "page"; slug: string }
   | { kind: "link"; name: string }
-  | { kind: "faq"; group: string; index: number }
-  | { kind: "node"; id: string };
+  | { kind: "faq"; group: string; index: number };
 
 export type SearchEntry = {
   id: string;
   kind: SearchTarget["kind"];
   target: SearchTarget;
   title: string;
-  /** The line under the title: the blurb, the page a question is on, the effect. */
+  /** The line under the title: the blurb, or the page a question is on. */
   subtitle: string;
   /** None for a question, which wears a glyph instead. */
   icon: ToolIcon | null;
@@ -70,7 +67,7 @@ export type Hit = {
   reason?: string;
 };
 
-export type SearchGroupId = "tools" | "questions" | "nodes";
+export type SearchGroupId = "tools" | "questions";
 export type SearchGroup = { id: SearchGroupId; label: string; hits: Hit[] };
 
 /**
@@ -81,7 +78,7 @@ export type SearchGroup = { id: SearchGroupId; label: string; hits: Hit[] };
  * subject a record matched on is a promise the list breaks. A test holds the
  * two together.
  */
-export const GROUP_CAPS = { tools: 9, questions: 5, nodes: 6 } as const;
+export const GROUP_CAPS = { tools: 9, questions: 5 } as const;
 
 /** How many entries the palette remembers having opened. */
 export const RECENT_CAP = 5;
@@ -204,23 +201,6 @@ function faqEntry(group: string, title: string, faq: Faq, index: number, order: 
   });
 }
 
-function nodeEntry(node: ScarabNode, order: number): SearchEntry {
-  return finish({
-    id: `node:${node.id}`,
-    kind: "node",
-    target: { kind: "node", id: node.id },
-    title: node.notable,
-    subtitle: node.effect,
-    icon: { src: `/atlas/${node.id}.png`, rounded: true },
-    external: false,
-    topics: [],
-    aliases: [...node.prefixes, ...(node.aliases ?? [])],
-    order,
-    blurb: "",
-    body: node.effect,
-  });
-}
-
 function mustTool(slug: string) {
   const tool = toolBySlug(slug);
   if (!tool) throw new Error(`No tool at /${slug}`);
@@ -253,9 +233,6 @@ export function buildIndex(): SearchIndex {
       entries.push(faqEntry(id, title, faq, index, order++));
     });
   }
-  [...EXCLUSIONS, ...BOOSTS].forEach((node, i) => {
-    entries.push(nodeEntry(node, i));
-  });
   return { entries, byId: new Map(entries.map((e) => [e.id, e])) };
 }
 
@@ -388,7 +365,6 @@ const GROUPS: readonly {
 }[] = [
   { id: "tools", label: "Tools", kinds: ["page", "link"] },
   { id: "questions", label: "Questions", kinds: ["faq"] },
-  { id: "nodes", label: "Atlas passives", kinds: ["node"] },
 ];
 
 function group(hits: Hit[], cap = true): SearchGroup[] {
@@ -484,11 +460,6 @@ export function entryHref(
       // Every question is answered on /about, whatever tool it is about.
       return {
         href: `/about#${faqAnchor(target.group, target.index)}`,
-        external: false,
-      };
-    case "node":
-      return {
-        href: `${toolHref(mustTool("scarabs"), at.slug)}#${target.id}`,
         external: false,
       };
   }

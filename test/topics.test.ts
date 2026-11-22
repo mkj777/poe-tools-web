@@ -40,7 +40,7 @@ test("aliases are written the way the search reads them", () => {
 });
 
 test("every tool is about something, and something that exists", () => {
-  assert.equal(tools.length, 22);
+  assert.equal(tools.length, 21);
   for (const tool of tools) {
     assert.ok(tool.topics.length > 0, tool.name);
     assert.equal(new Set(tool.topics).size, tool.topics.length, tool.name);
@@ -78,7 +78,7 @@ test("the subjects the search is measured against", () => {
   assert.deepEqual(under("overlay"), ["Leveling Guide", "Awakened PoE Trade"]);
   assert.deepEqual(under("regex"), ["Beast Regex", "Map Regex", "PoE Regex"]);
   assert.deepEqual(under("labyrinth"), ["PoELab"]);
-  assert.deepEqual(under("atlas"), ["Scarab Nodes", "PoE Planner"]);
+  assert.deepEqual(under("atlas"), ["PoE Planner"]);
   assert.deepEqual(under("guides"), ["Maxroll"]);
   assert.deepEqual(under("wiki"), ["PoEDB"]);
   assert.deepEqual(under("crafting"), [

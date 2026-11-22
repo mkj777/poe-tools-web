@@ -237,7 +237,7 @@ function SearchBody({
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder="Search tools, questions, passives"
+        placeholder="Search tools, questions"
       />
       <CommandList className="max-h-none min-h-0 flex-1 sm:max-h-[min(60svh,26rem)]">
         <CommandEmpty>Nothing matches &quot;{query.trim()}&quot;.</CommandEmpty>
@@ -276,9 +276,8 @@ function SearchBody({
 }
 
 /**
- * The palette: every tool, every question and every Atlas passive of the
- * site behind one field, opened from the sidebar, the mobile bar or the
- * keyboard.
+ * The palette: every tool and every question of the site behind one field,
+ * opened from the sidebar, the mobile bar or the keyboard.
  *
  * A sheet on a phone, since a dialog floating in the middle of a small screen
  * over a keyboard is neither; the height follows the viewport as the keyboard

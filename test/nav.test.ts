@@ -17,15 +17,16 @@ import {
   unlistedTools,
 } from "../src/lib/nav.ts";
 import { EXTERNAL_TOOLS } from "../src/lib/tools.ts";
+import nextConfig from "../next.config.ts";
 
 const beasts = toolBySlug("beasts")!;
 const maps = toolBySlug("maps")!;
 const leveling = toolBySlug("leveling")!;
 
-test("the site hosts four tools", () => {
+test("the site hosts three tools", () => {
   assert.deepEqual(
     SITE_TOOLS.map((t) => t.slug),
-    ["beasts", "maps", "scarabs", "leveling"],
+    ["beasts", "maps", "leveling"],
   );
   assert.equal(HOME.slug, "beasts");
 });
@@ -57,7 +58,6 @@ test("slugs are unique and URL safe", () => {
 test("only the tools that read prices carry a league", () => {
   assert.equal(beasts.league, true);
   assert.equal(maps.league, true);
-  assert.equal(toolBySlug("scarabs")!.league, true);
   assert.equal(leveling.league, undefined);
 });
 
@@ -88,6 +88,19 @@ test("activeTool reads the tool out of a pathname", () => {
 test("a page that is not listed still belongs to its tool", () => {
   // The simulation is unlisted, not homeless: the beasts entry stays lit.
   assert.equal(activeTool("/beasts/allflame/simulation"), "beasts");
+});
+
+test("the scarab nodes are gone, and their URLs lead home for good", async () => {
+  // 3.30 took the scarab passives out of the Atlas tree, and the page with them.
+  assert.equal(toolBySlug("scarabs"), undefined);
+  const redirects = await nextConfig.redirects!();
+  for (const source of ["/scarabs", "/scarabs/:league"]) {
+    assert.deepEqual(
+      redirects.find((r) => r.source === source),
+      { source, destination: "/", permanent: true },
+      source,
+    );
+  }
 });
 
 test("a path that is no tool of ours lights nothing up", () => {
@@ -166,9 +179,9 @@ test("the pages built here sit among the rest, not under a heading of their own"
   const under = (group: typeof general) =>
     group.entries.flatMap((e) => (e.kind === "page" ? [e.page.slug] : []));
   // Where the subject puts them: the campaign is for everyone, the Bestiary
-  // and the scarab nodes are each one mechanic.
+  // is one mechanic.
   assert.deepEqual(under(general), ["leveling"]);
-  assert.deepEqual(under(specific), ["beasts", "scarabs"]);
+  assert.deepEqual(under(specific), ["beasts"]);
 });
 
 test("the map regex is built, reachable and offered to nobody", () => {
@@ -191,7 +204,7 @@ test("three headings, all of them open", () => {
   );
 
   // Nothing is behind a click: every entry the sidebar carries is on arrival.
-  assert.equal(SIDEBAR_ENTRIES.length, 21);
+  assert.equal(SIDEBAR_ENTRIES.length, 20);
 });
 
 const names = (id: string) =>
@@ -232,7 +245,6 @@ test("two tools for the same question share a row on the home page", () => {
 test("specific is one tool per mechanic, sorted by subject", () => {
   assert.deepEqual(names("specific"), [
     "beasts",
-    "scarabs",
     "PoE Antiquary",
     "Disenchanting",
     "Timeless Jewels",
