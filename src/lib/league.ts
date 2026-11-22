@@ -35,17 +35,23 @@ export async function leagueParams() {
  * that says nothing is there: a hardcore slug to the current hardcore league,
  * anything else to the league a bare visit lands on.
  *
- * Undefined when the slug is still a league, or when there is nothing to send
- * it to.
+ * A league spelled with capitals goes to its own lowercase slug, which is the
+ * only spelling the pages answer to.
+ *
+ * Undefined when the slug is still a league as spelled, or when there is
+ * nothing to send it to.
  */
 export function successorSlug(
   slug: string,
   leagues: readonly { id: string }[],
 ): string | undefined {
   const slugs = leagues.map((l) => leagueSlug(l.id));
-  if (slugs.length === 0 || slugs.includes(slug)) return undefined;
+  if (slugs.length === 0) return undefined;
 
-  if (slug.toLowerCase().endsWith("hc")) {
+  const lower = slug.toLowerCase();
+  if (slugs.includes(lower)) return lower === slug ? undefined : lower;
+
+  if (lower.endsWith("hc")) {
     // The first hardcore league with a name of its own, never plain Hardcore.
     const hardcore = slugs.find((s) => s.endsWith("hc"));
     if (hardcore) return hardcore;

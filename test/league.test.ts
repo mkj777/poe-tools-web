@@ -144,3 +144,9 @@ test("a hardcore slug with no hardcore league falls back to the first", () => {
 test("a capitalised hardcore slug still finds the hardcore league", () => {
   assert.equal(successorSlug("AllflameHC", COVENS), "covenshc");
 });
+
+test("a live league spelled with capitals goes to its own slug, not the current league", () => {
+  assert.equal(successorSlug("Standard", COVENS), "standard");
+  assert.equal(successorSlug("HARDCORE", COVENS), "hardcore");
+  assert.equal(successorSlug("CovensHC", COVENS), "covenshc");
+});
