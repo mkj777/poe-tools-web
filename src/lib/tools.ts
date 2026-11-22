@@ -1,4 +1,3 @@
-import { leagueSlug } from "./ninja.ts";
 import type { TopicId } from "./topics.ts";
 
 /**
@@ -156,9 +155,11 @@ export const EXTERNAL_TOOLS: readonly ExternalTool[] = [
       "Unique disenchant",
       "Disenchant calculator",
     ],
-    // Its own paths are leagues, spelled the way poe.ninja spells them.
+    // Its own paths are leagues, lowercased with hyphens for spaces:
+    // /covens and /hardcore-covens. Not poe.ninja's spelling, whose
+    // /covenshc is a 404 there.
     href: (league) =>
-      `https://poe-disenchant-tool.vercel.app/${leagueSlug(league)}`,
+      `https://poe-disenchant-tool.vercel.app/${league.trim().toLowerCase().replace(/\s+/g, "-")}`,
   },
   {
     name: "Timeless Jewels",

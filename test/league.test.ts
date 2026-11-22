@@ -4,6 +4,7 @@ import {
   defaultLeagueSlug,
   leagueParams,
   resolveLeague,
+  successorSlug,
 } from "../src/lib/league.ts";
 
 /** A response shaped enough like poe.ninja's /leagues answer for every path here. */
@@ -108,4 +109,38 @@ test("leagueParams on an empty league list is an empty list of params", async (t
   stubFetch(t, () => fakeResponse([]));
 
   assert.deepEqual(await leagueParams(), []);
+});
+
+const COVENS = [
+  { id: "Covens" },
+  { id: "Hardcore Covens" },
+  { id: "Standard" },
+  { id: "Hardcore" },
+];
+
+test("an ended league is sent to the current one", () => {
+  assert.equal(successorSlug("allflame", COVENS), "covens");
+  assert.equal(successorSlug("mirage", COVENS), "covens");
+});
+
+test("an ended hardcore league is sent to the current hardcore one", () => {
+  assert.equal(successorSlug("allflamehc", COVENS), "covenshc");
+});
+
+test("a league that is still listed stays where it is", () => {
+  for (const slug of ["covens", "covenshc", "standard", "hardcore"]) {
+    assert.equal(successorSlug(slug, COVENS), undefined, slug);
+  }
+});
+
+test("with no leagues to go to, nothing is redirected", () => {
+  assert.equal(successorSlug("allflame", []), undefined);
+});
+
+test("a hardcore slug with no hardcore league falls back to the first", () => {
+  assert.equal(successorSlug("allflamehc", [{ id: "Covens" }]), "covens");
+});
+
+test("a capitalised hardcore slug still finds the hardcore league", () => {
+  assert.equal(successorSlug("AllflameHC", COVENS), "covenshc");
 });

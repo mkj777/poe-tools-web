@@ -67,15 +67,19 @@ test("trade carries the league the way Path of Exile spells it", () => {
   );
 });
 
-test("the disenchanting tool spells its leagues the way poe.ninja does", () => {
+test("the disenchanting tool spells its leagues with hyphens", () => {
   const disenchant = toolByName("Disenchanting");
   assert.equal(
-    disenchant.href("Allflame"),
-    "https://poe-disenchant-tool.vercel.app/allflame",
+    disenchant.href("Covens"),
+    "https://poe-disenchant-tool.vercel.app/covens",
   );
   assert.equal(
-    disenchant.href("Hardcore Allflame"),
-    "https://poe-disenchant-tool.vercel.app/allflamehc",
+    disenchant.href("Hardcore Covens"),
+    "https://poe-disenchant-tool.vercel.app/hardcore-covens",
+  );
+  assert.equal(
+    disenchant.href("Standard"),
+    "https://poe-disenchant-tool.vercel.app/standard",
   );
 });
 
