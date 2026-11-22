@@ -102,7 +102,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <SearchMount leagues={leagues} fallback={fallback} />
             <SidebarInset className="min-w-0">
               <MobileBar />
-              <LeagueNotice />
+              <LeagueNotice current={leagues[0]?.id} />
               {children}
               <footer className="text-muted-foreground mx-auto mt-auto flex w-full max-w-[88rem] gap-4 px-4 pt-4 pb-8 text-xs sm:px-6 lg:px-8">
                 <a
