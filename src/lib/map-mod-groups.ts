@@ -13,7 +13,7 @@ import { MAP_MOD_LINES } from "./map-mods.ts";
  * when you decide whether to run one. A friendlier paraphrase would be a second
  * vocabulary to learn, and would not match anything you could search for.
  *
- * These groups deliberately do not cover all 177 lines. Naming every one of
+ * These groups deliberately do not cover all 186 lines. Naming every one of
  * them would be a lot of naming for lines nobody bans, and it would mean a new
  * league's modifiers are unusable until someone curates them. Whatever no group
  * claims stays individually bannable through `looseLines()`.
@@ -25,17 +25,35 @@ export type ModGroup = {
 
 /**
  * What every map is rolled for. Never a target: banning these would hide the
- * maps worth keeping. They still matter, because every map carries them, so a
- * fragment landing in one of them dims everything.
+ * maps worth keeping. They still matter, because every rolled map carries some
+ * of them, so a fragment landing in one of them dims everything.
+ *
+ * 3.30 replaced Item Quantity on maps with Atlas Drops at the same values, and
+ * Scarabs with Threads.
  */
 export const REWARD_LINES: readonly string[] = [
+  "#% increased Atlas Drops in this Area",
   "#% increased Pack size",
-  "#% increased Quantity of Items found in this Area",
   "#% increased Rarity of Items found in this Area",
   "#% more Currency found in Area",
   "#% more Maps found in Area",
-  "#% more Scarabs found in Area",
-  "This Area's Modifiers to Quantity of Items found also apply to Rarity",
+  "#% more Threads found in Area",
+  "This Area's Modifiers to Atlas Drops also apply to Item Rarity",
+  /**
+   * The rare-only suffixes 3.30 added. Each is content a map is run for rather
+   * than a danger, and the Evocator ones carry Atlas Drops, rarity and pack
+   * size of their own, so they are never offered as a ban and a fragment must
+   * never dim them.
+   */
+  "Area contains a Mirage",
+  "Area contains a Mirror of Delirium",
+  "Area contains a buried Apex Sentinel",
+  "Area contains a buried Pandemonium Sentinel",
+  "Area contains a buried Stalker Sentinel",
+  "Area contains an Evocator of Beidat",
+  "Area contains an Evocator of Ghorr",
+  "Area contains an Evocator of K'Tash",
+  "Area contains the Viridian Wildwood",
 ];
 
 export const MOD_GROUPS: readonly ModGroup[] = [

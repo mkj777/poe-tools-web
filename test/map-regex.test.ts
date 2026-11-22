@@ -124,7 +124,7 @@ test("Temporal Chains does not collide with Temporarily Revive", () => {
   }
 });
 
-const quantity = REWARD_STATS.find((s) => s.id === "quantity")!;
+const atlasDrops = REWARD_STATS.find((s) => s.id === "atlasDrops")!;
 
 /** Every number the pattern accepts, read back the way a regex engine would. */
 const accepts = (min: number, value: number) =>
@@ -145,40 +145,42 @@ test("the threshold pattern accepts exactly the numbers at or above it", () => {
 });
 
 test("a threshold reads the property block the game prints", () => {
-  const term = statTerm(quantity, 30)!;
+  const term = statTerm(atlasDrops, 30)!;
   const body = term.slice(1, -1);
 
-  // "Item Quantity: +71%", with the dot standing in for the plus.
-  assert.ok(new RegExp(body).test("Item Quantity: +71%"));
-  assert.ok(new RegExp(body).test("Item Quantity: +30%"));
-  assert.ok(new RegExp(body).test("Item Quantity: +124%"));
-  assert.ok(!new RegExp(body).test("Item Quantity: +29%"));
-  assert.ok(!new RegExp(body).test("Item Quantity: +8%"));
+  // "Atlas Drops: +71%", with the dot standing in for the plus.
+  assert.ok(new RegExp(body).test("Atlas Drops: +71%"));
+  assert.ok(new RegExp(body).test("Atlas Drops: +30%"));
+  assert.ok(new RegExp(body).test("Atlas Drops: +124%"));
+  assert.ok(!new RegExp(body).test("Atlas Drops: +29%"));
+  assert.ok(!new RegExp(body).test("Atlas Drops: +8%"));
   assert.ok(!new RegExp(body).test("Item Rarity: +71%"));
+  // The 3.29 line is gone from maps; reading it would be reading nothing.
+  assert.ok(!new RegExp(body).test("Item Quantity: +71%"));
 
   // The wildcard digits cannot reach past the percent sign, which is the whole
   // reason they are allowed to be wildcards.
-  assert.ok(!new RegExp(body).test("Item Quantity: +3%"));
+  assert.ok(!new RegExp(body).test("Atlas Drops: +3%"));
 });
 
 test("a minimum of one asks only that the line is there", () => {
   // The game prints nothing for a stat of zero, so presence is the same
   // question, and far shorter than spelling out every number from one up.
-  assert.equal(statTerm(quantity, 1), '"Quantity:"');
-  assert.equal(statTerm(quantity, 0), null);
-  assert.equal(statTerm(quantity, -5), null);
+  assert.equal(statTerm(atlasDrops, 1), '"Drops:"');
+  assert.equal(statTerm(atlasDrops, 0), null);
+  assert.equal(statTerm(atlasDrops, -5), null);
 });
 
 test("minimums stand beside the negated term, in declaration order", () => {
   const banned = ["Players are Cursed with Temporal Chains"];
   const plain = planMapSearch(banned);
   const withMinimums = planMapSearch(banned, {
-    minimums: { packSize: 25, quantity: 60 },
+    minimums: { packSize: 25, atlasDrops: 60 },
   });
 
   assert.equal(
     withMinimums.search,
-    `${statTerm(quantity, 60)} ${statTerm(REWARD_STATS[2], 25)} ${plain.search}`,
+    `${statTerm(atlasDrops, 60)} ${statTerm(REWARD_STATS[2], 25)} ${plain.search}`,
   );
   // AND-joined terms, so asking for more cannot change what the exclusion says.
   assert.deepEqual(withMinimums.fragments, plain.fragments);
@@ -186,17 +188,27 @@ test("minimums stand beside the negated term, in declaration order", () => {
 
 test("minimums on their own still ask for something", () => {
   assert.equal(
-    planMapSearch([], { minimums: { quantity: 1 } }).search,
-    '"Quantity:"',
+    planMapSearch([], { minimums: { atlasDrops: 1 } }).search,
+    '"Drops:"',
   );
   assert.equal(planMapSearch([], { minimums: {} }).search, "");
 });
 
 test("every stat needle reaches its own line and no other", () => {
   const lines = [
-    "Item Quantity: +71%",
+    "Atlas Drops: +71%",
     "Item Rarity: +41%",
     "Monster Pack Size: +27%",
+  ];
+  // The other 3.30 property lines, as poe.re PR #578 reads them from the
+  // client strings. No needle may reach any of them.
+  const others = [
+    "More Threads: +12%",
+    "Quality (Threads): +20%",
+    "Quality (Quantity): +20%",
+    "Item Quantity: +20%",
+    "More Maps: +10%",
+    "More Currency: +10%",
   ];
 
   REWARD_STATS.forEach((stat, i) => {
@@ -207,7 +219,21 @@ test("every stat needle reaches its own line and no other", () => {
         `${stat.needle} against ${line}`,
       );
     });
+    for (const line of others) {
+      assert.ok(!line.includes(stat.needle), `${stat.needle} against ${line}`);
+    }
   });
+});
+
+test("no fragment dims the 3.30 property labels", () => {
+  // Every banned line at once is the widest net the solver ever casts.
+  const all = MAP_MOD_LINES.filter((l) => !REWARD_LINES.includes(l));
+  for (const fragment of planMapSearch(all).fragments) {
+    assert.ok(
+      !occursIn(fragment.text, ["Atlas Drops", "More Threads", "Quality (Threads)"]),
+      `${fragment.text} dims every rolled map`,
+    );
+  }
 });
 
 test("one fragment covers both reflect lines", () => {

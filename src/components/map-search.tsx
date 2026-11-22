@@ -56,13 +56,13 @@ export function MapSearch() {
     "no-leech",
   ]);
   /**
-   * Quantity starts at 1, which asks only that the line is there at all. An
-   * unrolled white map prints no quantity, so it starts out dark: it needs work
+   * Atlas Drops starts at 1, which asks only that the line is there at all. An
+   * unrolled white map prints no Atlas Drops, so it starts out dark: it needs work
    * just as much as a badly rolled rare one, and lighting it would make "dark"
    * mean two different things depending on the map.
    */
   const [minimums, setMinimums] = useState<Record<string, string>>({
-    quantity: "1",
+    atlasDrops: "1",
   });
 
   /**
@@ -157,16 +157,16 @@ export function MapSearch() {
           </Button>
         </div>
         {/* Magic maps cannot be told from rare ones, so this only reaches the
-            unrolled white ones: they print no quantity line at all, and asking
+            unrolled white ones: they print no Atlas Drops line at all, and asking
             for one at 1% drops them. See docs/stash-search.md, Test 8. */}
         <label className="text-muted-foreground flex w-fit items-center gap-2 py-2 text-sm">
           <Checkbox
-            checked={(Number(minimums.quantity) || 0) >= 1}
+            checked={(Number(minimums.atlasDrops) || 0) >= 1}
             onCheckedChange={(on) =>
               setMinimums((prev) => ({
                 ...prev,
-                quantity:
-                  on === true ? String(Math.max(asked.quantity, 1)) : "",
+                atlasDrops:
+                  on === true ? String(Math.max(asked.atlasDrops, 1)) : "",
               }))
             }
           />

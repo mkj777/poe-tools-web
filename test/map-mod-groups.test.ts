@@ -79,3 +79,31 @@ test("loose lines are everything no group and no reward claims", () => {
   // Nothing is unreachable: every line is either grouped, a reward, or loose.
   assert.equal(claimed.size + loose.length, MAP_MOD_LINES.length);
 });
+
+test("the 3.30 reward lines are rewards, and the rare-only suffixes with them", () => {
+  for (const line of [
+    "#% increased Atlas Drops in this Area",
+    "#% more Threads found in Area",
+    "This Area's Modifiers to Atlas Drops also apply to Item Rarity",
+    "Area contains a Mirage",
+    "Area contains a Mirror of Delirium",
+    "Area contains a buried Apex Sentinel",
+    "Area contains a buried Pandemonium Sentinel",
+    "Area contains a buried Stalker Sentinel",
+    "Area contains an Evocator of Beidat",
+    "Area contains an Evocator of Ghorr",
+    "Area contains an Evocator of K'Tash",
+    "Area contains the Viridian Wildwood",
+  ]) {
+    assert.ok(REWARD_LINES.includes(line), `not a reward line: ${line}`);
+    assert.ok(!looseLines().includes(line), `offered as a ban: ${line}`);
+  }
+});
+
+test("the reworded ally penalty is still bannable on its own", () => {
+  assert.ok(
+    looseLines().includes(
+      "Players in Area take #% increased Damage per Ally within # metres",
+    ),
+  );
+});

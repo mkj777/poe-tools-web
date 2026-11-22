@@ -1,5 +1,4 @@
 import { PageFrame } from "@/components/page-frame";
-import { SetupSkeleton } from "@/components/page-skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapsHeader } from "./header";
 
@@ -28,12 +27,13 @@ function Block({
 }
 
 /**
- * The map page before its prices. The regex needs nothing from the network,
- * so the wait is short; this keeps the page's shape for the moment it takes.
+ * The map page before its league list. The regex needs nothing from the
+ * network, so the wait is short; this keeps the page's shape for the moment it
+ * takes. No rail: the setup panel is hidden for now, see page.tsx.
  */
 export default function Loading() {
   return (
-    <PageFrame header={<MapsHeader />} aside={<SetupSkeleton />}>
+    <PageFrame header={<MapsHeader />}>
       <div className="space-y-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">

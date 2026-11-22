@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { leagueParams, resolveLeague } from "@/lib/league";
-import {
-  getAllScarabs,
-  getAstrolabes,
-  getCurrencyPrices,
-  leagueSlug,
-  type CurrencyPrices,
-} from "@/lib/ninja";
+import { leagueSlug } from "@/lib/ninja";
 import { breadcrumbLd, webAppLd } from "@/lib/seo";
 import { OG_IMAGE, canonical } from "@/lib/site";
 import { JsonLd } from "@/components/json-ld";
 import { LeagueSelect } from "@/components/league-select";
 import { MapSearch } from "@/components/map-search";
-import { MapSetup } from "@/components/map-setup";
 import { PageFrame } from "@/components/page-frame";
 import { MapsHeader } from "./header";
 
@@ -51,18 +44,11 @@ export const revalidate = 900;
 export const generateStaticParams = leagueParams;
 
 export default async function Page({ params }: PageProps<"/maps/[league]">) {
-  // Map modifiers do not change with the league. The prices beside them do,
-  // which is the only reason this page carries one.
+  // Map modifiers do not change with the league. The prices of the setup panel
+  // did, which is why this page carries one; the panel is hidden for now (see
+  // below), so the league currently changes nothing on the page.
   const { leagues, league } = await resolveLeague((await params).league);
   if (!league) notFound();
-
-  // A missing price list costs the panel a row, never the page. The regex is
-  // what the page is for, and it needs nothing from the network.
-  const [scarabs, astrolabes, currency] = await Promise.all([
-    getAllScarabs(league).catch(() => []),
-    getAstrolabes(league).catch(() => []),
-    getCurrencyPrices(league).catch((): CurrencyPrices => ({})),
-  ]);
 
   return (
     <PageFrame
@@ -71,13 +57,9 @@ export default async function Page({ params }: PageProps<"/maps/[league]">) {
           actions={<LeagueSelect leagues={leagues} league={league} />}
         />
       }
-      aside={
-        <MapSetup
-          scarabs={scarabs}
-          astrolabes={astrolabes}
-          divine={currency.divine}
-        />
-      }
+      // The setup panel (src/components/map-setup.tsx) is hidden for now, and
+      // its price fetches with it: 3.30 removed scarabs from the game and
+      // Threads replace them, and what the panel becomes is not decided yet.
     >
       <JsonLd
         data={webAppLd({

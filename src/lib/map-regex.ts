@@ -57,6 +57,16 @@ export const ITEM_CHROME: readonly string[] = [
   "Map",
   "Tier",
   "Monster Level",
+  /**
+   * 3.30 prints Atlas Drops and More Threads where Item Quantity and More
+   * Scarabs used to be. The reward lines already cover both words today, but
+   * only by the accident of their wording, so the labels are named here.
+   * Item Quantity stays: the 3.30 client strings still carry it, and keeping a
+   * label a map may not print costs only a rejected fragment.
+   */
+  "Atlas Drops",
+  "More Threads",
+  "Quality (Threads)",
   "Item Quantity",
   "Item Rarity",
   "Monster Pack Size",
@@ -104,7 +114,7 @@ export type Fragment = {
 
 /**
  * The three numbers a map is rolled for, as the property block prints them:
- * `Item Quantity: +71%`, `Item Rarity: +41%`, `Monster Pack Size: +27%`.
+ * `Atlas Drops: +71%`, `Item Rarity: +41%`, `Monster Pack Size: +27%`.
  *
  * These are worth asking about precisely because the game has already added
  * them up. Every other generator has to reason over the modifier text of each
@@ -117,13 +127,21 @@ export type Fragment = {
 export type RewardStat = { id: string; label: string; needle: string };
 
 export const REWARD_STATS: readonly RewardStat[] = [
-  { id: "quantity", label: "Item Quantity", needle: "Quantity: " },
+  /**
+   * 3.30 replaced Item Quantity on maps with Atlas Drops. The property line is
+   * assumed to read `Atlas Drops: +45%`: that wording comes from poe.re PR #578,
+   * taken from the 3.30.0.1 client string `ItemDisplayMapDropScalingBonus`, and
+   * neither its author nor this project has yet checked it against a map
+   * copied in game with Ctrl+C. Until then the needle starts at `Drops`, which
+   * still reaches the line if the label in front of it turns out different.
+   */
+  { id: "atlasDrops", label: "Atlas Drops", needle: "Drops: " },
   { id: "rarity", label: "Item Rarity", needle: "Rarity: " },
   { id: "packSize", label: "Monster Pack Size", needle: "Pack Size: " },
 ];
 
 /**
- * How many digits a printed value may have. A map's own quantity and rarity
+ * How many digits a printed value may have. A map's own Atlas Drops and rarity
  * come from its affixes and land near a hundred, so three digits is already far
  * past anything the game prints, and every extra one costs characters in a
  * field whose limit is still unknown.
@@ -133,7 +151,7 @@ const MAX_DIGITS = 3;
 /**
  * A digit position that may be anything. `.` rather than `[0-9]`, which is four
  * characters cheaper each time and cannot go wrong here: the term ends at the
- * `%`, so a wildcard has nowhere to wander. `Quantity: .([6-9].)%` reads 60 to
+ * `%`, so a wildcard has nowhere to wander. `Drops: .([6-9].)%` reads 60 to
  * 99 and refuses `+6%`, because there the `%` arrives one character early.
  */
 const FREE = ".";
